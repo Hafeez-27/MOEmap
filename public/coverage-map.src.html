@@ -1,0 +1,551 @@
+<title>School Coverage Clusters</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/*__MAPLIBRE_CSS__*/
+/* Layout: one-screen planning tool in the deck's light palette. Header with headline numbers, side panel, WebGL map. */
+:root{
+  color-scheme:light;
+  --navy:#14213D; --slate:#3B4556; --mut:#5E6B80; --mist:#D5DCE6; --line:#E1E6EE; --paper:#F7F9FB; --sheet:#FFFFFF;
+  --boy:#2457A6; --girl:#B0347A; --ns:#8C97A8; --single:#E07020; --good:#1F7A4D; --amber:#C98F00; --red:#C8372D; --gold:#F2C230;
+  --sea:#DCE8F1; --seal:#B9CFDF; --land:#F4F2EC; --road:#FFFFFF; --mway:#D3D8DF;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --cond:"IBM Plex Sans Condensed","IBM Plex Sans",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--paper);color:var(--navy);font:13px/1.45 var(--sans);font-variant-numeric:tabular-nums;display:flex;flex-direction:column;overflow:hidden}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--navy);outline-offset:2px}
+h1,h2,h3{font-family:var(--cond);margin:0;text-wrap:balance}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 28px;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));background:var(--navy);color:#fff}
+.top h1{font-size:21px;font-weight:700;line-height:1.1}
+.top .sub{color:#B9C3D4;font-size:12px}
+.kpis{display:flex;flex-wrap:wrap;gap:6px 24px;margin-left:auto}
+.kpi{display:flex;flex-direction:column}
+.kpi b{font:700 21px/1.05 var(--cond)}
+.kpi span{font-size:10.5px;color:#B9C3D4;letter-spacing:.05em;text-transform:uppercase}
+.kpi.warn b{color:#FFB27A}.kpi.ok b{color:#8FD9AE}
+.main{flex:1;display:flex;min-height:0}
+.side{width:410px;flex:none;display:flex;flex-direction:column;border-right:1px solid var(--mist);background:var(--sheet);min-height:0}
+.tabs{display:flex;border-bottom:1px solid var(--mist)}
+.tabs button{flex:1;background:none;border:0;border-bottom:3px solid transparent;padding:10px 6px 8px;font:600 13px var(--cond);letter-spacing:.05em;text-transform:uppercase;color:var(--mut);cursor:pointer}
+.tabs button[aria-selected="true"]{color:var(--navy);border-bottom-color:var(--navy)}
+.filters{display:grid;gap:8px;padding:12px 16px;border-bottom:1px solid var(--mist);background:var(--paper)}
+.frow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.frow > .t{font:600 10.5px var(--cond);text-transform:uppercase;letter-spacing:.05em;color:var(--mut);width:52px;flex:none}
+.chip{position:relative;display:inline-flex;align-items:center;gap:5px;border:1px solid var(--mist);border-radius:999px;padding:3px 9px;cursor:pointer;font-size:12px;background:var(--sheet);user-select:none}
+.chip input{position:absolute;opacity:0;pointer-events:none}
+.chip:has(input:checked){border-color:var(--navy)}
+.chip:has(input:not(:checked)){opacity:.5;text-decoration:line-through}
+.chip:has(input:focus-visible){outline:2px solid var(--navy);outline-offset:2px}
+.chip small{color:var(--mut)}
+.seg{display:inline-flex;border:1px solid var(--mist);border-radius:6px;overflow:hidden;background:var(--sheet)}
+.seg button{border:0;background:none;padding:4px 10px;font-size:12px;cursor:pointer;color:var(--slate)}
+.seg button+button{border-left:1px solid var(--mist)}
+.seg button[aria-pressed="true"]{background:var(--navy);color:#fff;font-weight:600}
+select,input[type=search]{border:1px solid var(--mist);border-radius:6px;padding:4px 8px;background:var(--sheet)}
+input[type=search]{flex:1;min-width:0}
+.pane{flex:1;overflow:auto;padding:14px 16px 28px;min-height:0}
+.pane h2{font-size:15px;font-weight:700;margin:20px 0 8px}
+.pane h2:first-child{margin-top:0}
+.pane p{margin:0 0 10px;color:var(--slate);max-width:65ch}
+.lead{font-size:14px;color:var(--navy)!important}
+.brief{border-left:3px solid var(--navy);background:var(--paper);padding:8px 10px;margin:0 0 12px;color:var(--slate)}
+.brief b{color:var(--navy)}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{text-align:right;padding:5px 4px;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left;white-space:normal}
+th{font:600 10.5px var(--cond);text-transform:uppercase;letter-spacing:.05em;color:var(--mut)}
+tr.tot td{font-weight:700;border-top:1px solid var(--navy);border-bottom:0}
+tbody tr.zr{cursor:pointer}tbody tr.zr:hover td{background:var(--paper)}
+.up{color:var(--single)}.down{color:var(--good)}
+.sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.decisions{margin:0;padding-left:18px;display:grid;gap:8px;color:var(--slate)}
+.decisions b{color:var(--navy)}
+.rules{margin:0;padding:0;list-style:none;display:grid;gap:8px}
+.rules li{padding:9px 11px;border:1px solid var(--mist);border-radius:6px}
+.rules li b{display:block;font-family:var(--cond);font-size:14px;margin-bottom:2px}
+.rules li span{color:var(--slate)}
+.count{color:var(--mut);font-size:12px;margin:0 0 6px}
+.list{list-style:none;margin:0;padding:0}
+.list li{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:8px 8px;border-bottom:1px solid var(--line);cursor:pointer}
+.list li:hover{background:var(--paper)}
+.list li.sel{background:#FFF7D6;box-shadow:inset 3px 0 0 var(--gold)}
+.list .nm{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.list .meta{grid-column:1/-1;color:var(--mut);font-size:12px;display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center}
+.tag{display:inline-block;font:600 10.5px/1.6 var(--cond);letter-spacing:.04em;text-transform:uppercase;padding:0 6px;border-radius:3px;border:1px solid currentColor}
+.tag.B{color:var(--boy)}.tag.G{color:var(--girl)}.tag.N{color:var(--ns)}.tag.rural{color:var(--good)}.tag.single{color:var(--single)}.tag.isl{color:#9A7400}
+.mins{font:600 12px var(--cond)}.mins.ok{color:var(--good)}.mins.near{color:var(--amber)}.mins.bad{color:var(--red)}
+.mapwrap{flex:1;position:relative;min-width:0;background:var(--sea)}
+#map{position:absolute;inset:0}
+.legend{position:absolute;right:calc(10px + env(safe-area-inset-right,0px));bottom:calc(30px + env(safe-area-inset-bottom,0px));z-index:5;background:var(--sheet);border:1px solid var(--mist);border-radius:6px;padding:9px 11px;font-size:12px;display:grid;gap:4px;max-width:260px;box-shadow:0 2px 8px rgba(20,33,61,.08)}
+.lgt{justify-self:end;background:none;border:0;padding:0;font:600 10.5px var(--cond);text-transform:uppercase;letter-spacing:.05em;color:var(--navy);cursor:pointer}
+.lgt::after{content:' ▾'}.lgt[aria-expanded="false"]::after{content:' ▸'}
+#legend{display:grid;gap:4px}
+.legend b{font:600 10.5px var(--cond);text-transform:uppercase;letter-spacing:.05em;color:var(--mut);margin-top:3px}
+.legend b:first-child{margin-top:0}
+.legend .r{display:flex;align-items:center;gap:8px}
+.legend svg{flex:none}
+.zoomhint{position:absolute;left:50%;bottom:calc(12px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:4;background:rgba(20,33,61,.86);color:#fff;font-size:12px;padding:4px 10px;border-radius:999px;pointer-events:none;white-space:nowrap}
+.detail{position:absolute;left:10px;top:10px;z-index:6;width:min(370px,calc(100% - 20px));max-height:calc(100% - 20px);overflow:auto;background:var(--sheet);border:1px solid var(--navy);border-radius:6px;padding:12px 14px;box-shadow:0 8px 24px rgba(20,33,61,.18)}
+.detail h3{font-size:17px;font-weight:700;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.detail .eng{margin:8px 0;padding:8px 10px;background:var(--paper);border-radius:4px;color:var(--slate)}
+.detail .eng b{color:var(--navy)}
+.detail .note{color:var(--slate);font-size:12px;margin:6px 0 0}
+.detail td:nth-child(2){white-space:normal;text-align:left}
+.detail .x{margin-left:auto;background:none;border:1px solid var(--mist);border-radius:4px;cursor:pointer;padding:0 7px;font-size:16px;line-height:22px}
+/* map labels (HTML markers: no font server needed) */
+.place{font:600 12px var(--cond);color:#7A8597;opacity:.8;letter-spacing:.05em;text-shadow:0 0 3px var(--land),0 0 3px var(--land),0 0 3px var(--land);white-space:nowrap;pointer-events:none}
+.place.sea{font-style:italic;color:#7F9DB5;text-shadow:0 0 3px var(--sea)}
+.zcard{background:var(--sheet);border:1px solid var(--navy);border-radius:5px;padding:3px 7px;font-size:11px;line-height:1.25;box-shadow:0 2px 8px rgba(20,33,61,.15);cursor:pointer;white-space:nowrap;transition:opacity .25s}
+.zcard b{display:block;font:700 12.5px var(--cond);color:var(--navy)}
+.zcard span{color:var(--slate)}
+.zcard i{font-style:normal;color:var(--single);font-weight:600}
+.zcard:hover{background:#FFF7D6}
+.clbl{background:rgba(255,255,255,.92);border:1px solid currentColor;border-radius:3px;padding:0 5px;font:600 11px/17px var(--cond);white-space:nowrap;cursor:pointer;transition:opacity .2s}
+.clbl.B{color:var(--boy)}.clbl.G{color:var(--girl)}.clbl.N{color:var(--slate)}.clbl.R{color:var(--single)}
+.isl{background:var(--gold);color:var(--navy);border:1px solid #B8900F;font:600 11.5px var(--cond);padding:2px 7px;border-radius:3px;white-space:nowrap;pointer-events:none}
+.maplibregl-popup-content{font:12px/1.4 var(--sans);color:var(--navy);padding:8px 10px;border-radius:5px;box-shadow:0 4px 14px rgba(20,33,61,.18)}
+.maplibregl-ctrl-group button{width:34px;height:34px}
+.maplibregl-ctrl-group button.homebtn{font:700 11px var(--cond);color:var(--navy)}
+.maplibregl-ctrl-attrib{font-size:10.5px}
+@media (max-width:820px){
+  body{overflow:auto;height:auto}
+  .main{flex-direction:column}
+  .mapwrap{order:1;height:64vh;flex:none}
+  .side{order:2;width:auto;border-right:0;border-top:1px solid var(--mist)}
+  .pane{overflow:visible}
+  .kpis{margin-left:0}
+  .maplibregl-ctrl-scale{display:none}
+  .legend{max-width:190px;font-size:11px;bottom:calc(36px + env(safe-area-inset-bottom,0px))}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="top">
+  <div>
+    <h1>School Coverage Clusters</h1>
+    <div class="sub">MOE EUC field engineers · Option 1 · 323 engineers on the Al Manhal schools mapping · 522 schools + 48 non-school sites</div>
+  </div>
+  <div class="kpis" id="kpis"></div>
+</header>
+<div class="main">
+  <aside class="side">
+    <div class="tabs" role="tablist">
+      <button role="tab" aria-selected="true" data-p="plan">Plan</button>
+      <button role="tab" aria-selected="false" data-p="clusters">Clusters</button>
+      <button role="tab" aria-selected="false" data-p="rules">Rules</button>
+    </div>
+    <div class="filters">
+      <div class="frow"><span class="t">Colour</span>
+        <div class="seg" id="mode"><button aria-pressed="true" data-m="cat">Option 1 category</button><button aria-pressed="false" data-m="gender">Gender</button><button aria-pressed="false" data-m="nat">Emirati</button><button aria-pressed="false" data-m="travel">Travel</button></div>
+      </div>
+      <div class="frow" id="kinds"><span class="t">Model</span></div>
+      <div class="frow"><span class="t">Show</span>
+        <label class="chip"><input type="checkbox" id="fB" checked><span class="sw" style="background:var(--boy)"></span>Boys</label>
+        <label class="chip"><input type="checkbox" id="fG" checked><span class="sw" style="background:var(--girl)"></span>Girls</label>
+        <label class="chip"><input type="checkbox" id="fR">Rural only</label>
+        <select id="zone" aria-label="Team-Lead cluster"><option value="">All Team-Lead clusters</option></select>
+      </div>
+    </div>
+    <div class="pane" id="p-plan"></div>
+    <div class="pane" id="p-clusters" hidden>
+      <div class="frow" style="margin-bottom:8px"><input type="search" id="q" placeholder="Search school, School_ID, FE id or MOE cluster" aria-label="Search clusters"></div>
+      <p class="count" id="count"></p>
+      <ul class="list" id="list"></ul>
+    </div>
+    <div class="pane" id="p-rules" hidden></div>
+  </aside>
+  <div class="mapwrap">
+    <div id="map"></div>
+    <div class="detail" id="detail" hidden></div>
+    <div class="legend" id="legendbox"><button class="lgt" id="lgt" aria-expanded="true">Legend</button><div id="legend"></div></div>
+  </div>
+</div>
+
+<script>/*__MAPLIBRE_JS__*/</script>
+<script>window.PLAN = /*__PLAN__*/null; window.BASE = /*__BASE__*/null;</script>
+<script>
+(() => {
+const P = window.PLAN, B = window.BASE, $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const V = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const fmt = n => Math.round(n).toLocaleString('en-US');
+const S = new Map(P.sites.map(s => [s.id, s])), C = new Map(P.clusters.map(c => [c.id, c])), Z = new Map(P.zones.map(z => [z.id, z]));
+const KIND = {
+  dedicated: { label: 'Dedicated', long: 'Dedicated national (1 school)' },
+  pair: { label: 'Shared pair', long: 'Shared engineer, 2 schools' },
+  triad: { label: 'Shared 3–4', long: 'Shared engineer, 3–4 schools' },
+  pool: { label: 'Pool', long: 'Pool (X-Small + non-school, ticket-driven)' },
+  remote: { label: 'Own engineer', long: 'Own engineer (no partner in reach)' }
+};
+const TIER = { XL: 'X-Large (2000+)', L: 'Large (1000–1999)', MT: 'Medium top list', IS: 'Dalma Island', MO: 'Medium others', S: 'Small', XS: 'X-Small', NS: 'Non-school site' };
+const TIERS = ['XL', 'L', 'MT', 'IS', 'MO', 'S', 'XS', 'NS'];
+// Option 1 colours: dedicated rows in the deck's navy family, rows still to plan (shared / pool) in the deck's red family
+const TCOL = { XL: '#14213D', L: '#2F4775', MT: '#6A80AB', IS: '#F2C230', MO: '#A3221B', S: '#D4473C', XS: '#EE9A8F', NS: '#9AA5B5' };
+const TRAD = { XL: [5, 9, 13], L: [4.5, 8, 12], MT: [4, 7, 11], IS: [4.5, 8, 12], MO: [3.5, 6.5, 10], S: [3.2, 6, 9.5], XS: [2.8, 5, 8.5], NS: [2.5, 4.5, 7.5] };
+const gName = g => g === 'B' ? 'Boys' : g === 'G' ? 'Girls' : 'Any';
+const minCls = m => m <= 20 ? 'ok' : m <= P.sla ? 'near' : 'bad';
+
+// ---------- figures ----------
+const by = k => P.clusters.filter(c => c.kind === k);
+const BU = P.budget, M = P.metrics, SC = P.scenarios || {}, eng = P.clusters.length, ded = by('dedicated').length, single = by('remote').length;
+const sharedN = by('pair').length + by('triad').length + single, poolN = by('pool').length;
+const moving = P.clusters.filter(c => c.members.length > 1);
+const mixed = P.clusters.filter(c => new Set(c.members.map(m => S.get(m).g).filter(Boolean)).size > 1).length;
+const male = P.clusters.filter(c => c.gender === 'B').length, female = P.clusters.filter(c => c.gender === 'G').length;
+const ruralPref = P.clusters.filter(c => c.kind !== 'dedicated' && c.rural), wave1 = by('dedicated').filter(c => c.wave === 1);
+const longest = moving.slice().sort((a, b) => b.maxReach - a.maxReach);
+const approxS = P.sites.filter(s => s.approx && s.tier !== 'NS'), boatS = P.sites.filter(s => s.boat);
+$('#kpis').innerHTML = [[eng, 'school field engineers'], [ded, 'dedicated nationals'], [sharedN, 'shared'], [poolN, 'pool'], [`${M.schools_in30}/${M.schools}`, 'schools ≤30 min P1'], [mixed, 'gender conflicts', mixed ? 'warn' : 'ok']]
+  .map(([v, l, c]) => `<div class="kpi ${c || ''}"><b>${typeof v === 'number' ? fmt(v) : v}</b><span>${l}</span></div>`).join('');
+
+// per Team-Lead cluster summary (the regions take the place of zones)
+const zstat = P.zones.map(z => {
+  const cs = P.clusters.filter(c => c.zone === z.id), ss = P.sites.filter(s => s.zone === z.id);
+  const sch = ss.filter(s => s.tier !== 'NS');
+  const in30 = sch.filter(s => !s.boat && (C.get(s.c).reach?.[s.id] ?? 0) <= P.sla).length;
+  return { z, cs, schools: sch.length, ns: ss.length - sch.length, eng: cs.length, ded: cs.filter(c => c.kind === 'dedicated').length, single: cs.filter(c => c.kind === 'remote').length, in30,
+    sharedN: cs.filter(c => ['pair', 'triad', 'remote'].includes(c.kind)).length, poolN: cs.filter(c => c.kind === 'pool').length, m: cs.filter(c => c.gender === 'B').length, f: cs.filter(c => c.gender === 'G').length,
+    lat: sch.reduce((a, s) => a + s.lat, 0) / sch.length, lng: sch.reduce((a, s) => a + s.lng, 0) / sch.length,
+    bounds: ss.reduce((b, s) => [[Math.min(b[0][0], s.lng), Math.min(b[0][1], s.lat)], [Math.max(b[1][0], s.lng), Math.max(b[1][1], s.lat)]], [[180, 90], [-180, -90]]) };
+});
+const dTd = (d) => `<td class="${d > 0 ? 'up' : d < 0 ? 'down' : ''}">${d > 0 ? '+' : ''}${d}</td>`;
+const pct = (a, b) => `${Math.round(100 * a / b)}%`;
+const V1 = SC.V1, IM = V1?.impact;
+const scRow = (k, cur) => { const s = SC[k]; if (!s) return ''; return `<tr${cur ? ' class="tot"' : ''}><td><b>${k}</b> ${esc(s.label)}</td><td>${s.engineers}</td><td>${s.schools_in30}</td><td>${s.rural_out30}</td><td>${s.over60}</td><td>${s.p90_reach}</td></tr>`; };
+const scHead = `<thead><tr><th>Scenario</th><th>Eng.</th><th>≤30 min</th><th>Rural >30</th><th>>60 min</th><th>P90 min</th></tr></thead>`;
+
+// ---------- side panes ----------
+$('#p-plan').innerHTML = `
+  <p class="brief"><b>Direction from the project lead (3 Nov):</b> 333 engineers in total. 10 are HQ dedicated and left out of this plan, so 323 cover the schools. Schools are grouped by the mapping in the Al Manhal sheet: the Team-Lead cluster and, inside it, the MOE sub-cluster. Option 1 categories apply.</p>
+  <p class="lead">${fmt(eng)} field engineers cover all ${P.sites.length} sites. ${M.schools_in30} of ${M.schools} schools (${M.users_in30_pct}% of users) have an engineer within ${P.sla} minutes at school-run peak. No engineer crosses a Team-Lead cluster, and no cluster mixes boys' and girls' schools.</p>
+
+  <h2>Against the deck (Option 1)</h2>
+  <table><thead><tr><th>Block</th><th>Deck</th><th>Plan</th><th>Δ</th></tr></thead><tbody>
+    <tr><td>Dedicated nationals</td><td>${BU.deck.dedicated}</td><td>${ded}</td>${dTd(ded - BU.deck.dedicated)}</tr>
+    <tr><td>Shared non-nationals</td><td>${BU.deck.shared}</td><td>${sharedN}</td>${dTd(sharedN - BU.deck.shared)}</tr>
+    <tr><td>Pool (X-Small, non-school)</td><td>${BU.deck.pool}</td><td>${poolN}</td>${dTd(poolN - BU.deck.pool)}</tr>
+    <tr class="tot"><td>School field total</td><td>${BU.field}</td><td>${eng}</td>${dTd(eng - BU.field)}</tr>
+    <tr><td>HQ support (3 sites)</td><td>${BU.hq}</td><td>${BU.hq}</td><td>0</td></tr>
+    <tr class="tot"><td>Grand total</td><td>${BU.total}</td><td>${eng + BU.hq}</td>${dTd(eng + BU.hq - BU.total)}</tr>
+  </tbody></table>
+  <p style="margin-top:8px">Site counts per category match the deck exactly. User totals per category are within 5% of the deck's; the register's user counts differ slightly from the ones the deck used. Pairing inside the mapping needs ${BU.deck.shared - sharedN} fewer shared engineers than the deck's 1-per-2, because odd schools join a nearby pair as a 3rd school. Those ${BU.deck.shared - sharedN} engineers go to the pools, where the distances are longest.</p>
+
+  <h2>Second allocation run: what improved</h2>
+  <table>${scHead}<tbody>${scRow('A')}${scRow('B')}${scRow('C', 1)}</tbody></table>
+  <p style="margin-top:8px">C is the plan shown on the map. Against the first version (A) it brings ${SC.C && SC.A ? SC.C.schools_in30 - SC.A.schools_in30 : ''} more schools within ${P.sla} minutes and cuts the schools over an hour away from ${SC.A?.over60} to ${SC.C?.over60}, with the same 323 engineers. Three changes did it:</p>
+  <ol class="decisions">
+    <li>Pairs avoid legs over ${P.sla} minutes, not just the lowest total travel.</li>
+    <li>An X-Small school that sits within ${P.sla} minutes of every school in a pair joins that engineer, so pool engineers stop driving past shared engineers.</li>
+    <li>Pool engineers go where they cut the most travel beyond ${P.sla} minutes. No pool engineer carries more than 1.5× the average workload, and no pool is split below 3 sites.</li>
+  </ol>
+  <p class="count">A sweep of 288 combinations of these settings (penalty, join distance, pool workload ceiling, base choice, sub-cluster penalty) found nothing better within the rules.</p>
+
+  <h2>Impact of 359 → 323 engineers</h2>
+  ${V1 ? `<table><thead><tr><th>Measure</th><th>359 plan</th><th>323 plan</th></tr></thead><tbody>
+    <tr><td>Schools with an engineer ≤${P.sla} min (P1)</td><td>${V1.schools_in30} (${pct(V1.schools_in30, V1.schools)})</td><td>${M.schools_in30} (${pct(M.schools_in30, M.schools)})</td></tr>
+    <tr><td>Users covered ≤${P.sla} min</td><td>${V1.users_in30_pct}%</td><td>${M.users_in30_pct}%</td></tr>
+    <tr><td>Rural schools beyond ${P.sla} min</td><td>${V1.rural_out30}</td><td>${M.rural_out30}</td></tr>
+    <tr><td>Schools over 60 min away</td><td>${V1.over60}</td><td>${M.over60}</td></tr>
+    <tr><td>Median / P90 reach, shared & pool</td><td>${V1.median_reach} / ${V1.p90_reach} min</td><td>${M.median_reach} / ${M.p90_reach} min</td></tr>
+    <tr><td>Schools with their own engineer</td><td>${IM.load_v1.own}</td><td>${IM.load_plan.own}</td></tr>
+    <tr><td>Users per shared engineer (avg)</td><td>${fmt(IM.load_v1.shared_users_avg)}</td><td>${fmt(IM.load_plan.shared_users_avg)}</td></tr>
+    <tr><td>Sites per pool engineer (avg / max)</td><td>${IM.load_v1.pool_sites_avg} / ${IM.load_v1.pool_sites_max}</td><td>${IM.load_plan.pool_sites_avg} / ${IM.load_plan.pool_sites_max}</td></tr>
+  </tbody></table>
+  <p style="margin-top:8px">The 36 engineers removed were mostly the ${IM.load_v1.own} "own engineer" posts that kept isolated schools within ${P.sla} minutes. As a result <b>${IM.lost} schools (${fmt(IM.lost_users)} users) lose ${P.sla}-minute P1 reach</b>: ${IM.lost_rural} rural, ${IM.lost_girls} girls' schools; ${Object.entries(IM.lost_by_tier).map(([t, n]) => `${n} ${TIER[t]}`).join(', ')}. By cluster: ${Object.entries(IM.lost_by_cluster).map(([k, n]) => `${esc(k)} ${n}`).join(', ')}. The 190 dedicated schools are not affected.</p>` : ''}
+
+  <h2>Levers that need a decision</h2>
+  <table>${scHead}<tbody>${scRow('C', 1)}${scRow('E')}${scRow('H')}${scRow('D')}${scRow('F')}</tbody></table>
+  <p style="margin-top:8px">E (co-ed flexibility) is the only big lever. D (sharing the exclaves across clusters) and F (dropping cluster boundaries altogether) do not help: the Team-Lead mapping is not what costs travel. What costs travel is distance between schools of the same gender.</p>
+
+  <h2>By Team-Lead cluster</h2>
+  <table><thead><tr><th>Cluster</th><th>Sch.</th><th>Ded.</th><th>Shared</th><th>Pool</th><th>Eng.</th><th>≤30</th></tr></thead><tbody>
+  ${zstat.map(x => `<tr class="zr" data-z="${x.z.id}" tabindex="0"><td>${x.z.n} · ${esc(x.z.name)}<br><small style="color:var(--mut)">${esc(x.z.tl || 'Team Lead to confirm')}</small></td><td>${x.schools}${x.ns ? `<small> +${x.ns}</small>` : ''}</td><td>${x.ded}</td><td>${x.sharedN}</td><td>${x.poolN}</td><td><b>${x.eng}</b></td><td>${pct(x.in30, x.schools)}</td></tr>`).join('')}
+  <tr class="tot"><td>Total</td><td>${P.sites.filter(s => s.tier !== 'NS').length}<small> +${P.sites.filter(s => s.tier === 'NS').length}</small></td><td>${ded}</td><td>${sharedN}</td><td>${poolN}</td><td>${eng}</td><td>${pct(M.schools_in30, M.schools)}</td></tr>
+  </tbody></table>
+  <p class="count" style="margin-top:6px">+n = non-school sites, served by that cluster's pool. ≤30 = schools with an engineer within ${P.sla} minutes. Click a row to zoom to it.</p>
+
+  <h2>Location check</h2>
+  <p>${P.sites.filter(s => s.tier !== 'NS').length - approxS.length - 1} schools use the register's own GPS. ${approxS.length + 1} had no GPS in the register; the earlier data build had stacked five of them on one point in Sharjah city. Mohammed Bin Rashid Boys now uses the location in its address field. The other ${approxS.length} are placed by town and marked "location to confirm": ${approxS.map(s => esc(s.name.split(' Cycle')[0].split(' Kindergarten')[0])).join(', ')}. Only Mleiha Girls and Abu Moosa affect sharing; the rest are dedicated.</p>
+  <p>${boatS.length ? `${esc(boatS[0].name)} is on Abu Musa island, so it gets scheduled boat visits and remote support from the Sharjah pool, not a road response time.` : ''} The far-out schools are real exclaves, not data errors: Hatta (Dubai), Masfout (Ajman), Al Muniai (RAK) and Al Quaa (Al Ain).</p>
+
+  <h2>Emirati placement</h2>
+  <p>All ${ded} dedicated posts are Emirati nationals: ${by('dedicated').filter(c => c.gender === 'B').length} male and ${by('dedicated').filter(c => c.gender === 'G').length} female. The ${wave1.length} rural and island schools are placed first (wave 1). Another ${ruralPref.length} shared and pool engineers serve rural schools and are marked Emirati preferred.</p>
+
+  <h2>Decisions needed</h2>
+  <ol class="decisions">
+    <li><b>Accept a slower P1 response at ${M.schools - M.schools_in30} schools, or fund engineers for them.</b> ${M.schools - M.schools_in30} schools are beyond ${P.sla} minutes${IM ? ` (${IM.lost} of them were within ${P.sla} in the 359 plan)` : ''}, and ${M.over60} are beyond an hour. Longest: ${longest.slice(0, 3).map(c => `${c.id} (${c.maxReach} min)`).join(', ')}. Restoring 30-minute reach everywhere needs the 359.</li>
+    <li><b>Co-ed schools (276).</b> If a co-ed school may take an engineer of either gender, ${SC.E && SC.C ? SC.E.schools_in30 - SC.C.schools_in30 : ''} more schools come within ${P.sla} minutes at no extra cost (scenario E). If co-ed KG and Cycle 1 instead need female engineers, the girls' clusters must be rebuilt and reach gets worse.</li>
+    ${single ? `<li><b>${by('remote').map(c => esc(S.get(c.base).name)).join(', ')}</b> keeps its own engineer: no girls' school is within 2 hours inside Al Dhafra.</li>` : ''}
+    <li><b>Satellites of dedicated engineers.</b> A few isolated X-Small schools are within ${P.sla} minutes of a dedicated national (scenario H, +${SC.H && SC.C ? SC.H.schools_in30 - SC.C.schools_in30 : ''} schools). It dilutes the dedicated commitment for little gain; not applied.</li>
+    <li><b>Team Leads for clusters ${P.zones.filter(z => !z.tl).map(z => z.n).join(', ')}</b> are blank in the sheet.</li>
+    <li><b>${approxS.length} school locations to confirm</b> (no GPS in the register), and Abu Moosa's boat-visit arrangement.</li>
+    <li><b>Non-school sites.</b> The 48 locations are placeholders until MOE confirms the list. Their users are scaled to the deck's 3,907.</li>
+  </ol>`;
+$('#p-rules').innerHTML = `<ul class="rules">
+  <li><b>Headcount: ${BU.total} = ${BU.hq} HQ + ${BU.field} schools</b><span>The 10 HQ dedicated engineers (3 HQ sites) are outside this map. The other ${BU.field} cover the 522 schools and 48 non-school sites, an exact fit.</span></li>
+  <li><b>Schools mapping (Al Manhal sheet)</b><span>Column "Cluster" gives the Team-Lead cluster (1–9, with its Team Lead); "Cluster English Name" gives the MOE sub-cluster, e.g. DNE.5.1. A shared or pool engineer always stays inside one Team-Lead cluster. A pair crosses MOE sub-clusters only when that saves at least ${P.cross} minutes. The plan fills the sheet's FE column with the engineer ID.</span></li>
+  <li><b>Dedicated: ${ded} schools</b><span>The 14 X-Large, 44 Large and 130 Medium-top schools by supported users (students + teachers + admin + technicians, from Al Manhal), plus the two Dalma Island schools. One Emirati national each, on site.</span></li>
+  <li><b>Gender rule</b><span>Boys' schools: male engineers only. Girls' schools: female only. A cluster never mixes the two. Non-school sites accept either.</span></li>
+  <li><b>Shared engineers</b><span>The 71 Medium-others and 161 Small schools are paired per Team-Lead cluster and gender, avoiding legs over ${P.sla} minutes first and lowest travel second; the engineer is based at the larger school. In an odd group, the school left over joins the pair that is easiest to reach. Girls' X-Small schools join a girls' pair the same way, and any X-Small school within ${P.sla} minutes of every school in a pair joins it.</span></li>
+  <li><b>Pool engineers</b><span>The ${BU.field} less the dedicated and shared engineers leaves ${poolN} for the pools: the remaining X-Small schools and the non-school sites. Each Team-Lead cluster gets enough to keep every pool under 1.5× the average workload (half users, half sites). The rest go where the next engineer cuts the most minutes beyond ${P.sla}, without splitting a pool below 3 sites.</span></li>
+  <li><b>P1 reach</b><span>The minutes at school-run peak (06:45–08:30, 13:15–15:00) before an engineer can be on site. Dedicated: on site. Shared: from the farthest other school in the cluster, since the engineer rotates. Pool: from the pool base. Reach is reported against the ${P.sla}-minute target, not enforced: enforcing it needs about 359 engineers.</span></li>
+  <li><b>Rural first for Emirati nationals</b><span>Rural and island dedicated schools are wave 1. Shared and pool engineers with a rural school are marked Emirati preferred.</span></li>
+  <li><b>Road model</b><span>Straight-line distance × detour factor (1.4 under 10 km, 1.3 under 35 km, 1.15 beyond); 30, 55 and 120 km/h for urban, suburban and highway; peak traffic ×1.45 in Dubai, Sharjah and Ajman, ×1.25 in Abu Dhabi and Al Ain, ×1.1 in RAK, Fujairah and Al Dhafra; ×1.7 for a Dubai–Sharjah crossing; +10% on rural access roads; +8 min to leave and park.</span></li>
+</ul>
+<p class="count" style="margin-top:12px">Sources: All Schools – Al Manhal register (Cluster, Team Lead, MOE sub-cluster, users, GPS); MOE EUC Resource Deployment Plan, Option 1; project lead's direction of 3 Nov 2026. Built by tools/build_coverage_plan.py, tools/score_v1.py and tools/build-coverage-map.mjs. The FE mapping is in MOE-FE-Mapping-Option1-323.xlsx.</p>`;
+
+// ---------- geometry ----------
+const ll = a => { const o = []; for (let i = 0; i < a.length; i += 2) o.push([a[i + 1], a[i]]); return o; };
+function hull(pts) {
+  const p = pts.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]); if (p.length < 3) return p;
+  const cr = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]); const lo = [], up = [];
+  for (const q of p) { while (lo.length >= 2 && cr(lo[lo.length - 2], lo[lo.length - 1], q) <= 0) lo.pop(); lo.push(q); }
+  for (const q of p.slice().reverse()) { while (up.length >= 2 && cr(up[up.length - 2], up[up.length - 1], q) <= 0) up.pop(); up.push(q); }
+  return lo.slice(0, -1).concat(up.slice(0, -1));
+}
+// buffered convex hull = convex hull of a ring of points around every member
+function shape(c, r = 750) {
+  const pts = c.members.map(m => S.get(m)).filter(s => !s.boat), lat0 = pts.reduce((a, s) => a + s.lat, 0) / pts.length;
+  const kx = 111320 * Math.cos(lat0 * Math.PI / 180), ky = 110540, ring = [];
+  for (const s of pts) for (let i = 0; i < 24; i++) { const a = i / 24 * 2 * Math.PI; ring.push([s.lng * kx + Math.cos(a) * r, s.lat * ky + Math.sin(a) * r]); }
+  const h = hull(ring).map(([x, y]) => [x / kx, y / ky]); h.push(h[0]); return h;
+}
+const fc = f => ({ type: 'FeatureCollection', features: f });
+const siteF = [], hullF = [], spokeF = [];
+for (const c of P.clusters) {
+  const g = c.gender || 'N';
+  if (c.kind !== 'dedicated') hullF.push({ type: 'Feature', properties: { id: c.id, kind: c.kind, g }, geometry: { type: 'Polygon', coordinates: [shape(c, c.kind === 'remote' ? 900 : 750)] } });
+  const b = S.get(c.base);
+  for (const l of c.legs) { const t = S.get(l.to); if (t.boat) continue; spokeF.push({ type: 'Feature', properties: { id: c.id, kind: c.kind, g: t.g || 'N', peak: l.peak }, geometry: { type: 'LineString', coordinates: [[b.lng, b.lat], [t.lng, t.lat]] } }); }
+  for (const m of c.members) {
+    const s = S.get(m), leg = c.legs.find(l => l.to === m);
+    siteF.push({ type: 'Feature', properties: { id: s.id, c: c.id, kind: c.kind, g: s.g || 'N', tier: s.tier, base: m === c.base && c.members.length > 1 ? 1 : 0, mins: leg ? leg.peak : -1, nat: c.kind === 'dedicated' ? 2 : c.rural ? 1 : 0, approx: s.approx ? 1 : 0 }, geometry: { type: 'Point', coordinates: [s.lng, s.lat] } });
+  }
+}
+
+// ---------- map ----------
+const UAE = [[51.9, 22.85], [57.5, 26.45]];
+const map = new maplibregl.Map({
+  container: 'map', bounds: UAE, fitBoundsOptions: { padding: 20 }, minZoom: 6, maxZoom: 16, maxBounds: [[51.0, 21.9], [58.4, 27.3]],
+  dragRotate: false, pitchWithRotate: false, attributionControl: false,
+  style: { version: 8, sources: {}, layers: [{ id: 'bg', type: 'background', paint: { 'background-color': V('--land') } }] }
+});
+map.touchZoomRotate.disableRotation(); map.keyboard.disableRotation();
+map.scrollZoom.setWheelZoomRate(1 / 300); map.scrollZoom.setZoomRate(1 / 80);
+map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');
+map.addControl(new maplibregl.AttributionControl({ compact: true, customAttribution: B.attribution }), 'bottom-right');
+
+const COL = { boy: V('--boy'), girl: V('--girl'), ns: V('--ns'), single: V('--single'), navy: V('--navy'), white: '#FFFFFF', good: V('--good'), amber: V('--amber'), red: V('--red'), gold: V('--gold'), mist: V('--mist') };
+const gExpr = ['match', ['get', 'g'], 'B', COL.boy, 'G', COL.girl, COL.ns];
+const tierExpr = ['match', ['get', 'tier'], ...TIERS.flatMap(t => [t, TCOL[t]]), COL.ns];
+const radAt = (add = 0) => ['interpolate', ['linear'], ['zoom'], 6, ['match', ['get', 'tier'], ...TIERS.flatMap(t => [t, TRAD[t][0] + add]), 3 + add], 10, ['match', ['get', 'tier'], ...TIERS.flatMap(t => [t, TRAD[t][1] + add]), 5 + add], 14, ['match', ['get', 'tier'], ...TIERS.flatMap(t => [t, TRAD[t][2] + add]), 8 + add]];
+const radExpr = radAt();
+const minsExpr = ['case', ['==', ['get', 'kind'], 'dedicated'], COL.mist, ['<', ['get', 'mins'], 0], COL.navy, ['<=', ['get', 'mins'], 20], COL.good, ['<=', ['get', 'mins'], P.sla], COL.amber, COL.red];
+const natExpr = ['match', ['get', 'nat'], 2, COL.good, 1, '#8CCBA6', '#C4CBD6'];
+
+map.on('load', () => {
+  const [b0, b1, b2, b3] = B.box; // lat0, lng0, lat1, lng1
+  const rect = (x0, y0, x1, y1) => ({ type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [[[x0, y0], [x1, y0], [x1, y1], [x0, y1], [x0, y0]]] } });
+  map.addSource('sea', { type: 'geojson', data: fc(B.sea.map(p => ({ type: 'Feature', properties: { edge: 1 }, geometry: { type: 'Polygon', coordinates: [ll(p)] } })).concat([rect(b1 - 0.6, b2, 58.6, 27.6), rect(b3, 23.95, 58.6, b2 + 0.001)])) });
+  map.addSource('isl', { type: 'geojson', data: fc(B.islands.map(p => ({ type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [ll(p)] } }))) });
+  map.addSource('mway', { type: 'geojson', data: fc(B.motorway.map(l => ({ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: ll(l) } }))) });
+  map.addSource('prim', { type: 'geojson', data: fc(B.primary.map(l => ({ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: ll(l) } }))) });
+  map.addLayer({ id: 'sea', type: 'fill', source: 'sea', paint: { 'fill-color': V('--sea'), 'fill-antialias': false } });
+  map.addLayer({ id: 'isl', type: 'fill', source: 'isl', paint: { 'fill-color': V('--land'), 'fill-outline-color': V('--seal') } });
+  map.addLayer({ id: 'prim', type: 'line', source: 'prim', minzoom: 8, layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#FFFFFF', 'line-width': ['interpolate', ['linear'], ['zoom'], 8, 0.6, 13, 3], 'line-opacity': ['interpolate', ['linear'], ['zoom'], 8, 0, 9, 1] } });
+  map.addLayer({ id: 'mway-case', type: 'line', source: 'mway', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': V('--mway'), 'line-width': ['interpolate', ['linear'], ['zoom'], 6, 1.2, 13, 7] } });
+  map.addLayer({ id: 'mway', type: 'line', source: 'mway', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#FFFFFF', 'line-width': ['interpolate', ['linear'], ['zoom'], 6, 0.5, 13, 4.5] } });
+
+  map.addSource('leaders', { type: 'geojson', data: fc(zstat.map(x => ({ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: [[x.lng, x.lat], CARD[x.z.id] ? CARD[x.z.id].slice(0, 2) : [x.lng, x.lat]] } }))) });
+  map.addLayer({ id: 'leaders', type: 'line', source: 'leaders', maxzoom: 8.4, paint: { 'line-color': COL.navy, 'line-width': 1, 'line-dasharray': [2, 2], 'line-opacity': 0.6 } });
+  map.addSource('hulls', { type: 'geojson', data: fc(hullF) });
+  map.addSource('spokes', { type: 'geojson', data: fc(spokeF) });
+  map.addSource('sites', { type: 'geojson', data: fc(siteF) });
+  const hullFade = ['interpolate', ['linear'], ['zoom'], 7, 0.35, 9, 0.2, 12, 0.13];
+  map.addLayer({ id: 'hull-fill', type: 'fill', source: 'hulls', paint: { 'fill-color': ['match', ['get', 'kind'], 'remote', COL.single, ['match', ['get', 'g'], 'B', COL.boy, 'G', COL.girl, COL.ns]], 'fill-opacity': hullFade } });
+  const lw = ['interpolate', ['linear'], ['zoom'], 7, 0.8, 11, 1.8, 14, 2.6];
+  map.addLayer({ id: 'hull-shared', type: 'line', source: 'hulls', filter: ['in', ['get', 'kind'], ['literal', ['pair', 'triad']]], layout: { 'line-join': 'round' }, paint: { 'line-color': gExpr, 'line-width': lw } });
+  map.addLayer({ id: 'hull-pool', type: 'line', source: 'hulls', filter: ['in', ['get', 'kind'], ['literal', ['pool', 'nspool']]], layout: { 'line-join': 'round' }, paint: { 'line-color': gExpr, 'line-width': lw, 'line-dasharray': [2, 1.5] } });
+  map.addLayer({ id: 'hull-remote', type: 'line', source: 'hulls', filter: ['==', ['get', 'kind'], 'remote'], layout: { 'line-join': 'round' }, paint: { 'line-color': COL.single, 'line-width': lw, 'line-dasharray': [1, 1] } });
+  map.addLayer({ id: 'spokes', type: 'line', source: 'spokes', minzoom: 8.5, layout: { 'line-cap': 'round' }, paint: { 'line-color': gExpr, 'line-width': ['interpolate', ['linear'], ['zoom'], 8.5, 0.8, 13, 2.2], 'line-opacity': ['interpolate', ['linear'], ['zoom'], 8.5, 0, 9.5, 0.75] } });
+  map.addLayer({ id: 'sel-hull', type: 'line', source: 'hulls', filter: ['==', ['get', 'id'], ''], paint: { 'line-color': COL.gold, 'line-width': 4 } });
+  map.addLayer({ id: 'sel-ring', type: 'circle', source: 'sites', filter: ['==', ['get', 'c'], ''], paint: { 'circle-radius': radAt(5), 'circle-color': 'rgba(0,0,0,0)', 'circle-stroke-color': COL.gold, 'circle-stroke-width': 3.5 } });
+  map.addLayer({ id: 'sites', type: 'circle', source: 'sites', paint: { 'circle-radius': radExpr, 'circle-color': tierExpr, 'circle-stroke-color': gExpr, 'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 6, 1, 11, 2.2], 'circle-opacity': ['case', ['==', ['get', 'approx'], 1], 0.6, 1] } });
+  map.addLayer({ id: 'base-dot', type: 'circle', source: 'sites', minzoom: 10, filter: ['==', ['get', 'base'], 1], paint: { 'circle-radius': 2, 'circle-color': '#FFFFFF' } });
+
+  labels(); applyMode(); applyFilter();
+  // interactions
+  const pop = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 10, maxWidth: '280px' });
+  map.on('mousemove', 'sites', e => {
+    map.getCanvas().style.cursor = 'pointer';
+    const p = e.features[0].properties, s = S.get(p.id), c = C.get(p.c);
+    pop.setLngLat([s.lng, s.lat]).setHTML(`<b>${esc(s.name)}</b>${s.no && s.tier !== 'NS' ? ` <span style="color:${V('--mut')}">${esc(s.no)}</span>` : ''}<br>${TIER[s.tier]} · ${fmt(s.u)} users · ${gName(s.g)}${s.rural ? ' · rural' : ''}${s.approx ? ' · location to confirm' : ''}<br><span style="color:${V('--mut')}">FE ${c.id} · ${KIND[c.kind].label} · ${esc(s.moe)}${s.boat ? ' · boat visits' : c.reach && c.reach[s.id] > 0 ? ` · P1 reach ${c.reach[s.id]} min` : p.base ? ' · engineer base' : ''}</span>`).addTo(map);
+  });
+  map.on('mouseleave', 'sites', () => { map.getCanvas().style.cursor = ''; pop.remove(); });
+  map.on('click', 'sites', e => select(e.features[0].properties.c, true));
+  map.on('click', 'hull-fill', e => { if (!map.queryRenderedFeatures(e.point, { layers: ['sites'] }).length) select(e.features[0].properties.id, true); });
+  map.on('mouseenter', 'hull-fill', () => map.getCanvas().style.cursor = 'pointer');
+  map.on('mouseleave', 'hull-fill', () => map.getCanvas().style.cursor = '');
+  map.on('zoom', () => { const z = map.getZoom(); for (const m of zoneMk) { const on = z < 8.4; m.el.style.opacity = on ? 1 : 0; m.el.style.pointerEvents = on ? 'auto' : 'none'; } });
+  map.on('moveend', labelVis);
+});
+
+// ---------- HTML labels (no glyph server needed) ----------
+let zoneMk = [], clMk = [], placeMk = [];
+// where each zone's card sits at national zoom (lng, lat, anchor): over open sea or desert, away from the other cards
+const CARD = { C2: [55.35, 26.3, 'right'], C1: [54.95, 25.85, 'right'], C3: [54.6, 25.2, 'right'], C9: [53.95, 24.72, 'right'],
+  C7: [52.95, 23.3, 'top'], C8: [55.5, 23.42, 'top'], C5: [56.85, 24.75, 'top'], C4: [56.8, 25.55, 'top'] };
+function labels() {
+  const PLACES = [['Dubai', 25.17, 55.27], ['Sharjah', 25.32, 55.47], ['Ajman', 25.43, 55.52], ['Umm Al Quwain', 25.56, 55.66], ['Ras Al Khaimah', 25.73, 56.0], ['Fujairah', 25.15, 56.28], ['Abu Dhabi', 24.43, 54.45], ['Al Ain', 24.17, 55.73], ['Madinat Zayed', 23.62, 53.73], ['Ruwais', 24.1, 52.73], ['Arabian Gulf', 25.15, 53.6, 'sea'], ['Gulf of Oman', 25.15, 56.75, 'sea']];
+  for (const [n, la, lo, k] of PLACES) { const el = document.createElement('div'); el.className = 'place' + (k ? ' sea' : ''); el.textContent = n; placeMk.push(new maplibregl.Marker({ element: el }).setLngLat([lo, la]).addTo(map)); }
+  for (const x of zstat) {
+    const el = document.createElement('div'); el.className = 'zcard'; el.tabIndex = 0;
+    el.innerHTML = `<b>${x.z.n} · ${esc(x.z.name)}</b><span>${x.schools} sch · ${x.eng} eng</span>`;
+    el.onclick = () => flyZone(x.z.id); el.onkeydown = e => { if (e.key === 'Enter') flyZone(x.z.id); };
+    const at = CARD[x.z.id] || [x.lng, x.lat, 'bottom'];
+    zoneMk.push({ mk: new maplibregl.Marker({ element: el, anchor: at[2] }).setLngLat([at[0], at[1]]).addTo(map), el });
+  }
+  const isl = P.sites.filter(s => s.island);
+  if (isl.length) { const el = document.createElement('div'); el.className = 'isl'; el.textContent = `Dalma Island · ${isl.length} dedicated`; new maplibregl.Marker({ element: el, anchor: 'bottom', offset: [0, -14] }).setLngLat([isl[0].lng, isl[0].lat]).addTo(map); }
+  for (const c of P.clusters) {
+    if (c.kind === 'dedicated') continue;
+    const pts = c.members.map(m => S.get(m)).filter(s => !s.boat), lng = pts.reduce((a, s) => a + s.lng, 0) / pts.length, lat = Math.max(...pts.map(s => s.lat));
+    const el = document.createElement('div'); el.className = 'clbl ' + (c.kind === 'remote' ? 'R' : c.gender || 'N');
+    const nsN = c.members.filter(m => S.get(m).tier === 'NS').length, schN = c.members.length - nsN;
+    el.textContent = c.kind === 'remote' ? `${c.id} · own engineer`
+      : `${c.id} · ${schN} school${schN > 1 ? 's' : ''}${nsN ? ` + ${nsN} NS` : ''} · ${c.maxPeak}′`;
+    el.onclick = e => { e.stopPropagation(); select(c.id, true); };
+    clMk.push({ c, el, mk: new maplibregl.Marker({ element: el, anchor: 'bottom', offset: [0, -12] }).setLngLat([lng, lat]).addTo(map) });
+  }
+  labelVis();
+}
+let visSet = new Set(P.clusters.map(c => c.id));
+function labelVis() {
+  const z = map.getZoom();
+  for (const m of zoneMk) { const on = z < 8.4; m.el.style.opacity = on ? 1 : 0; m.el.style.pointerEvents = on ? 'auto' : 'none'; }
+  for (const m of placeMk) m.getElement().style.display = z < 11.5 ? '' : 'none';
+  // cluster labels: from zoom 10.6, greedy placement so no two labels overlap (selected and single-site first, then largest)
+  const placed = [], cand = z >= 10.6 ? clMk.filter(m => visSet.has(m.c.id)) : [];
+  for (const m of clMk) m.el.style.display = 'none';
+  const W = map.getContainer().clientWidth, Hh = map.getContainer().clientHeight;
+  cand.sort((a, b) => (b.c.id === sel) - (a.c.id === sel) || (b.c.kind === 'remote') - (a.c.kind === 'remote') || b.c.users - a.c.users);
+  for (const m of cand) {
+    const p = map.project(m.mk.getLngLat()), w = m.el.textContent.length * 6.3 + 12, h = 19;
+    const r = { x0: p.x - w / 2, x1: p.x + w / 2, y0: p.y - 12 - h, y1: p.y - 12 };
+    if (r.x1 < 0 || r.x0 > W || r.y1 < 0 || r.y0 > Hh) continue;
+    if (placed.some(q => r.x0 < q.x1 + 3 && r.x1 > q.x0 - 3 && r.y0 < q.y1 + 2 && r.y1 > q.y0 - 2)) continue;
+    placed.push(r); m.el.style.display = '';
+  }
+}
+
+// ---------- modes & filters ----------
+let mode = 'cat', sel = null;
+function applyMode() {
+  const fill = mode === 'cat' ? tierExpr : mode === 'gender' ? gExpr : mode === 'nat' ? natExpr : minsExpr;
+  const stroke = mode === 'gender' ? ['case', ['==', ['get', 'kind'], 'dedicated'], COL.navy, ['==', ['get', 'kind'], 'remote'], COL.single, COL.white] : gExpr;
+  map.setPaintProperty('sites', 'circle-color', fill);
+  map.setPaintProperty('sites', 'circle-stroke-color', stroke);
+  map.setPaintProperty('spokes', 'line-color', mode === 'travel' ? ['case', ['<=', ['get', 'peak'], 20], COL.good, ['<=', ['get', 'peak'], P.sla], COL.amber, COL.red] : gExpr);
+  map.setPaintProperty('spokes', 'line-width', mode === 'travel' ? ['interpolate', ['linear'], ['zoom'], 8.5, 1.5, 13, 4] : ['interpolate', ['linear'], ['zoom'], 8.5, 0.8, 13, 2.2]);
+  legend();
+}
+const kindsRow = $('#kinds');
+for (const k of Object.keys(KIND)) kindsRow.insertAdjacentHTML('beforeend', `<label class="chip"><input type="checkbox" data-k="${k}" checked>${KIND[k].label} <small>${by(k).length}</small></label>`);
+for (const z of P.zones) $('#zone').insertAdjacentHTML('beforeend', `<option value="${z.id}">Cluster ${z.n} · ${esc(z.name)}</option>`);
+const F = () => ({ kinds: new Set($$('#kinds input:checked').map(i => i.dataset.k)), B: $('#fB').checked, G: $('#fG').checked, rural: $('#fR').checked, zone: $('#zone').value, q: $('#q').value.trim().toLowerCase() });
+function visible(c, f) {
+  if (!f.kinds.has(c.kind)) return false;
+  if ((c.gender === 'B' && !f.B) || (c.gender === 'G' && !f.G)) return false;
+  if (f.rural && !c.rural) return false;
+  if (f.zone && c.zone !== f.zone) return false;
+  if (f.q && !(c.id.toLowerCase().includes(f.q) || c.moe.some(m => m.toLowerCase().includes(f.q)) || c.members.some(m => S.get(m).name.toLowerCase().includes(f.q) || String(S.get(m).no).toLowerCase() === f.q))) return false;
+  return true;
+}
+function applyFilter() {
+  const f = F(), ids = P.clusters.filter(c => visible(c, f)).map(c => c.id); visSet = new Set(ids);
+  const lit = ['literal', ids];
+  if (map.getLayer('sites')) {
+    map.setFilter('sites', ['in', ['get', 'c'], lit]);
+    map.setFilter('base-dot', ['all', ['==', ['get', 'base'], 1], ['in', ['get', 'c'], lit]]);
+    map.setFilter('spokes', ['in', ['get', 'id'], lit]);
+    map.setFilter('hull-fill', ['in', ['get', 'id'], lit]);
+    map.setFilter('hull-shared', ['all', ['in', ['get', 'kind'], ['literal', ['pair', 'triad']]], ['in', ['get', 'id'], lit]]);
+    map.setFilter('hull-pool', ['all', ['in', ['get', 'kind'], ['literal', ['pool', 'nspool']]], ['in', ['get', 'id'], lit]]);
+    map.setFilter('hull-remote', ['all', ['==', ['get', 'kind'], 'remote'], ['in', ['get', 'id'], lit]]);
+    labelVis();
+  }
+  list(f, ids);
+}
+const siteTxt = c => { const ns = c.members.filter(m => S.get(m).tier === 'NS').length, sc = c.members.length - ns; return [sc ? `${sc} school${sc > 1 ? 's' : ''}` : '', ns ? `${ns} non-school` : ''].filter(Boolean).join(' + '); };
+function list(f, ids) {
+  const cs = ids.map(id => C.get(id)).sort((a, b) => (b.kind === 'remote') - (a.kind === 'remote') || (a.kind === 'dedicated') - (b.kind === 'dedicated') || b.maxReach - a.maxReach);
+  $('#count').textContent = `${cs.length} clusters · ${cs.reduce((a, c) => a + c.members.length, 0)} sites`;
+  $('#list').innerHTML = cs.map(c => `<li data-id="${c.id}" class="${c.id === sel ? 'sel' : ''}" tabindex="0"><span class="nm">${c.id} · ${esc(S.get(c.base).name)}</span>${c.members.length > 1 ? `<span class="mins ${minCls(c.maxReach)}">${c.maxReach} min</span>` : '<span></span>'}
+    <span class="meta"><span class="tag ${c.gender || 'N'}">${gName(c.gender)}</span><span>${KIND[c.kind].label}</span><span>${siteTxt(c)}</span><span>${fmt(c.users)} users</span>${c.rural ? '<span class="tag rural">Rural</span>' : ''}${c.members.some(m => S.get(m).island) ? '<span class="tag isl">Island</span>' : ''}</span></li>`).join('');
+}
+function legend() {
+  const dot = (fill, stroke = '#fff', w = 1.5, r = 5) => `<svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="9" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="${w}"/></svg>`;
+  const area = (col, dash) => `<svg width="22" height="14" viewBox="0 0 22 14" aria-hidden="true"><rect x="1.5" y="1.5" width="19" height="11" rx="5.5" fill="${col}" fill-opacity=".16" stroke="${col}" stroke-width="1.6" ${dash ? `stroke-dasharray="${dash}"` : ''}/></svg>`;
+  const ln = col => `<svg width="22" height="10" viewBox="0 0 22 10" aria-hidden="true"><line x1="1" y1="5" x2="21" y2="5" stroke="${col}" stroke-width="3"/></svg>`;
+  const clusters = `<b>Clusters</b><div class="r">${area(COL.boy)}Shared engineer area (boys)</div><div class="r">${area(COL.girl)}Shared engineer area (girls)</div><div class="r">${area(COL.boy, '3 2')}Pool area (dashed)</div><div class="r">${area(COL.single, '1.6 1.6')}Own engineer (no partner)</div>`;
+  let h = '';
+  if (mode === 'cat') h = `<b>Option 1 category</b>${TIERS.map(t => `<div class="r">${dot(TCOL[t], '#fff', 1.2, TRAD[t][1] * 0.75)}${TIER[t]}${['XL', 'L', 'MT', 'IS'].includes(t) ? ' · dedicated' : ''}</div>`).join('')}<div class="r" style="color:var(--mut)">Ring colour = school gender</div>${clusters}`;
+  if (mode === 'gender') h = `<b>Gender</b><div class="r">${dot(COL.boy)}Boys' school · male engineer</div><div class="r">${dot(COL.girl)}Girls' school · female engineer</div><div class="r">${dot(COL.ns)}Non-school · any engineer</div><div class="r">${dot(COL.mist, COL.navy, 2.5)}Navy ring = dedicated</div>${clusters}`;
+  if (mode === 'nat') h = `<b>Engineer</b><div class="r">${dot(COL.good)}Emirati national (dedicated)</div><div class="r">${dot('#8CCBA6')}Emirati preferred (rural)</div><div class="r">${dot('#C4CBD6')}Non-national</div><div class="r" style="color:var(--mut)">Ring colour = school gender</div>${clusters}`;
+  if (mode === 'travel') h = `<b>Peak minutes from base</b><div class="r">${ln(COL.good)}20 min or less</div><div class="r">${ln(COL.amber)}21–${P.sla} min</div><div class="r">${ln(COL.red)}Over ${P.sla} min</div><div class="r">${dot(COL.navy)}Engineer's base school</div><div class="r">${dot(COL.mist)}Dedicated (no travel)</div>`;
+  $('#legend').innerHTML = h;
+}
+
+// ---------- selection & navigation ----------
+function boundsOf(pts, pad = 0.004) { return [[Math.min(...pts.map(p => p.lng)) - pad, Math.min(...pts.map(p => p.lat)) - pad], [Math.max(...pts.map(p => p.lng)) + pad, Math.max(...pts.map(p => p.lat)) + pad]]; }
+function pad() { const d = $('#detail'); return { top: 60, bottom: 60, left: d.hidden ? 60 : Math.min(400, map.getContainer().clientWidth * .45), right: 60 }; }
+function flyZone(id) { const x = zstat.find(s => s.z.id === id); if (x) map.fitBounds(x.bounds, { padding: 50, duration: 1100, maxZoom: 12 }); }
+function select(id, fly) {
+  const c = C.get(id); if (!c) return; sel = id;
+  map.setFilter('sel-hull', ['==', ['get', 'id'], id]); map.setFilter('sel-ring', ['==', ['get', 'c'], id]);
+  const b = S.get(c.base);
+  const rows = c.members.map(m => { const s = S.get(m), leg = c.legs.find(l => l.to === m);
+    return `<tr><td>${m === c.base && c.members.length > 1 ? '★ ' : ''}${esc(s.name)}</td><td>${TIER[s.tier]}${s.rural ? ', rural' : ''}${s.approx ? ', location to confirm' : ''}</td><td>${fmt(s.u)}</td><td>${s.boat ? 'boat' : s.tier === 'NS' ? (leg ? leg.peak : '–') : c.members.length > 1 ? `<span class="mins ${minCls(c.reach[m])}">${c.reach[m]}</span>${m === c.base ? ' ★' : ''}` : 'on site'}</td></tr>${s.locNote ? `<tr><td colspan="4" style="color:var(--mut);font-size:11px">${esc(s.locNote)}</td></tr>` : ''}`; }).join('');
+  let extra = '';
+  if (c.kind === 'remote' && c.nearest) { const n = S.get(c.nearest.id); extra += `<p class="note">Nearest ${gName(c.gender).toLowerCase()}' school: ${esc(n?.name || c.nearest.id)}, ${c.nearest.peak} min at peak${n && C.get(n.c)?.kind === 'dedicated' ? ' (it has its own dedicated engineer)' : ''}.</p>`; }
+  if (c.satellite) extra += `<p class="note">Option: satellite of ${esc(S.get(c.satellite.host).name)} (${c.satellite.peak} min away), saving one engineer.</p>`;
+  if (c.wave) extra += `<p class="note">Emirati placement wave ${c.wave} (${c.rank} of ${ded}).</p>`;
+  $('#detail').innerHTML = `<h3>${c.id} <span class="tag ${c.gender || 'N'}">${gName(c.gender)}</span>${c.rural ? '<span class="tag rural">Rural</span>' : ''}${c.kind === 'remote' ? '<span class="tag single">Own engineer</span>' : ''}<button class="x" id="dx" aria-label="Close details">×</button></h3>
+    <div style="color:var(--mut);margin-top:2px">${KIND[c.kind].long} · ${fmt(c.users)} users</div>
+    <div style="color:var(--mut)">Team-Lead cluster ${Z.get(c.zone)?.n} · ${esc(Z.get(c.zone)?.name || c.zone)} · TL ${esc(Z.get(c.zone)?.tl || 'to confirm')} · MOE ${esc(c.moe.join(', ') || '–')}</div>
+    <div class="eng"><b>1 ${c.engineer.sex === 'Any' ? 'engineer (male or female)' : c.engineer.sex.toLowerCase() + ' engineer'}</b> · ${c.engineer.nat}${c.members.length > 1 ? ` · based at ${esc(b.name)}` : ' · on site'}</div>
+    <table><thead><tr><th>Site</th><th>Category</th><th>Users</th><th>P1 reach min</th></tr></thead><tbody>${rows}</tbody></table>
+    ${c.note ? `<p class="note">${esc(c.note)}</p>` : ''}${extra}`;
+  $('#detail').hidden = false;
+  $('#dx').onclick = clearSel;
+  $$('#list li').forEach(l => l.classList.toggle('sel', l.dataset.id === id));
+  labelVis();
+  if (fly) map.fitBounds(boundsOf(c.members.map(m => S.get(m))), { padding: pad(), maxZoom: 13.5, duration: 1000 });
+}
+function clearSel() { sel = null; $('#detail').hidden = true; map.setFilter('sel-hull', ['==', ['get', 'id'], '']); map.setFilter('sel-ring', ['==', ['get', 'c'], '']); $$('#list li.sel').forEach(l => l.classList.remove('sel')); }
+
+// 'whole UAE' control under the zoom buttons
+class HomeCtl { onAdd() { const d = document.createElement('div'); d.className = 'maplibregl-ctrl maplibregl-ctrl-group'; d.innerHTML = '<button type="button" class="homebtn" title="Show the whole UAE" aria-label="Show the whole UAE">UAE</button>'; d.onclick = () => { clearSel(); map.fitBounds(UAE, { padding: 20, duration: 1000 }); }; return d; } onRemove() {} }
+map.addControl(new HomeCtl(), 'top-right');
+
+// ---------- wiring ----------
+$$('.tabs button').forEach(b => b.onclick = () => { $$('.tabs button').forEach(x => x.setAttribute('aria-selected', x === b)); for (const p of ['plan', 'clusters', 'rules']) $('#p-' + p).hidden = p !== b.dataset.p; });
+$$('#mode button').forEach(b => b.onclick = () => { mode = b.dataset.m; $$('#mode button').forEach(x => x.setAttribute('aria-pressed', x === b)); if (map.getLayer('sites')) applyMode(); });
+$$('.filters input').forEach(i => i.addEventListener('change', applyFilter));
+$('#zone').addEventListener('change', () => { applyFilter(); $('#zone').value ? flyZone($('#zone').value) : map.fitBounds(UAE, { padding: 20, duration: 1000 }); });
+$('#q').addEventListener('input', applyFilter);
+$('#list').addEventListener('click', e => { const li = e.target.closest('li'); if (li) select(li.dataset.id, true); });
+$('#list').addEventListener('keydown', e => { const li = e.target.closest('li'); if (li && e.key === 'Enter') select(li.dataset.id, true); });
+$('#p-plan').addEventListener('click', e => { const tr = e.target.closest('tr.zr'); if (tr) flyZone(tr.dataset.z); });
+$('#p-plan').addEventListener('keydown', e => { const tr = e.target.closest('tr.zr'); if (tr && e.key === 'Enter') flyZone(tr.dataset.z); });
+addEventListener('keydown', e => { if (e.key === 'Escape') clearSel(); });
+$('#lgt').onclick = () => { const o = $('#lgt').getAttribute('aria-expanded') === 'true'; $('#lgt').setAttribute('aria-expanded', !o); $('#legend').hidden = o; };
+if (innerWidth < 820) $('#lgt').click();
+list(F(), P.clusters.map(c => c.id)); legend();
+})();
+</script>

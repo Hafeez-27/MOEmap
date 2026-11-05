@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>One School Day</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="css/demo.css">
+</head>
+<body>
+<header class="dtop">
+  <div class="brand"><div class="logo" aria-hidden="true">MOE</div><div><b>One school day, end to end</b><span>EUC field service demo, real network data</span></div></div>
+  <ol class="rail" id="rail" aria-label="Chapters"></ol>
+  <div class="dclock"><span id="dDate">Mon 26 Oct 2026</span><b id="dClk">06:45</b></div>
+  <div class="dnav"><button id="prev" aria-label="Previous chapter">Back</button><button id="next" class="primary">Next</button></div>
+</header>
+
+<div class="stage">
+  <aside class="narr" id="narr" aria-live="polite"></aside>
+
+  <section class="screen" aria-label="Screens">
+    <div class="tabs" role="tablist" id="tabs">
+      <button role="tab" data-s="portal">School portal <small>what the teacher sees</small></button>
+      <button role="tab" data-s="ops">Operations console <small>service desk and dispatch</small></button>
+    </div>
+    <div class="pane" id="p-portal">
+      <div class="browser"><div class="bbar"><i></i><i></i><i></i><span id="bUrl">portal.moe.gov.ae/support</span></div><div class="bbody" id="portal"></div></div>
+    </div>
+    <div class="pane" id="p-ops">
+      <div class="okpis" id="okpis"></div>
+      <div class="ogrid"><div class="omap"><div id="map"></div><div class="mlegend" id="mlegend"></div></div><div class="opanel" id="opanel"></div></div>
+    </div>
+  </section>
+
+  <section class="phonecol" aria-label="Engineer mobile app">
+    <div class="who" id="who" role="tablist"></div>
+    <div class="phone" id="phoneFrame"><div class="notch"></div><div class="pstatus"><b id="pTime">06:45</b><span>5G ▮▮▮ 82%</span></div><div class="papp" id="phone"></div></div>
+    <p class="pcap" id="pcap"></p>
+  </section>
+</div>
+<div class="toast hidden" id="toast" role="status"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script type="module" src="js/demo/demo.js"></script>
+</body>
+</html>

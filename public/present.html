@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>One School Day</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="css/demo.css">
+<link rel="stylesheet" href="css/present.css">
+</head>
+<body>
+<!-- BODY:START -->
+<div id="viewport"><div id="stage">
+
+<section class="slide s-title" data-title="Welcome">
+  <div class="brands"><img src="brand/alpha-data.png" alt="Alpha Data" class="ad"><i></i><img src="brand/moe.png" alt="UAE Ministry of Education" class="moe"></div>
+  <div class="k">Interactive demo, guided presentation</div>
+  <h1>One school day, end to end</h1>
+  <p>Follow a teacher’s fault report and a school-wide outage through the service desk, dispatch and the engineer’s phone. Real schools and engineers from the allocation workbook, a calibrated drive-time model and the ministry’s two allocation rules.</p>
+  <div class="chips"><span>522 schools</span><span>312 engineers</span><span>10 zones</span><span>Mon 26 Oct 2026</span></div>
+  <p class="by">Prepared by Alpha Data for the UAE Ministry of Education</p>
+  <div class="hint"><kbd>→</kbd> or click <b>Next</b> to step through. <kbd>O</kbd> overview, <kbd>F</kbd> fullscreen</div>
+</section>
+
+<section class="slide s-end" data-title="The day at a glance">
+  <div class="k">The plan</div>
+  <h2>The day we will walk through</h2>
+  <p class="sub">Three screens tell the story: the school portal the teacher uses, the operations dashboard the service desk uses, and the app on the engineer’s phone.</p>
+  <div class="day">
+    <div class="reveal" data-from="1"><b>06:50</b><span>Roster covers an absence</span><small>Nearest hub first</small></div>
+    <div class="reveal" data-from="1"><b>08:40</b><span>Teacher reports a dead smart board</span><small>School portal</small></div>
+    <div class="reveal" data-from="1"><b>08:52</b><span>Desk triage, engineer chosen</span><small>Gender rule applied</small></div>
+    <div class="reveal" data-from="1"><b>09:32</b><span>On site, fixed, signed off</span><small>Engineer app</small></div>
+    <div class="reveal hot" data-from="2"><b>10:41</b><span>A school loses its internet</span><small>One P1 incident</small></div>
+    <div class="reveal hot" data-from="2"><b>10:46</b><span>Help from the next zone’s hub</span><small>Operator approves</small></div>
+    <div class="reveal hot" data-from="2"><b>12:44</b><span>Line restored, reports closed</span><small>7 linked reports</small></div>
+    <div class="reveal" data-from="3"><b>15:00</b><span>Results for the network</span><small>And what to change</small></div>
+  </div>
+  <div class="lanes">
+    <div class="lane reveal" data-from="3"><h3>School portal</h3><p>Report a fault in a minute, see who is coming and when, rate the visit.</p></div>
+    <div class="lane reveal" data-from="3"><h3>Operations dashboard</h3><p>Network figures, the map, response clocks, candidate engineers and approvals.</p></div>
+    <div class="lane reveal" data-from="3"><h3>Engineer app</h3><p>Roster, job offers, route and arrival time, checks, sign-off and gate check-in.</p></div>
+  </div>
+</section>
+
+<section class="slide" data-app="service" data-title="The network"><div class="shead"><span class="k">06:45, before the day starts</span><h2>The service and its rules</h2></div></section>
+<section class="slide" data-app="roster" data-title="Morning roster"><div class="shead"><span class="k">06:50</span><h2>The morning roster</h2></div></section>
+<section class="slide" data-app="report" data-title="A teacher reports"><div class="shead"><span class="k">08:40, school portal</span><h2>A teacher reports a fault</h2></div></section>
+<section class="slide" data-app="triage" data-title="Desk triage"><div class="shead"><span class="k">08:40 to 08:52, service desk</span><h2>Triage and a remote fix first</h2></div></section>
+<section class="slide" data-app="dispatch" data-title="Dispatch"><div class="shead"><span class="k">08:52, dispatch</span><h2>Choosing the engineer</h2></div></section>
+<section class="slide" data-app="drive" data-title="On the way"><div class="shead"><span class="k">08:54 to 09:32</span><h2>On the way</h2></div></section>
+<section class="slide" data-app="onsite" data-title="On site"><div class="shead"><span class="k">09:32, engineer app</span><h2>On site, fixing</h2></div></section>
+<section class="slide" data-app="signoff" data-title="Sign-off"><div class="shead"><span class="k">10:22</span><h2>Sign-off and the teacher’s rating</h2></div></section>
+<section class="slide" data-app="outage" data-title="Outage"><div class="shead"><span class="k">10:41, a second school</span><h2>A school loses its internet</h2></div></section>
+<section class="slide" data-app="search" data-title="Looking nearby"><div class="shead"><span class="k">10:45, dispatch check</span><h2>Looking nearby first</h2></div></section>
+<section class="slide" data-app="reassign" data-title="Reassignment"><div class="shead"><span class="k">10:46</span><h2>An engineer from the next zone</h2></div></section>
+<section class="slide" data-app="gate" data-title="Gate check-in"><div class="shead"><span class="k">10:47 to 11:29</span><h2>Drive and gate check-in</h2></div></section>
+<section class="slide" data-app="restore" data-title="Restore"><div class="shead"><span class="k">11:29 to 12:44</span><h2>Restoring service</h2></div></section>
+<section class="slide" data-app="results" data-title="Results"><div class="shead"><span class="k">15:00, close of day</span><h2>What the day adds up to</h2></div></section>
+<section class="slide" data-app="explore" data-title="Your turn"><div class="shead"><span class="k">Your turn</span><h2>Run the day yourself</h2></div></section>
+
+<section class="slide s-end" data-title="Summary">
+  <div class="k">In summary</div>
+  <h2>Fast where the rules allow, honest where they don’t</h2>
+  <p class="sub">One simulated Monday across the whole network, with every allocation checked against the gender rule and the nearby-only rule.</p>
+  <div class="winrow">
+    <div class="win reveal" data-from="1"><b>970</b><span>tickets logged</span><small>527 needed a site visit</small></div>
+    <div class="win reveal" data-from="1"><b>97%</b><span>on site within target</span><small>Response clocks count school hours</small></div>
+    <div class="win reveal" data-from="1"><b>6</b><span>engineers lent nearby</span><small>Same or neighbouring zone, under an hour</small></div>
+    <div class="win reveal" data-from="1"><b>0</b><span>gender rule breaches</span><small>On every path, automatic or manual</small></div>
+  </div>
+  <div class="msgs">
+    <div class="msg reveal" data-from="2" style="border-left-color:#A8306F"><h3>Add a female pool engineer in Dubai</h3><p>Two pool engineers serve 15 girls’ schools. With one absence, the next P1 waited on Sharjah and missed its target by 18 minutes.</p></div>
+    <div class="msg reveal" data-from="3" style="border-left-color:#16233B"><h3>Re-pair shared schools by distance</h3><p>A paired engineer’s two schools are a median 44 minutes apart today. Pairing by drive time cuts that to 17.</p></div>  </div>
+  <div class="warm reveal" data-from="4"><b>Warm start, then live</b><p>The model starts from past ticket and incident history to plan where each engineer is based, then keeps re-planning the distribution from real-time tickets, travel and attendance.</p></div>
+  <div class="endby"><img src="brand/alpha-data.png" alt="Alpha Data" class="ad"><span>Prepared by Alpha Data for the UAE Ministry of Education</span><img src="brand/moe.png" alt="UAE Ministry of Education" class="moe"></div>
+</section>
+
+<div id="appwrap"><div id="app">
+  <header class="dtop">
+    <div class="brand"><img class="mlogo" src="brand/moe.png" alt="UAE Ministry of Education"><div><b>EUC field operations</b><span>Service desk, dispatch and the engineer app</span></div></div>
+    <ol class="rail" id="rail" aria-label="Chapters"></ol>
+    <div class="dclock"><span id="dDate">Mon 26 Oct 2026</span><b id="dClk">06:45</b></div>
+    <div class="dnav"><button id="prev" aria-label="Previous chapter">Back</button><button id="next" class="primary">Next</button></div>
+  </header>
+  <div class="stage">
+    <aside class="narr" id="narr" aria-live="polite"></aside>
+    <section class="screen" aria-label="Screens">
+      <div class="tabs" role="tablist" id="tabs">
+        <button role="tab" data-s="portal">School portal <small>what the teacher sees</small></button>
+        <button role="tab" data-s="ops">Operations dashboard <small>service desk and dispatch</small></button>
+      </div>
+      <div class="pane" id="p-portal"><div class="browser"><div class="bbar"><i></i><i></i><i></i><span id="bUrl"></span></div><div class="bbody" id="portal"></div></div></div>
+      <div class="pane" id="p-ops"><div class="okpis" id="okpis"></div><div class="ogrid"><div class="omap"><div id="map"></div><div class="mlegend" id="mlegend"></div></div><div class="opanel" id="opanel"></div></div></div>
+    </section>
+    <section class="phonecol" aria-label="Engineer mobile app">
+      <div class="who" id="who" role="tablist"></div>
+      <div class="phone" id="phoneFrame"><div class="notch"></div><div class="pstatus"><b id="pTime">06:45</b><span>5G ▮▮▮ 82%</span></div><div class="papp" id="phone"></div></div>
+      <p class="pcap" id="pcap"></p>
+    </section>
+  </div>
+  <div id="ring"></div>
+</div></div>
+<div id="pop" role="dialog" aria-live="polite"></div>
+<div id="ovl"></div>
+<div id="bar">
+  <button class="bnav" id="pprev" aria-label="Previous">‹</button>
+  <button class="bnav" id="pnext" aria-label="Next">›</button>
+  <div id="prog"><div></div></div>
+  <div id="pos"></div>
+  <div class="blogos"><img src="brand/alpha-data.png" alt="Alpha Data" class="ad"><img src="brand/moe.png" alt="UAE Ministry of Education" class="moe"></div>
+</div>
+</div></div>
+<div class="toast hidden" id="toast" role="status"></div>
+<!-- BODY:END -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>window.DEMO_PRESENT = true;</script>
+<script type="module" src="js/demo/demo.js"></script>
+<script type="module" src="js/demo/present.js"></script>
+</body>
+</html>

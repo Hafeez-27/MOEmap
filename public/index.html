@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MOE Field Operations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand"><div class="logo" aria-hidden="true">MOE</div><div><b>Field operations</b><span>EUC engineer allocation, 522 schools</span></div></div>
+  <div class="clock" aria-live="off">
+    <span id="date">Mon 26 Oct</span><b id="clk">06:50</b>
+    <span id="scale" class="scale">1 s = 2 min</span>
+    <div class="bar"><i id="dayBar"></i></div>
+  </div>
+  <nav class="views" id="nav" aria-label="Views">
+    <button data-v="ops" class="on">Operations</button><button data-v="schools">Schools</button><button data-v="engs">Engineers</button><button data-v="plan">Planning <em id="nPend" class="hidden">0</em></button><button data-v="model">Model</button>
+  </nav>
+  <div class="ctl">
+    <button id="play" class="primary" aria-label="Pause simulation">Pause</button>
+    <div class="seg" id="speed" role="group" aria-label="Simulation speed"><button data-s="1">1×</button><button data-s="2" class="on">2×</button><button data-s="5">5×</button><button data-s="15">15×</button><button data-s="60">60×</button></div>
+    <button id="skip" title="Run the rest of today instantly and stop at the next morning">Next morning</button>
+    <select id="scenario" aria-label="Scenario"><option value="">Scenario…</option><option value="exam">Assessment day</option><option value="isp">ISP outage in Sharjah</option><option value="accident">Accident on the E311</option><option value="firmware">Smart-panel firmware fault</option><option value="flu">Flu wave (12% off sick)</option><option value="female">8 female engineers off</option></select>
+  </div>
+  <div class="badges"><a href="demo.html"><button>End-to-end demo</button></a><button id="copBtn" class="cop-btn">Ask Copilot</button></div>
+</header>
+
+<div class="context" id="context">
+  <div class="seg" id="period" role="group" aria-label="Period"><button data-p="today" class="on">Today</button><button data-p="week">Last 5 school days</button><button data-p="all">All days</button></div>
+  <label>Zone <select id="fZone"><option value="">All zones</option></select></label>
+  <label>Schools <select id="fGender"><option value="">All</option><option value="B">Boys' (male engineers)</option><option value="G">Girls' (female engineers)</option><option value="N">Non-school sites</option></select></label>
+  <label class="chk"><input type="checkbox" id="pauseEod"> Pause at end of day</label>
+  <span class="ctx-note" id="ctxNote"></span><span id="bRoute" class="badge">Routing</span><span id="bAI" class="badge">AI</span>
+</div>
+
+<main id="main">
+  <section id="v-ops" class="view on">
+    <div class="strip"><canvas id="cStrip" role="img" aria-label="Today's tickets across the school day"></canvas></div>
+    <div class="kpis" id="kpis"></div>
+    <div class="ops">
+      <div class="mapwrap"><div id="map"></div>
+        <div class="maplegend" id="legend"><span><i class="d good"></i>Healthy</span><span><i class="d watch"></i>Watch</span><span><i class="d risk"></i>At risk</span><span><i class="d critical"></i>Critical</span><span><i class="ring b"></i>Boys'</span><span><i class="ring g"></i>Girls'</span><span><i class="eng"></i>Engineer (blue male, plum female)</span><span><i class="eng loan"></i>On loan</span><span><i class="hub"></i>Hub</span><label class="chk"><input type="checkbox" id="allEng"> All engineers</label></div>
+        <div id="drawer" class="drawer hidden" role="dialog" aria-label="Details"></div>
+        <div id="eod" class="eod hidden"></div>
+      </div>
+      <aside class="side">
+        <div class="side-scroll">
+          <section><h3>Needs attention <small id="attN"></small></h3><div id="attention"></div></section>
+          <section><h3>Approvals</h3><div id="approvalsMini"></div></section>
+          <section><h3>On the road <small id="roadN"></small></h3><div id="road"></div></section>
+        </div>
+        <section class="feedbox"><h3>Live ticket feed <span class="seg" id="feedSeg" role="group" aria-label="Feed filter"><button data-f="field" class="on" aria-pressed="true">Field work</button><button data-f="all" aria-pressed="false">Everything</button></span></h3><div id="feed" class="feed" aria-live="off"></div></section>
+      </aside>
+    </div>
+  </section>
+  <section id="v-schools" class="view"></section>
+  <section id="v-engs" class="view"></section>
+  <section id="v-plan" class="view"></section>
+  <section id="v-model" class="view"></section>
+</main>
+
+<aside id="copilot" class="copilot hidden" aria-label="Copilot">
+  <div class="cop-h"><b>Copilot</b><span id="copModel"></span><button id="copClose" aria-label="Close copilot">✕</button></div>
+  <div class="chips" id="chips"></div>
+  <div class="msgs" id="msgs"></div>
+  <form id="aiF"><input id="aiQ" placeholder="Ask about schools, engineers or moves" autocomplete="off"><button class="primary">Send</button></form>
+</aside>
+<div id="toast" class="toast hidden" role="status"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

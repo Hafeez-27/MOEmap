@@ -1,0 +1,1790 @@
+<title>MOE Site Engineer Allocation Maps</title>
+<script>/* default zoom: 80% on a Mac, 67% on Windows (desktop only) */(function(){try{var n=navigator,p=(n.userAgentData&&n.userAgentData.platform)||n.platform||'',z=/Mac/i.test(p)&&!(n.maxTouchPoints>1)?0.8:/Win/i.test(p)?0.67:1;if(z!==1){document.documentElement.style.setProperty('--z',z);document.documentElement.classList.add('zoomed');}}catch(e){}})();</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/*__MAPLIBRE_CSS__*/
+/* One screen: headline + headcount bar on top, explanation panel on the left, map on the right.
+   Colour always means "who looks after this site": green = Emirati national, blue = city shared, orange = city pool,
+   magenta = remote shared. Shape adds the rest: lines join a shared pair, dashed areas outline a pool patch, offices are dots with a white centre. */
+:root{
+  color-scheme:light;
+  --chg:#6D28D9; --chgk:#4C1D95; --chgl:#CDBDF4; --chgbg:#F6F2FF; --bad:#B42318;
+  --ink:#15233B; --ink2:#3A4659; --mut:#5F6B80; --line:#E4E8EF; --mist:#D2D9E3; --paper:#F5F7FA; --sheet:#FFFFFF; --hi:#F2C230;
+  --nat:#10744F; --pair:#2A78D6; --pool:#EE8A2E; --poolk:#A65A12; --rem:#B64A9A; --hq:#9AA4B3;
+  --boy:#2457A6; --girl:#C2387F; --mix:#8A6D1A;
+  --t1:#1F8A4C; --t2:#C98F00; --t3:#C8372D;
+  --sea:#DCE8F1; --seal:#B9CFDF; --land:#F4F2EC; --mway:#D3D8DF;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --cond:"IBM Plex Sans Condensed","IBM Plex Sans",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+/* default zoom (see the script at the top): the page is laid out larger and scaled down, like the browser's own zoom */
+html.zoomed{overflow:hidden}html.zoomed body{transform:scale(var(--z));transform-origin:0 0;width:calc(100vw / var(--z));height:calc(100vh / var(--z))}html.zoomed dialog{scale:var(--z)}
+body{margin:0;background:var(--paper);color:var(--ink);font:13px/1.5 var(--sans);font-variant-numeric:tabular-nums;display:flex;flex-direction:column;overflow:hidden}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+h1,h2,h3{font-family:var(--cond);margin:0;text-wrap:balance}
+
+/* header */
+.top{background:var(--sheet);border-bottom:1px solid var(--mist);padding:12px max(18px,env(safe-area-inset-right,0px)) 12px max(18px,env(safe-area-inset-left,0px));display:grid;grid-template-columns:auto minmax(260px,1fr) minmax(420px,1.6fr);gap:10px 28px;align-items:center}
+.brand{display:flex;align-items:center;gap:14px}
+.brand img{display:block;height:48px;width:auto}
+.brand i{width:1px;height:40px;background:var(--mist)}
+.top h1{font-size:23px;font-weight:700;line-height:1.1}
+.top .sub{color:var(--ink2);font-size:13px;margin-top:3px;max-width:62ch}
+.hc{display:grid;gap:7px}
+.hc-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.hc-head b{font:700 15px var(--cond)}
+.hc-head span{color:var(--mut);font-size:12px}
+.hc-head b em,.hc-keys em{font-style:normal;font-weight:700;color:var(--chg);margin-left:3px}
+.hc-head b em{font:600 12.5px var(--sans)}
+.dm{font-style:normal;font-weight:700;color:var(--chg);margin-left:3px}
+.chgtag{font-style:normal;font-size:10.5px;font-weight:700;color:var(--chgk);background:var(--chgbg);border:1px solid var(--chgl);border-radius:4px;padding:0 4px;margin-left:6px;white-space:nowrap}
+.notlive{margin:0 0 10px;padding:6px 9px;border:1px solid var(--chgl);background:var(--chgbg);color:var(--chgk);border-radius:6px;font-size:12.5px}
+.bar{display:flex;gap:2px;height:22px}
+.bar button{border:0;padding:0;cursor:pointer;min-width:6px;border-radius:2px;position:relative}
+.bar button:first-child{border-radius:4px 2px 2px 4px}.bar button:last-child{border-radius:2px 4px 4px 2px}
+.bar button.hq{cursor:default;background:repeating-linear-gradient(135deg,var(--hq) 0 3px,#C5CCD6 3px 6px)}
+.bar button.off{opacity:.25}
+.bar button:hover:not(.hq){filter:brightness(1.08)}
+.hc-keys{display:flex;flex-wrap:wrap;gap:4px 18px}
+.hc-keys button{display:flex;align-items:baseline;gap:6px;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+.hc-keys button.off{opacity:.4;text-decoration:line-through}
+.hc-keys button.hq{cursor:default}
+.hc-keys i{width:10px;height:10px;border-radius:2px;align-self:center;flex:none}
+.hc-keys b{font:700 16px var(--cond)}
+.hc-keys span{color:var(--ink2);font-size:12px}
+
+.main{flex:1;display:flex;min-height:0}
+.side{width:var(--side-w,420px);flex:none;display:flex;flex-direction:column;border-right:1px solid var(--mist);background:var(--sheet);min-height:0;position:relative;transition:width .18s ease}
+.side.dragging{transition:none;user-select:none}
+.main.collapsed .side{display:none}
+/* drag the panel's edge to resize it; the small round button hides it; the tab on the map brings it back */
+.side-grip{position:absolute;top:0;right:-5px;width:10px;height:100%;cursor:col-resize;z-index:12;touch-action:none}
+.side-grip::after{content:'';position:absolute;left:4px;top:0;bottom:0;width:2px;background:transparent;transition:background .12s}
+.side-grip:hover::after,.side.dragging .side-grip::after{background:var(--chg)}
+.side-hide,.side-show{display:grid;place-items:center;border:1px solid var(--mist);background:var(--sheet);color:var(--ink2);cursor:pointer;box-shadow:0 1px 6px rgba(21,35,59,.14)}
+.side-hide{position:absolute;right:-13px;top:46px;z-index:13;width:26px;height:26px;border-radius:50%;padding:0}
+.side-hide:hover,.side-show:hover{color:var(--ink);border-color:var(--ink)}
+.side-show{position:absolute;left:0;top:50%;transform:translateY(-50%);z-index:9;border-left:0;border-radius:0 8px 8px 0;padding:10px 6px;font:600 12px var(--cond);writing-mode:vertical-rl;gap:6px}
+.side-show[hidden],.side-hide[hidden]{display:none}
+.tabs{display:flex;border-bottom:1px solid var(--mist);padding:0 8px}
+.tabs button{flex:1;background:none;border:0;border-bottom:3px solid transparent;padding:10px 4px 8px;font:600 14px var(--cond);color:var(--mut);cursor:pointer}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--ink)}
+.ctrl{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--mist);background:var(--paper)}
+.ctrl label{font-size:12px;color:var(--mut)}
+.seg{display:inline-flex;border:1px solid var(--mist);border-radius:6px;overflow:hidden;background:var(--sheet)}
+.seg button{border:0;background:none;padding:4px 10px;font-size:12px;cursor:pointer;color:var(--ink2)}
+.seg button+button{border-left:1px solid var(--mist)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:#fff;font-weight:600}
+select,input[type=search]{border:1px solid var(--mist);border-radius:6px;padding:4px 8px;background:var(--sheet)}
+.pane{flex:1;overflow:auto;padding:16px 18px 32px;min-height:0}
+.pane h2{font-size:16px;font-weight:700;margin:22px 0 8px}
+.pane h2:first-child{margin-top:0}
+.pane p{margin:0 0 10px;color:var(--ink2);max-width:62ch}
+.lede{font-size:14px;color:var(--ink)!important}
+
+/* how to read */
+.key{display:grid;gap:7px;margin:0 0 6px;padding:10px 12px;background:var(--paper);border-radius:6px}
+.key div{display:grid;grid-template-columns:34px 1fr;gap:8px;align-items:center;color:var(--ink2)}
+.key svg{display:block}
+/* coverage blocks: a coloured rule says which engineer type the block is about */
+.blk{border-left:4px solid var(--c);padding:2px 0 2px 12px;margin:0 0 18px}
+.blk-h{display:flex;align-items:baseline;gap:10px}
+.blk-h b{font:700 28px/1 var(--cond);color:var(--ink)}
+.blk-h span{font:600 15px var(--cond)}
+.blk p{margin:4px 0 6px}
+.facts{margin:0;padding:0;list-style:none;display:grid;gap:3px}
+.facts li{color:var(--ink2);padding-left:14px;position:relative}
+.facts li::before{content:'';position:absolute;left:2px;top:.62em;width:5px;height:5px;border-radius:50%;background:var(--c)}
+.facts b{color:var(--ink)}
+.dist{margin:8px 0 4px}
+.dist .db{display:flex;gap:2px;height:14px}
+.dist .db div{border-radius:2px;cursor:default}
+.dist .dl{display:flex;flex-wrap:wrap;gap:2px 14px;margin-top:4px;font-size:12px;color:var(--ink2)}
+.dist .dl i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.confirm{margin:0;padding-left:18px;display:grid;gap:6px;color:var(--ink2)}
+.confirm b{color:var(--ink)}
+
+/* zones */
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{text-align:right;padding:6px 4px;border-bottom:1px solid var(--line);white-space:nowrap;vertical-align:top}
+th:first-child,td:first-child{text-align:left;white-space:normal}
+th{font:600 12px var(--cond);color:var(--mut)}
+tr.tot td{font-weight:700;border-top:1px solid var(--ink);border-bottom:0}
+tbody tr.zr{cursor:pointer}tbody tr.zr:hover td{background:var(--paper)}
+tr.zr small{color:var(--mut)}
+.mini{display:flex;gap:1px;height:6px;margin-top:4px;width:100%}
+.mini div{border-radius:1px}
+
+/* engineer list */
+.filters{display:grid;gap:8px;margin-bottom:10px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--mist);border-radius:999px;padding:3px 10px;cursor:pointer;font-size:12px;background:var(--sheet)}
+.chip[aria-pressed="false"]{opacity:.45}
+.chip i{width:9px;height:9px;border-radius:50%}
+input[type=search]{width:100%}
+.count{color:var(--mut);font-size:12px;margin:0 0 6px}
+.list{list-style:none;margin:0;padding:0}
+.list li{display:grid;grid-template-columns:12px 1fr auto;gap:2px 10px;padding:8px 6px;border-bottom:1px solid var(--line);cursor:pointer;align-items:start}
+.list li:hover{background:var(--paper)}
+.list li.sel{background:#FFF8DC;box-shadow:inset 3px 0 0 var(--hi)}
+.list li > i{width:10px;height:10px;border-radius:50%;margin-top:5px}
+.list .nm{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.list .rt{font:600 12px var(--cond);color:var(--ink2);text-align:right}
+.list .meta{grid-column:2/-1;color:var(--mut);font-size:12px}
+
+/* method */
+.rules{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+.rules li b{display:block;font:600 14px var(--cond);color:var(--ink)}
+.rules li span{color:var(--ink2)}
+.src{color:var(--mut);font-size:12px;margin-top:14px}
+
+/* map */
+.mapwrap{flex:1;position:relative;min-width:0;background:var(--sea)}
+#map{position:absolute;inset:0}
+.legend{position:absolute;left:calc(10px + env(safe-area-inset-left,0px));top:64px;z-index:5;background:var(--sheet);border:1px solid var(--mist);border-radius:6px;padding:9px 12px;font-size:12px;display:grid;gap:5px;max-width:260px;box-shadow:0 2px 10px rgba(21,35,59,.08)}
+/* search on the map */
+.msearch{position:absolute;left:calc(10px + env(safe-area-inset-left,0px));top:10px;z-index:9;width:min(390px,calc(100% - 70px))}
+.msearch .box{display:flex;align-items:center;gap:8px;height:44px;padding:0 12px;background:var(--sheet);border:1px solid var(--mist);border-radius:8px;box-shadow:0 2px 12px rgba(21,35,59,.12)}
+.msearch .box:focus-within{border-color:var(--ink);box-shadow:0 2px 14px rgba(21,35,59,.18)}
+.msearch svg{flex:none;color:var(--mut)}
+.msearch input{flex:1;min-width:0;border:0;outline:0;background:none;font-size:14px;color:var(--ink);height:100%}
+.msearch input::placeholder{color:var(--mut)}
+.msearch kbd{font:600 11px var(--sans);color:var(--mut);border:1px solid var(--mist);border-radius:4px;padding:1px 6px;line-height:16px}
+.msearch .box:focus-within kbd,.msearch input:not(:placeholder-shown) ~ kbd{display:none}
+.mres{list-style:none;margin:6px 0 0;padding:4px;background:var(--sheet);border:1px solid var(--mist);border-radius:8px;box-shadow:0 10px 30px rgba(21,35,59,.16);max-height:min(440px,calc(100vh - 260px));overflow:auto}
+.mres li{display:grid;grid-template-columns:12px 1fr auto;gap:1px 10px;align-items:baseline;padding:7px 9px;border-radius:5px;cursor:pointer}
+.mres li.act{background:var(--paper)}
+.mres li > i{width:10px;height:10px;border-radius:50%;align-self:center;grid-row:span 2}
+.mres li > i.z{background:none!important;border:2px solid var(--ink);width:10px;height:10px;box-sizing:border-box;border-radius:3px}
+.mres .t{font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mres .ty{font:600 11px var(--cond);color:var(--mut)}
+.mres .s{grid-column:2 / 4;color:var(--ink2);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mres li.none{display:block;color:var(--ink2);cursor:default;font-size:12.5px;line-height:1.45}
+.detail tr.hit td{background:#FFF8DC}
+.dask{margin:10px 0 0}.dask button{width:100%;font:inherit;font-weight:600;border:1px solid var(--ink);background:var(--sheet);color:var(--ink);border-radius:6px;padding:7px 10px;cursor:pointer}
+.dask button:hover{background:var(--paper)}
+/* ask AI */
+.pane.ai{display:flex;flex-direction:column;padding:0;overflow:hidden}
+.pane.ai[hidden]{display:none}
+.ai-top{padding:10px 16px 8px;border-bottom:1px solid var(--line)}
+.ai-ctx{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12px;color:var(--mut)}
+.ai-ctx .pk{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--mist);border-radius:999px;padding:1px 2px 1px 9px;background:var(--sheet);color:var(--ink);font-size:12px;max-width:100%}
+.ai-ctx .pk span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ai-ctx .pk i{width:8px;height:8px;border-radius:50%;flex:none}
+.ai-ctx .pkclr{border:0;background:none;padding:0 2px;font:inherit;font-size:12px;font-weight:600;color:var(--ink);text-decoration:underline;cursor:pointer}
+.ai-ctx .pk button{border:0;background:none;color:var(--mut);cursor:pointer;font-size:15px;line-height:1;padding:0 5px}
+.ai-log{flex:1;overflow:auto;padding:14px 16px 6px;min-height:0}
+.ai-hello p{color:var(--ink2);margin:0 0 8px}
+.msg{margin:0 0 16px}
+.msg.u{display:flex;flex-direction:column;align-items:flex-end}
+.msg.u .bub{background:var(--ink);color:#fff;border-radius:12px 12px 3px 12px;padding:7px 12px;max-width:88%;white-space:pre-wrap;font-size:13.5px}
+.msg.u .ctx{font-size:11.5px;color:var(--mut);margin:0 2px 3px;max-width:88%;text-align:right}
+.msg.a{font-size:13.5px;line-height:1.55;color:var(--ink)}
+.msg.a p{margin:0 0 8px;color:var(--ink);max-width:none}
+.msg.a ul,.msg.a ol{margin:2px 0 8px;padding-left:20px}
+.msg.a li{margin:2px 0}
+.msg.a .mdh{font-weight:700;margin:8px 0 4px}
+.msg.a .wait{color:var(--mut)}
+.msg.a .err{color:var(--bad)}
+.mdt{border-collapse:collapse;margin:4px 0 10px;font-size:12.5px;width:100%}
+.mdt th,.mdt td{border-bottom:1px solid var(--line);padding:4px 6px;text-align:left;white-space:normal;vertical-align:top}
+.mdt th{color:var(--mut);font-weight:600}
+.ref{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--mist);background:var(--paper);border-radius:999px;padding:0 8px;font:inherit;font-size:12.5px;font-weight:600;color:var(--ink);cursor:pointer;line-height:20px;max-width:100%;vertical-align:baseline}
+.ref:hover{border-color:var(--ink)}
+.ref i{width:8px;height:8px;border-radius:50%;flex:none}
+.ref i.z,.ai-ctx .pk i.z{background:none!important;border:1.5px solid var(--ink);border-radius:2px;box-sizing:border-box}
+.showall{border:0;background:none;color:var(--ink);font:inherit;font-size:12.5px;font-weight:600;text-decoration:underline;cursor:pointer;padding:0}
+.chg-card{border:1px solid var(--chgl);background:var(--chgbg);border-radius:6px;padding:8px 10px;margin:8px 0 6px;font-size:12.5px}
+.chg-card b{color:var(--chgk)}
+.chg-card ul{margin:4px 0 0;padding-left:18px}.chg-card li.bad{color:var(--bad)}
+.chg-card .broke{color:var(--bad);margin:6px 0 0;font-size:12px}
+.rule-card{border:1px solid #F1B5AE;background:#FFF4F2;border-radius:6px;padding:9px 11px;margin:8px 0 6px;font-size:12.5px}
+.rule-card b{color:var(--bad)}.rule-card ul{margin:4px 0 6px;padding-left:18px;color:var(--bad)}.rule-card p{margin:0 0 6px;color:var(--ink2)}
+.rules-broken{border:1px solid #F1B5AE;background:#FFF4F2;border-radius:6px;padding:7px 10px;margin:6px 0;font-size:12.5px}
+.rules-broken b{color:var(--bad)}.rules-broken ul{margin:3px 0 0;padding-left:18px;color:var(--bad)}.rules-broken li span{color:var(--ink2);font-style:italic}
+.ackbox{display:flex!important;gap:8px;align-items:flex-start;font-weight:400!important;margin:8px 0 0!important;color:var(--ink)}
+.ackbox input{width:auto!important;margin-top:3px}
+.ai-sugg{display:flex;gap:6px;padding:4px 16px 8px;overflow-x:auto;scrollbar-width:thin}
+.ai-sugg .sugg{flex:none;white-space:nowrap}
+.sugg{border:1px solid var(--mist);background:var(--sheet);border-radius:999px;padding:4px 11px;font:inherit;font-size:12.5px;color:var(--ink);cursor:pointer;text-align:left}
+.sugg:hover{border-color:var(--ink);background:var(--paper)}
+.ai-form{display:flex;gap:8px;padding:8px 16px 12px;border-top:1px solid var(--line);align-items:stretch}
+.ai-clip{flex:none;width:38px;border:1px solid var(--mist)!important;background:var(--sheet)!important;color:var(--ink2)!important;border-radius:8px;padding:0!important;display:grid;place-items:center;cursor:pointer}
+.ai-clip:hover{border-color:var(--ink)!important;color:var(--ink)!important}
+.ai-files{display:flex;flex-wrap:wrap;gap:6px;padding:8px 16px 0;border-top:1px solid var(--line)}
+.ai-files+.ai-form{border-top:0}
+.af{display:inline-flex;align-items:center;gap:6px;max-width:100%;border:1px solid var(--mist);background:var(--sheet);border-radius:6px;padding:3px 4px 3px 4px;font-size:12px;color:var(--ink)}
+.af img{width:26px;height:26px;object-fit:cover;border-radius:3px;flex:none}
+.af .fi{flex:none;min-width:26px;height:26px;border-radius:3px;background:var(--paper);border:1px solid var(--line);display:grid;place-items:center;font:700 9.5px var(--cond);color:var(--ink2);padding:0 2px}
+.af .fn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:20ch}
+.af small{color:var(--mut);white-space:nowrap}
+.af button{border:0;background:none;color:var(--mut);cursor:pointer;font-size:15px;line-height:1;padding:0 4px}
+.af.bad{border-color:#F1B5AE;background:#FFF4F2;color:var(--bad);padding:4px 8px}
+.ufiles{display:flex;flex-wrap:wrap;gap:5px;justify-content:flex-end;margin:0 0 4px;max-width:88%}
+.ufiles .af{background:var(--paper)}
+.pane.ai.drop{outline:2px dashed var(--chg);outline-offset:-6px;background:var(--chgbg)}
+.ai-form textarea{flex:1;resize:none;border:1px solid var(--mist);border-radius:8px;padding:9px 11px;font:inherit;font-size:13.5px;line-height:1.4;min-height:40px;max-height:140px;color:var(--ink)}
+.ai-form textarea:focus{outline:2px solid var(--ink);outline-offset:-1px}
+.ai-form button{border:0;background:var(--ink);color:#fff;border-radius:8px;padding:0 16px;font-weight:600;cursor:pointer}
+.ai-form button:disabled{opacity:.35;cursor:default}
+.ai-note{font-size:11.5px;color:var(--mut);padding:0 16px 10px;margin:0}
+/* who answered, the planning steps, Stop / New chat */
+.ai-top{display:flex;gap:8px;align-items:flex-start}.ai-top .ai-ctx{flex:1;min-width:0}
+.ai-new{flex:none;border:1px solid var(--mist);background:var(--sheet);border-radius:6px;font:inherit;font-size:12px;font-weight:600;padding:2px 9px;color:var(--ink);cursor:pointer}
+.ai-new:hover{border-color:var(--ink)}
+.ai-form button.stop{background:var(--sheet);color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink)}
+.msg.a .by{display:flex;align-items:center;gap:6px;margin:6px 0 0;font-size:11.5px;color:var(--mut)}
+.by i{width:7px;height:7px;border-radius:50%;background:#8D97A6;flex:none}.by.cl i{background:var(--chg)}
+.psteps{border:1px solid var(--chgl);border-radius:8px;background:var(--sheet);margin:2px 0 10px;overflow:hidden}
+.ps-head{display:flex;width:100%;align-items:center;gap:8px;border:0;background:var(--chgbg);padding:7px 10px;font:inherit;font-size:12.5px;color:var(--chgk);cursor:pointer;text-align:left}
+.ps-head b{font-weight:700}.ps-head .ps-n{margin-left:auto;font-size:12px;text-decoration:underline;white-space:nowrap}
+.ps-head .ps-dot{width:8px;height:8px;border-radius:50%;background:var(--chg);flex:none;animation:pspulse 1.2s ease-in-out infinite}
+.ps-list{list-style:none;margin:0;padding:8px 10px 2px}
+.ps{position:relative;display:grid;grid-template-columns:12px 1fr;gap:9px;padding:0 0 9px}
+.ps:not(:last-child)::before{content:'';position:absolute;left:5px;top:15px;bottom:0;width:1.5px;background:var(--chgl)}
+.ps-ic{width:12px;height:12px;margin-top:3px;border-radius:50%;border:2px solid var(--chg);background:var(--sheet);box-sizing:border-box}
+.ps.tool .ps-ic,.ps.try .ps-ic{background:var(--chg)}.ps.handoff .ps-ic{border-color:#8D97A6}
+.ps.bad .ps-ic{border-color:var(--bad);background:var(--bad)}
+.ps.live .ps-ic{animation:pspulse 1.2s ease-in-out infinite}
+@keyframes pspulse{50%{box-shadow:0 0 0 4px rgba(109,40,217,.2)}}
+.ps-b{min-width:0;font-size:12.5px;line-height:1.45}.ps-b>b{display:block;font-weight:600;color:var(--ink)}
+.ps-b p{margin:2px 0 0;color:var(--ink2)}.ps-note p{margin:2px 0 0}
+.ps-txt{font-style:italic;white-space:pre-wrap;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer}
+.ps-txt.open{display:block}
+.ps-t{border-collapse:collapse;margin:4px 0 0;width:100%;font-size:12px}
+.ps-t td{padding:3px 6px 3px 0;border-top:1px solid var(--line);vertical-align:middle}
+.ps-t td:first-child,.ps-t td.n{white-space:nowrap}.ps-t td.n{font-variant-numeric:tabular-nums;font-weight:600}.ps-t td.n small{font-size:inherit;font-weight:400;color:var(--ink2)}.ps-t td.no{color:var(--bad)}
+.ps-b .ref{white-space:nowrap;max-width:none}
+.ps-t tr.cur td{color:var(--mut)}
+.ps-mv{margin:3px 0 0;padding:0;list-style:none}.ps-mv li{margin:3px 0;line-height:1.9}
+.ps-mv .up{color:var(--bad);font-weight:600;white-space:nowrap}.ps-mv .dn{color:#027A48;font-weight:600;white-space:nowrap}
+.ps-b .ps-rule{color:var(--bad)}
+.ps.stage .ps-ic{background:var(--chg);border-color:var(--chgk)}.ps.version .ps-ic{background:var(--sheet);border-color:var(--ink);border-width:3px}
+.vrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:5px}
+.vrow a,.vrow button{font:inherit;font-size:12px;font-weight:600;border-radius:6px;padding:3px 9px;cursor:pointer;border:1px solid var(--mist);background:var(--sheet);color:var(--ink);text-decoration:none;white-space:nowrap}
+.vrow a:hover,.vrow button:hover{border-color:var(--ink)}
+.vnote{font-size:11.5px;color:var(--mut)!important}
+.msg.a a{color:var(--chgk);word-break:break-all}
+.ps-b .chg-card,.ps-b .rule-card{margin:6px 0 2px}
+.vlinkbox{display:flex;gap:8px;margin:8px 0 0}.vlinkbox input{flex:1;min-width:0}
+.vlinkbox button{font:inherit;font-size:12.5px;font-weight:600;border-radius:6px;padding:5px 11px;cursor:pointer;border:1px solid var(--ink);background:var(--ink);color:#fff;white-space:nowrap}
+.ps-map{margin-top:3px;border:0;background:none;padding:0;font:inherit;font-size:12px;font-weight:600;color:var(--chgk);text-decoration:underline;cursor:pointer}
+.livebar{position:absolute;left:50%;transform:translateX(-50%);bottom:38px;z-index:9;display:flex;gap:10px;align-items:center;background:var(--chgbg);border:1.5px solid var(--chg);border-radius:8px;padding:7px 9px 7px 12px;box-shadow:0 4px 18px rgba(21,35,59,.18);font-size:12.5px;color:var(--chgk);max-width:calc(100% - 40px)}
+.livebar .lt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:54ch}
+.livebar .ld{white-space:nowrap;color:var(--ink2);font-variant-numeric:tabular-nums}
+.livebar button{font:inherit;font-size:12.5px;font-weight:600;border-radius:6px;padding:4px 10px;cursor:pointer;border:1px solid var(--chgl);background:var(--sheet);color:var(--chgk);white-space:nowrap}
+.livebar .dot{width:9px;height:9px;border-radius:50%;background:var(--chg);flex:none}.livebar.live .dot{animation:pspulse 1.2s ease-in-out infinite}
+.livebar[hidden]{display:none}.mapwrap.previewing .selbar{display:none}
+.isobar{position:absolute;left:50%;transform:translateX(-50%);bottom:38px;z-index:9;display:flex;gap:10px;align-items:center;background:var(--sheet);border:1.5px solid var(--ink);border-radius:8px;padding:6px 8px 6px 12px;box-shadow:0 4px 18px rgba(21,35,59,.18);font-size:12.5px;max-width:calc(100% - 40px)}
+.isobar[hidden]{display:none}.isobar span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:56ch}
+.isobar button{font:inherit;font-size:12.5px;font-weight:600;border-radius:6px;padding:5px 12px;cursor:pointer;border:1px solid var(--ink);background:var(--ink);color:#fff;white-space:nowrap}
+.mapwrap.isolating .selbar{display:none}
+/* before / after a change: only what the change touches is on the map */
+.cmpbar{position:absolute;left:50%;transform:translateX(-50%);bottom:38px;z-index:9;display:flex;gap:10px;align-items:center;background:var(--sheet);border:1.5px solid var(--chg);border-radius:10px;padding:6px 8px;box-shadow:0 4px 18px rgba(21,35,59,.18);font-size:12.5px;max-width:calc(100% - 40px)}
+.cmpbar[hidden]{display:none}
+.cmpbar .seg,.livebar .seg{display:flex;border:1px solid var(--mist);border-radius:7px;overflow:hidden;flex:none}
+.cmpbar .seg button,.livebar .seg button{border:0;background:var(--sheet);padding:6px 14px;font:700 13px var(--cond);color:var(--ink2);cursor:pointer}
+.cmpbar .seg button+button,.livebar .seg button+button{border-left:1px solid var(--mist)}
+.cmpbar .seg button[aria-pressed="true"],.livebar .seg button[aria-pressed="true"]{background:var(--ink);color:#fff}
+.cmpbar .seg button[data-s="after"][aria-pressed="true"],.livebar .seg button[data-s="after"][aria-pressed="true"]{background:var(--chg)}
+.cmpbar .ct{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:50ch;color:var(--ink2)}.cmpbar .ct b{color:var(--ink)}
+.cmpbar .up{color:var(--bad);font-weight:600}.cmpbar .dn{color:#027A48;font-weight:600}
+.cmpbar .cb{font:inherit;font-size:12.5px;font-weight:600;border-radius:6px;padding:5px 11px;cursor:pointer;border:1px solid var(--mist);background:var(--sheet);color:var(--ink);white-space:nowrap}
+.cmpbar .cb:hover{border-color:var(--ink)}
+.mapwrap.comparing .selbar{display:none}
+@media (prefers-reduced-motion:reduce){.ps.live .ps-ic,.livebar.live .dot,.ps-head .ps-dot{animation:none}}
+/* simulated changes */
+#draftbox{flex:none;max-height:34%;overflow:auto}
+.ai.chatting #draftbox{max-height:24%}
+.dbox{margin:12px 16px 2px;border:1px solid var(--chgl);background:var(--chgbg);border-radius:8px;padding:10px 12px}
+.dbox .dh{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.dbox .dh b{color:var(--chgk);font:700 14px var(--cond)}
+.dbox .dh span{color:var(--chgk);font-size:12px}
+.dbox ol{margin:6px 0 4px;padding-left:18px;font-size:12.5px}
+.dbox li{margin:3px 0}.dbox li.bad{color:var(--bad)}
+.dbox .undo{margin-left:6px;border:0;background:none;color:var(--chgk);text-decoration:underline;cursor:pointer;font-size:12px;padding:0}
+.dbox details{font-size:12.5px;margin:4px 0}.dbox summary{cursor:pointer;font-weight:600;color:var(--chgk)}
+.dbox ul{margin:4px 0 0;padding-left:18px}.dbox ul li{margin:2px 0}.dbox ul li.w{color:var(--bad)}
+.dact{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.dact button,.draftbar button,.selbar button,.req .acts button{font:inherit;font-size:12.5px;font-weight:600;border-radius:6px;padding:5px 11px;cursor:pointer;border:1px solid var(--mist);background:var(--sheet);color:var(--ink)}
+.dact button.p,.draftbar button.p,.selbar button.p,.req .acts button.p{background:var(--ink);border-color:var(--ink);color:#fff}
+.dact button:disabled,.draftbar button:disabled{opacity:.4;cursor:default}
+.draftbar{position:absolute;right:58px;top:10px;z-index:8;display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:var(--chgbg);border:1px solid var(--chgl);border-radius:8px;padding:6px 8px 6px 12px;box-shadow:0 2px 12px rgba(21,35,59,.12);font-size:12.5px;color:var(--chgk);max-width:calc(100% - 480px)}
+.draftbar b{font-weight:700}
+.selbar{position:absolute;left:50%;transform:translateX(-50%);bottom:38px;z-index:8;display:flex;gap:10px;align-items:center;background:var(--sheet);border:1px solid var(--mist);border-radius:8px;padding:6px 8px 6px 12px;box-shadow:0 4px 18px rgba(21,35,59,.16);font-size:12.5px;max-width:calc(100% - 40px)}
+.selbar span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:44ch}
+.tchg{margin-top:6px;padding:5px 8px;border-radius:4px;background:var(--chgbg);color:var(--chgk);font-size:12px}
+dialog.req{border:1px solid var(--mist);border-radius:10px;padding:0;width:min(540px,calc(100% - 32px));box-shadow:0 20px 60px rgba(21,35,59,.25);color:var(--ink)}
+dialog.req::backdrop{background:rgba(21,35,59,.35)}
+.req form{padding:18px 20px}
+.req h3{font:700 19px var(--cond);margin:0 0 4px}
+.req p{color:var(--ink2);margin:0 0 8px}
+.req label{display:block;font-weight:600;font-size:12.5px;margin:12px 0 4px}
+.req input,.req textarea{width:100%;font:inherit;font-size:13.5px;border:1px solid var(--mist);border-radius:6px;padding:8px 10px;color:var(--ink)}
+.req textarea{resize:vertical;min-height:60px}
+.req ul{font-size:12.5px;max-height:190px;overflow:auto;padding-left:18px;margin:6px 0;color:var(--ink2)}
+.req ul li.w{color:var(--bad)}
+.req .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+.req .err{color:var(--bad);font-size:12.5px;margin:8px 0 0}
+.req .ok{color:#1F7A45}
+.legend .lt{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.legend .lt b{font:600 13px var(--cond)}
+.legend .lt button{background:none;border:0;padding:0;font-size:12px;color:var(--mut);cursor:pointer}
+#legend{display:grid;gap:5px}
+.legend .r{display:flex;align-items:center;gap:8px;color:var(--ink2)}
+.legend .r svg{flex:none}
+.legend .hint{color:var(--mut);font-size:11.5px;margin-top:2px}
+.detail{position:absolute;left:12px;top:64px;z-index:6;width:min(390px,calc(100% - 24px));max-height:calc(100% - 140px);overflow:auto;background:var(--sheet);border:1px solid var(--mist);border-top:4px solid var(--c,var(--ink));border-radius:6px;padding:12px 14px 14px;box-shadow:0 10px 30px rgba(21,35,59,.14)}
+.detail .dh{display:flex;align-items:flex-start;gap:10px}
+.detail h3{font-size:19px;font-weight:700;line-height:1.15}
+.detail .kind{color:var(--ink2);margin-top:2px}
+.detail .x{margin-left:auto;background:none;border:1px solid var(--mist);border-radius:4px;cursor:pointer;padding:0 8px;font-size:17px;line-height:24px}
+.detail dl{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;margin:10px 0}
+.detail dt{color:var(--mut)}
+.detail dd{margin:0}
+.detail table td:first-child{white-space:normal}
+.detail .note{color:var(--ink2);font-size:12.5px;margin:8px 0 0;padding:7px 9px;background:var(--paper);border-radius:4px}
+.detail .flag{background:#FFF1E6;color:#8A3B00}
+.detail .live{display:block;margin-top:3px;font-size:12px;color:var(--ink)}
+.detail .live.wait{color:var(--mut)}
+.detail .live b{font-weight:700}.detail .live .up{color:#B42318}.detail .live .dn{color:#1F7A45}
+.detail .livecap{color:var(--mut);font-size:12px;margin:6px 0 0}
+.tag{display:inline-block;font:600 11px/1.6 var(--cond);padding:0 6px;border-radius:3px;border:1px solid currentColor;white-space:nowrap}
+.tag.B{color:var(--boy)}.tag.G{color:var(--girl)}.tag.M{color:var(--mix)}.tag.O{color:var(--mut)}
+
+/* hover card */
+.tip{position:absolute;z-index:8;pointer-events:none;width:300px;background:var(--sheet);border:1px solid var(--mist);border-radius:6px;box-shadow:0 8px 26px rgba(21,35,59,.18);font-size:12.5px;line-height:1.45;overflow:hidden}
+.tip[hidden]{display:none}
+.tip .th{padding:8px 11px 7px;border-top:4px solid var(--c)}
+.tip .tn{font:700 14.5px/1.2 var(--cond)}
+.tip .ta{color:var(--mut);font-size:12px;direction:rtl;text-align:left}
+.tip .tg{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.tip dl{display:grid;grid-template-columns:auto 1fr;gap:1px 10px;margin:0;padding:0 11px 8px}
+.tip dt{color:var(--mut)}
+.tip dd{margin:0}
+.tip .te{padding:8px 11px 9px;background:var(--paper);border-top:1px solid var(--line)}
+.tip .te b{display:block;font:600 13px var(--cond)}
+.tip .te span{color:var(--ink2)}
+.tip .tf{padding:6px 11px 8px;color:#8A3B00;background:#FFF1E6;font-size:12px}
+.tip .tx{padding:5px 11px 7px;color:var(--mut);font-size:11.5px;border-top:1px solid var(--line)}
+
+/* map labels (HTML markers: no font server needed) */
+.place{font:600 12px var(--cond);color:#7A8597;opacity:.85;text-shadow:0 0 3px var(--land),0 0 3px var(--land),0 0 3px var(--land);white-space:nowrap;pointer-events:none}
+.place.sea{font-style:italic;color:#7F9DB5;text-shadow:0 0 3px var(--sea)}
+.zcard{background:var(--sheet);border:1px solid var(--mist);border-radius:6px;padding:5px 8px 6px;font-size:11.5px;line-height:1.3;box-shadow:0 2px 10px rgba(21,35,59,.12);cursor:pointer;white-space:nowrap;transition:opacity .25s;min-width:150px}
+.zcard b{display:block;font:700 13.5px var(--cond);color:var(--ink)}
+.zcard .zl{color:var(--mut)}
+.zcard .zn{display:flex;gap:9px;margin-top:3px;color:var(--ink2)}
+.zcard .zn i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:3px}
+.zcard:hover,.zcard:focus-visible{border-color:var(--ink)}
+.mlbl{background:rgba(255,255,255,.94);border:1px solid var(--pair);color:var(--ink);border-radius:9px;padding:0 6px;font:600 11px/16px var(--cond);white-space:nowrap;pointer-events:none}
+.mlbl.long{border-color:var(--t3);color:#8F1F17}
+.isl{background:var(--sheet);color:var(--ink);border:1px solid var(--mist);font:600 11.5px var(--cond);padding:2px 7px;border-radius:4px;white-space:nowrap;pointer-events:none}
+.maplibregl-ctrl-group button{width:34px;height:34px}
+.maplibregl-ctrl-group button.homebtn{font:700 11px var(--cond);color:var(--ink)}
+.maplibregl-ctrl-attrib{font-size:10.5px}
+.glogo{margin:0 0 8px 10px!important;line-height:0}.glogo img{display:block;width:105px;height:22px}
+.gattr{background:rgba(255,255,255,.8);font-size:10.5px;color:#3C4043;padding:1px 6px;margin:0!important;border-radius:3px 0 0 0;pointer-events:auto;max-width:60vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:980px){.draftbar{left:10px;right:10px;top:60px;max-width:none}.top{grid-template-columns:1fr}.brand img{height:38px}}
+@media (max-width:820px){
+  body{overflow:auto;height:auto}
+  .main{flex-direction:column}
+  .mapwrap{order:1;height:66vh;flex:none}
+  .side{order:2;width:auto;border-right:0;border-top:1px solid var(--mist)}
+  .side-grip,.side-hide,.side-show{display:none!important}.main.collapsed .side{display:flex}
+  .pane{overflow:visible}
+  .tip{display:none}
+  .legend{max-width:200px;font-size:11px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head><body>
+<header class="top">
+  <div class="brand"><img src="__LOGO_AD__" alt="Alpha Data" width="39" height="48"><i></i><img src="__LOGO_MOE__" alt="UAE Ministry of Education" width="148" height="48"></div>
+  <div>
+    <h1>MOE Site Engineer Allocation Maps</h1>
+    <div class="sub" id="sub"></div>
+  </div>
+  <div class="hc" id="hc" aria-label="Where the engineers go">
+    <div class="hc-head"><b id="hc-title">Where the engineers go</b><span>Click a colour to show only those engineers</span></div>
+    <div class="bar" id="bar"></div>
+    <div class="hc-keys" id="keys"></div>
+  </div>
+</header>
+<div class="main">
+  <aside class="side" id="side">
+    <div class="side-grip" id="side-grip" role="separator" aria-orientation="vertical" aria-label="Drag to resize the panel; double-click to reset" title="Drag to resize; double-click to reset"></div>
+    <button type="button" class="side-hide" id="side-hide" aria-label="Hide the panel" title="Hide the panel"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M7.5 2.5 4 6l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="tabs" role="tablist">
+      <button role="tab" aria-selected="true" data-p="overview">Overview</button>
+      <button role="tab" aria-selected="false" data-p="ai">Ask AI</button>
+      <button role="tab" aria-selected="false" data-p="zones">Zones</button>
+      <button role="tab" aria-selected="false" data-p="engineers">Engineers</button>
+      <button role="tab" aria-selected="false" data-p="method">Method</button>
+    </div>
+    <div class="ctrl">
+      <label for="zone">Zone</label>
+      <select id="zone"><option value="">All 10 zones</option></select>
+      <label>Colour by</label>
+      <div class="seg" id="mode"><button aria-pressed="true" data-m="cov">Engineer type</button><button aria-pressed="false" data-m="gender">Boys / girls</button><button aria-pressed="false" data-m="drive">Drive time</button></div>
+    </div>
+    <div class="pane" id="p-overview"></div>
+    <div class="pane" id="p-zones" hidden></div>
+    <div class="pane" id="p-engineers" hidden>
+      <div class="filters">
+        <input type="search" id="q" placeholder="Filter this list: school, School no., engineer ID or Team Lead" aria-label="Filter the engineer list">
+        <div class="chips" id="chips"></div>
+      </div>
+      <p class="count" id="count"></p>
+      <ul class="list" id="list"></ul>
+    </div>
+    <div class="pane" id="p-method" hidden></div>
+    <div class="pane ai" id="p-ai" hidden>
+      <div id="draftbox"></div>
+      <div class="ai-top"><div class="ai-ctx" id="ai-ctx"></div><button type="button" class="ai-new" id="ai-new" hidden>New chat</button></div>
+      <div class="ai-log" id="ai-log" aria-live="polite"></div>
+      <div class="ai-sugg" id="ai-sugg"></div>
+      <div class="ai-files" id="ai-files" hidden></div>
+      <form class="ai-form" id="ai-form"><button type="button" class="ai-clip" id="ai-clip" aria-label="Attach files" title="Attach images, PDFs, Excel, CSV or text files"><svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 11.5 12.4 19.6a5.5 5.5 0 0 1-7.8-7.8l8.5-8.5a3.7 3.7 0 0 1 5.2 5.2l-8.5 8.5a1.8 1.8 0 0 1-2.6-2.6l7.8-7.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button><input type="file" id="ai-file" multiple hidden accept="image/png,image/jpeg,image/webp,image/gif,application/pdf,.pdf,.csv,.tsv,.txt,.md,.json,.xlsx,.xls,.xlsm,.ods"><textarea id="ai-q" rows="1" placeholder="Ask about the plan, or ask for a change" aria-label="Ask the assistant"></textarea><button type="submit" id="ai-send">Ask</button></form>
+    </div>
+  </aside>
+  <div class="mapwrap">
+    <div id="map" role="application" aria-label="Map of schools and engineers"></div>
+    <button type="button" class="side-show" id="side-show" hidden aria-label="Show the panel"><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 2.5 8 6 4.5 9.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Panel</button>
+    <div class="detail" id="detail" hidden></div>
+    <div class="draftbar" id="draftbar" hidden></div>
+    <div class="selbar" id="selbar" hidden></div>
+    <div class="livebar" id="livebar" hidden aria-live="polite"></div>
+    <div class="isobar" id="isobar" hidden aria-live="polite"></div>
+    <div class="cmpbar" id="cmpbar" hidden></div>
+    <div class="tip" id="tip" hidden></div>
+    <div class="msearch" id="msearch">
+      <div class="box"><svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+        <input id="mq" type="search" role="combobox" aria-expanded="false" aria-controls="mres" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Search a school, School no., engineer or Team Lead" aria-label="Search schools, offices, engineers, zones and Team Leads"><kbd title="Press / to search">/</kbd></div>
+      <ul class="mres" id="mres" role="listbox" aria-label="Search results" hidden></ul>
+    </div>
+    <div class="legend"><div class="lt"><b>Map key</b><button id="lgt" aria-expanded="true">Hide</button></div><div id="legend"></div></div>
+  </div>
+</div>
+<dialog class="req" id="reqdlg" aria-labelledby="reqh"></dialog>
+<script>window.PLAN = /*__PLAN__*/null; window.BASE = /*__BASE__*/null;</script>
+<script>/*__MAPLIBRE_JS__*/</script>
+<script>/*__ENGINE__*/</script>
+<script>
+(() => {
+let P = window.PLAN; const B = window.BASE, $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const V = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const fmt = n => Math.round(n).toLocaleString('en-US');
+let S, E, Z, ST, schools, offices;
+// the plan on screen: the live plan, a simulated one (pending changes) or a proposal being reviewed
+function setPlan(p) { P = p; S = new Map(p.sites.map(s => [s.id, s])); E = new Map(p.engineers.map(e => [e.id, e])); Z = new Map(p.zones.map(z => [z.id, z])); ST = p.stats; schools = p.sites.filter(s => s.type === 'school'); offices = p.sites.filter(s => s.type === 'office'); }
+setPlan(P);
+let ISO = null, AI_MODELS = null, LIVEPLAN = window.PLAN, LIVEMETA = { version: 0 }, LIVEENG = new Map(LIVEPLAN.sites.map(s => [s.id, s.eng])), ONLINE = false, ONLINE_PROP = false, VIEWING = null;
+// drive-time wording: Google Maps typical times once fetched, else the road model
+const TS = ST.times || {}, GOO = TS.source && TS.source !== 'model';
+const PK = GOO ? 'at 7:30 am' : 'at peak', OFW = GOO ? 'at 10:30 am' : 'off-peak';
+const FETCHED = GOO && TS.meta?.peak?.fetched ? new Date(TS.meta.peak.fetched + 'T12:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '';
+
+// ---------- vocabulary: one name per idea, used everywhere ----------
+const KIND = {
+  national:      { name: 'Emirati national', plural: 'Emirati nationals', col: '--nat', what: 'Remote school, own engineer on site', short: 'Dedicated, on site' },
+  city_shared:   { name: 'City shared engineer', plural: 'city shared engineers', col: '--pair', what: 'Medium, Large and X-Large city schools, two per engineer', short: 'Shares two nearby city schools' },
+  pool:          { name: 'City pool engineer', plural: 'city pool engineers', col: '--pool', what: 'Small and X-Small city schools plus offices, by ticket', short: 'Covers a patch of small sites' },
+  remote_shared: { name: 'Remote shared engineer', plural: 'remote shared engineer', col: '--rem', what: 'The two smallest remote schools', short: 'Shares the two smallest remote schools' },
+};
+const KORDER = ['national', 'remote_shared', 'city_shared', 'pool'];
+const C = k => V(KIND[k].col);
+const gWord = g => ({ B: "Boys'", G: "Girls'", M: 'Mixed' }[g] || '');
+const gTag = g => g ? `<span class="tag ${g}">${{ B: 'Boys', G: 'Girls', M: 'Mixed' }[g]}</span>` : '<span class="tag O">Office</span>';
+const engOf = s => E.get(s.eng);
+const kmS = km => km == null || km === '' ? '' : `${+km === 0 ? 0 : +km < 10 ? (+km).toFixed(1) : Math.round(+km)} km`;   // road distance shown next to every drive time
+const legOf = (e, id) => e.legs.find(l => l.to === id);
+const zoneName = id => Z.get(id)?.label || id;
+const cnt = k => P.engineers.filter(e => e.kind === k).length;
+const notLive = () => P !== LIVEPLAN;                                     // a simulated change, a version, a proposal or Claude's attempt
+const dMark = d => d ? `<em class="dm">${d > 0 ? '+' : '−'}${Math.abs(d)}</em>` : '';
+const liveCnt = k => LIVEPLAN.engineers.filter(e => e.kind === k).length;
+const notLiveNote = () => notLive() ? `<p class="notlive">Showing ${VIEWING?.version ? 'a saved version' : VIEWING ? 'a proposal' : PREVIEW ? 'the change being tried' : CMP?.side === 'before' ? 'the live plan' : 'the plan with your simulated changes'}, not the live plan. Numbers that differ from the live plan are marked.</p>` : '';
+const bandOf = m => m == null ? 'boat' : m <= 15 ? 't1' : m <= P.sla ? 't2' : 't3';
+
+// ---------- header: the headcount, as one bar ----------
+let shown = new Set(KORDER);
+const verNote = () => LIVEMETA.version ? ` Live plan version ${LIVEMETA.version}, approved ${new Date(LIVEMETA.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} by ${esc(LIVEMETA.by)}.` : '';
+function renderHeader() {
+$('#sub').innerHTML = `${fmt(schools.length)} schools and ${offices.length} offices, every one with a named engineer. Remote schools each get their own Emirati national. City schools share engineers: bigger ones in pairs, small ones and offices in pools that each zone lead dispatches.${verNote()}`;
+const SEG = [...KORDER.map(k => ({ k, n: cnt(k), col: C(k), label: { national: 'Emirati nationals, one per remote school', remote_shared: 'remote shared', city_shared: 'city shared, two schools each', pool: `city pool, about ${Math.round(ST.pool_sites_avg || 5)} sites each` }[k] })), { k: 'hq', n: P.hq, col: '', label: 'at HQ (3 sites, not on this map)' }];
+$('#bar').innerHTML = SEG.map(s => `<button class="${s.k === 'hq' ? 'hq' : ''}" data-k="${s.k}" style="flex:${s.n} 0 0;${s.col ? `background:${s.col}` : ''}" aria-label="${s.n} ${esc(s.label)}" title="${s.n} ${esc(s.label)}"></button>`).join('');
+const liveN = k => k === 'hq' ? LIVEPLAN.hq : LIVEPLAN.engineers.filter(e => e.kind === k).length, dTxt = d => d ? `<em>${d > 0 ? '+' : '−'}${Math.abs(d)}</em>` : '';
+const total = P.engineers.length + P.hq, liveTotal = LIVEPLAN.engineers.length + LIVEPLAN.hq, dt = P === LIVEPLAN ? 0 : total - liveTotal;
+$('#hc-title').innerHTML = `Where the ${total} engineers go${dt ? ` ${dTxt(dt)} <em>vs the live plan</em>` : ''}`; $('#hc').setAttribute('aria-label', `Where the ${total} engineers go`);
+$('#keys').innerHTML = SEG.map(s => `<button class="${s.k === 'hq' ? 'hq' : ''}" data-k="${s.k}"><i style="background:${s.col || V('--hq')}"></i><b>${s.n}</b>${P === LIVEPLAN ? '' : dTxt(s.n - liveN(s.k))}<span>${esc(s.label)}</span></button>`).join('');
+$$('#bar button, #keys button').forEach(b => { b.onclick = () => toggleKind(b.dataset.k); b.classList.toggle('off', b.dataset.k !== 'hq' && !shown.has(b.dataset.k)); });
+}
+renderHeader();
+function toggleKind(k) {
+  if (k === 'hq') return;
+  if (shown.size === 1 && shown.has(k)) shown = new Set(KORDER);    // clicking the only visible type shows everything again
+  else shown = new Set([k]);
+  $$('#bar button, #keys button').forEach(b => b.classList.toggle('off', b.dataset.k !== 'hq' && !shown.has(b.dataset.k)));
+  $$('#chips .chip').forEach(c => c.setAttribute('aria-pressed', shown.has(c.dataset.k)));
+  applyFilter();
+}
+
+// ---------- overview ----------
+function renderOverview() {
+const pairs = P.engineers.filter(e => e.kind === 'city_shared' && e.sites.length > 1);
+const pBand = { t1: pairs.filter(e => e.maxPeak <= 15).length, t2: pairs.filter(e => e.maxPeak > 15 && e.maxPeak <= P.sla).length, t3: pairs.filter(e => e.maxPeak > P.sla).length };
+const pools = P.engineers.filter(e => e.kind === 'pool');
+const rem = P.engineers.find(e => e.kind === 'remote_shared');
+const natF = P.engineers.filter(e => e.kind === 'national' && e.gender === 'Female').length;
+const qx = schools.filter(s => s.cr === 'City' && ['Medium', 'Large', 'X-Large'].includes(s.size) && ['X-Small', 'Small'].includes(s.qsize));
+const mixed = ST.mixed_pairs.map(id => E.get(id));
+const three = P.engineers.filter(e => e.kind === 'city_shared' && e.sites.length === 3), single = P.engineers.filter(e => e.kind === 'city_shared' && e.sites.length === 1);
+const keySvg = {
+  nat: `<svg width="34" height="18" viewBox="0 0 34 18"><circle cx="17" cy="9" r="6" fill="${C('national')}" stroke="#fff" stroke-width="1.5"/></svg>`,
+  pair: `<svg width="34" height="18" viewBox="0 0 34 18"><line x1="7" y1="9" x2="27" y2="9" stroke="${C('city_shared')}" stroke-width="2.5"/><circle cx="7" cy="9" r="5" fill="${C('city_shared')}" stroke="#fff" stroke-width="1.5"/><circle cx="27" cy="9" r="5" fill="${C('city_shared')}" stroke="#fff" stroke-width="1.5"/></svg>`,
+  pool: `<svg width="34" height="18" viewBox="0 0 34 18"><rect x="1.5" y="1.5" width="31" height="15" rx="7.5" fill="${C('pool')}" fill-opacity=".14" stroke="${V('--poolk')}" stroke-dasharray="3 2"/><circle cx="10" cy="9" r="3.5" fill="${C('pool')}" stroke="${V('--poolk')}"/><circle cx="23" cy="9" r="4" fill="${C('pool')}" stroke="${V('--poolk')}"/><circle cx="23" cy="9" r="1.5" fill="#fff"/></svg>`,
+  rem: `<svg width="34" height="18" viewBox="0 0 34 18"><line x1="7" y1="9" x2="27" y2="9" stroke="${C('remote_shared')}" stroke-width="2.5"/><circle cx="7" cy="9" r="5" fill="${C('remote_shared')}" stroke="#fff" stroke-width="1.5"/><circle cx="27" cy="9" r="5" fill="${C('remote_shared')}" stroke="#fff" stroke-width="1.5"/></svg>`,
+  size: `<svg width="34" height="18" viewBox="0 0 34 18"><circle cx="6" cy="9" r="3" fill="#8D97A6"/><circle cx="15" cy="9" r="4.5" fill="#8D97A6"/><circle cx="27" cy="9" r="6.5" fill="#8D97A6"/></svg>`,
+};
+const distBar = (b, n) => `<div class="dist"><div class="db" role="img" aria-label="Drive between paired schools ${PK}: ${b.t1} within 15 minutes, ${b.t2} within 16 to 30, ${b.t3} over 30">
+  ${[['t1', '15 min or less'], ['t2', '16–30 min'], ['t3', 'over 30 min']].map(([k, l]) => b[k] ? `<div style="flex:${b[k]} 0 0;background:var(--${k})" title="${b[k]} of ${n} pairs: ${l}"></div>` : '').join('')}</div>
+  <div class="dl">${[['t1', '15 min or less'], ['t2', '16–30 min'], ['t3', 'over 30 min']].map(([k, l]) => `<span><i style="background:var(--${k})"></i>${b[k]} pairs: ${l}</span>`).join('')}</div></div>`;
+$('#p-overview').innerHTML = `${notLiveNote()}
+  <p class="lede">Every school and office on the map is coloured by the engineer who looks after it. Hover over anything for the details; click to see the engineer's full list.</p>
+  <div class="key">
+    <div>${keySvg.nat}<span>Remote school with its own Emirati national</span></div>
+    <div>${keySvg.pair}<span>Two city schools sharing one engineer; zoom in to see the drive time on the line</span></div>
+    <div>${keySvg.pool}<span>A pool engineer's home patch: small schools (dots) and offices (dots with a white centre)</span></div>
+    <div>${keySvg.size}<span>Bigger dot, more users (students and staff)</span></div>
+  </div>
+
+  <h2>The four ways a site is covered</h2>
+  <div class="blk" style="--c:${C('national')}">
+    <div class="blk-h"><b>${cnt('national')}</b>${notLive() ? dMark(cnt('national') - liveCnt('national')) : ''}<span>Emirati nationals</span></div>
+    <p>The ${cnt('national')} largest remote schools each get one Emirati national, working on site. Nationals are never shared with another school; MOE has confirmed this.</p>
+    <ul class="facts"><li><b>${cnt('national')}</b> of the ${schools.filter(s => s.cr === 'Remote').length} remote schools, ranked by users</li><li><b>${natF}</b> female nationals for girls' schools; ${P.engineers.filter(e => e.kind === 'national' && e.gender === 'Male or female').length} mixed schools can take either</li><li>No travel: the engineer is already there</li></ul>
+  </div>
+  <div class="blk" style="--c:${C('city_shared')}">
+    <div class="blk-h"><b>${cnt('city_shared')}</b>${notLive() ? dMark(cnt('city_shared') - liveCnt('city_shared')) : ''}<span>City shared engineers</span></div>
+    <p>The ${schools.filter(s => s.cr === 'City' && ['Medium', 'Large', 'X-Large'].includes(s.size)).length} Medium, Large and X-Large city schools are paired with the nearest school of the same gender in the same zone. One non-national engineer covers both, based at the larger one.</p>
+    <ul class="facts"><li>Half the pairs are <b>${ST.pair_median} minutes</b> apart or less ${GOO ? 'in 7:30 am school-run traffic (Google Maps)' : 'at school-run peak'}, and <b>${(ST.pair_km_median).toFixed(1)} km</b> apart or less</li>
+      <li><b>${qx.length}</b> of these schools are "qualified X-Small" in the workbook: Alef runs their student devices, so MOE supports staff only</li>
+      <li>${three.length} engineers cover 3 schools and ${single.length} covers 1, because some zones have odd numbers of schools</li></ul>
+    ${distBar(pBand, pairs.length)}
+  </div>
+  <div class="blk" style="--c:${C('pool')}">
+    <div class="blk-h"><b>${cnt('pool')}</b>${notLive() ? dMark(cnt('pool') - liveCnt('pool')) : ''}<span>City pool engineers</span></div>
+    <p>The ${schools.filter(s => s.cr === 'City' && ['Small', 'X-Small'].includes(s.size)).length} Small and X-Small city schools and the ${offices.length} offices have few tickets. Each zone gets pool engineers in proportion to its workload, and the zone lead dispatches them by ticket. The map shows each one's suggested home patch.</p>
+    <ul class="facts"><li><b>${ST.pool_sites_avg.toFixed(1)}</b> sites per pool engineer on average (most ${Math.min(...pools.map(e => e.sites.length))}–${ST.pool_sites_max})</li>
+      <li>Half the sites are <b>${ST.pool_median_reach} minutes</b> or less from the patch base ${PK}</li>
+      <li>Every girls' school has a female engineer: ${pools.filter(e => e.gender === 'Female').length} female pool engineers${ST.girls_small_with_city_engineer ? `, and ${ST.girls_small_with_city_engineer} small girls' school${ST.girls_small_with_city_engineer === 1 ? ' rides' : 's ride'} with a nearby female city engineer` : ''}</li></ul>
+  </div>
+  <div class="blk" style="--c:${C('remote_shared')}">
+    <div class="blk-h"><b>${cnt('remote_shared')}</b>${notLive() ? dMark(cnt('remote_shared') - liveCnt('remote_shared')) : ''}<span>Remote shared engineer${cnt('remote_shared') === 1 ? '' : 's'}</span></div>
+    <p>${rem ? `The ${rem.sites.length === 2 ? 'two' : rem.sites.length} smallest remote schools share one non-national: ${rem.sites.map(id => esc(S.get(id).name)).join(' and ')}.` : 'No remote shared engineer in this plan.'}</p>
+  </div>
+
+  <h2>Still to confirm</h2>
+  <ol class="confirm">
+    <li><b>Abu Moosa School:</b> the workbook gives "Not in Service" for its location. It is shown on Abu Musa island; if it is in service, it needs boat visits.</li>
+    ${mixed.length ? `<li><b>${mixed.length} boys + girls pairs</b> (${mixed.map(e => `${zoneName(e.zone)}`).join(', ')}): those zones have an odd number of both boys' and girls' city schools, so one pair must mix. Each gets a female engineer.</li>` : ''}
+    <li><b>${ST.ns_placeholders} offices are placeholders</b> and none of the ${offices.length} has a map location; they are placed by area. ${ST.ns_users_assumed} have no user count, so the workbook's 75 users is assumed. The on-ground count is 38 offices, not ${offices.length}.</li>
+    ${P.zones.filter(z => !schools.some(x => x.zone === z.id && x.cr === 'City')).map(z => { const pe = P.engineers.filter(e => e.zone === z.id && e.kind === 'pool'), no = offices.filter(x => x.zone === z.id).length; return pe.length ? `<li><b>${esc(z.label)}</b> has no city schools, so its ${pe.length === 1 ? 'single pool engineer covers' : `${pe.length} pool engineers cover`} only its ${no} office${no === 1 ? '' : 's'}.</li>` : ''; }).join('')}
+    <li><b>${pBand.t3} city pair${pBand.t3 === 1 ? ' is' : 's are'} more than ${P.sla} minutes apart ${PK}</b>${pBand.t3 ? `, in ${[...new Set(pairs.filter(e => e.maxPeak > P.sla).map(e => zoneName(e.zone)))].join(', ')}, where same-gender schools inside one zone are far apart` : ''}. ${GOO ? 'At 10:30 am' : 'Off-peak'} they are shorter; hover a pair for both.</li>
+  </ol>`;
+}
+renderOverview();
+
+// ---------- zones ----------
+function renderZones() {
+const zr = P.zones.map(z => ({ z, n: KORDER.map(k => z.byKind[k] || 0) }));
+const liveZ = new Map(LIVEPLAN.zones.map(z => [z.id, z])), zd = z => notLive() ? dMark(z.eng - (liveZ.get(z.id)?.eng ?? z.eng)) : '';
+$('#p-zones').innerHTML = `${notLiveNote()}<p>Each zone has a Team Lead who runs its engineers. Click a zone to zoom to it.</p>
+  <table><thead><tr><th>Zone and Team Lead</th><th>Schools</th><th>Offices</th><th>Engineers</th></tr></thead><tbody>
+  ${zr.map(({ z, n }) => `<tr class="zr" data-z="${z.id}" tabindex="0"><td><b>${esc(z.label)}</b><br><small>${esc(z.lead)}</small>
+    <div class="mini" title="${KORDER.map((k, i) => `${n[i]} ${KIND[k].plural}`).filter(t => !t.startsWith('0 ')).join(', ')}">${KORDER.map((k, i) => n[i] ? `<div style="flex:${n[i]} 0 0;background:${C(k)}"></div>` : '').join('')}</div></td>
+    <td>${z.schools}<br><small>${z.remote} remote</small></td><td>${z.offices}</td><td><b>${z.eng}</b>${zd(z)}<br><small>${KORDER.map((k, i) => n[i] ? `${n[i]} ${{ national: 'nat.', remote_shared: 'rem.', city_shared: 'shared', pool: 'pool' }[k]}` : '').filter(Boolean).join(', ')}</small></td></tr>`).join('')}
+  <tr class="tot"><td>All zones</td><td>${schools.length}</td><td>${offices.length}</td><td>${P.engineers.length}${notLive() ? dMark(P.engineers.length - LIVEPLAN.engineers.length) : ''}</td></tr></tbody></table>
+  <p class="count" style="margin-top:8px">Plus ${P.hq} HQ engineers at the 3 HQ sites, outside the zones.</p>`;
+}
+renderZones();
+
+// ---------- method ----------
+function renderMethod() {
+$('#p-method').innerHTML = `${notLiveNote()}<ul class="rules">
+  <li><b>Plan version</b><span>${LIVEMETA.version ? `Version ${LIVEMETA.version}, approved ${new Date(LIVEMETA.at).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Dubai' })} by ${esc(LIVEMETA.by)}${LIVEMETA.requester ? `, requested by ${esc(LIVEMETA.requester)}` : ''}. Changes are proposed with the assistant and approved by email.` : 'The original plan (version 0). Changes can be proposed with the assistant (Ask AI) and are applied once Sithesvaran Thirumaran or Sanath Swaroop approves them by email.'}</span></li>
+  <li><b>Headcount</b><span>${P.engineers.length + P.hq} engineers${notLive() ? ` ${dMark(P.engineers.length - LIVEPLAN.engineers.length)} vs the live plan` : ''}: ${P.hq} stay at HQ (3 sites, not mapped) and ${P.engineers.length} cover the ${schools.length} schools and ${offices.length} offices. ${cnt('national')} + ${cnt('remote_shared')} + ${cnt('city_shared')} + ${cnt('pool')} = ${P.engineers.length}.</span></li>
+  <li><b>Remote or city</b><span>Each school's "City / Remote" label and size category come from the project lead's workbook, with its zones, Team Leads and GPS (confirmed by the Team Leads). ${ST.closed_removed} closed schools are left out.</span></li>
+  <li><b>Remote schools</b><span>Ranked by supported users. The top ${cnt('national')} get one Emirati national each, on site, female for girls' schools.${(r => r ? ` The ${r.sites.length} smallest share one non-national.` : '')(P.engineers.find(e => e.kind === 'remote_shared'))}</span></li>
+  <li><b>City Medium, Large and X-Large</b><span>Paired inside each zone. Same gender first, then the shortest drive ${GOO ? 'in 7:30 am traffic (Google Maps)' : 'at school-run peak'}; the engineer is based at the larger school. Where a zone's numbers are odd, one engineer covers 3 schools in one zone and 1 school in another, so the total stays at ${cnt('city_shared')}. Where both boys' and girls' counts are odd, one pair mixes and gets a female engineer.</span></li>
+  <li><b>City Small, X-Small and offices</b><span>${cnt('pool')} pool engineers, split across zones by workload (half users, half number of sites), at least one per zone. Inside a zone, girls' schools go to female engineers; the rest are split into compact patches of similar workload. Offices accept any engineer. If a zone has too few small girls' schools to keep a female pool engineer busy, they ride with the nearest female city engineer instead.</span></li>
+  ${GOO ? `<li><b>Drive times</b><span>From Google Maps: its typical traffic for a school-day Tuesday, leaving at 7:30 am (the school run) and at 10:30 am, looked up ${FETCHED}${TS.source === 'mixed' ? `; ${TS.google} of ${TS.legs} trips, the rest estimated from the road model scaled to Google's times` : ` for all ${TS.legs} trips engineers make`}. Pairs and patches were chosen on these times. Drive time only: allow a few minutes to park. Click an engineer to add live traffic: Google's usual time for this hour and the time right now. Live traffic needs the online version (or the project's local server); the map file opened on its own shows the typical times only.</span></li>` : ''}
+  <li${GOO ? ' hidden' : ''}><b>Drive times</b><span>Door to door at the school-run peak (06:45–08:30 and 13:15–15:00): straight-line distance × a detour factor, at 30, 55 and 120 km/h for urban, suburban and highway roads, slowed by local traffic (×1.45 Dubai, Sharjah, Ajman; ×1.25 Abu Dhabi, Al Ain; ×1.1 elsewhere), +10% on rural roads, +8 minutes to leave and park. Off-peak times are shown alongside.</span></li>
+  <li><b>Users</b><span>Supported users = students + all staff, from the workbook. Offices use the workbook's user counts, or 75 where none is given.</span></li>
+</ul>
+<p class="src">Sources: MOE EUC Zone Engineer Allocation, Option Remote workbook (Schools List_Updated, Non-School Sites, Zone Lead &amp; Pools Hub, national-breakup); call with the project lead, 3 Nov 2026; Al Manhal register (rural flags and Arabic names only)${GOO ? `; Google Maps Routes API, ${FETCHED}` : ''}. Engineer-by-engineer list: MOE-FE-Mapping-Option-Remote-323.xlsx.</p>`;
+}
+renderMethod();
+
+// ---------- engineer list ----------
+$('#chips').innerHTML = KORDER.map(k => `<button class="chip" data-k="${k}" aria-pressed="true"><i style="background:${C(k)}"></i>${KIND[k].name}</button>`).join('');
+$$('#chips .chip').forEach(c => c.onclick = () => toggleKind(c.dataset.k));
+for (const z of P.zones) $('#zone').insertAdjacentHTML('beforeend', `<option value="${z.id}">${esc(z.label)} (${esc(z.lead)})</option>`);
+const engLine = e => {
+  const sc = e.sites.filter(id => S.get(id).type === 'school').length, of = e.sites.length - sc;
+  const what = e.kind === 'national' ? 'on site' : [sc ? `${sc} school${sc > 1 ? 's' : ''}` : '', of ? `${of} office${of > 1 ? 's' : ''}` : ''].filter(Boolean).join(' and ');
+  return `${what}, ${e.gender.toLowerCase()} engineer`;
+};
+function list() {
+  const f = curFilter(), q = $('#q').value.trim().toLowerCase();
+  const es = P.engineers.filter(e => visibleE(e, f) && (!q || e.id.toLowerCase().includes(q) || Z.get(e.zone).lead.toLowerCase().includes(q) || e.sites.some(id => { const s = S.get(id); return s.name.toLowerCase().includes(q) || String(s.no).toLowerCase() === q; })));
+  $('#count').innerHTML = `${notLiveNote()}${es.length} engineer${es.length === 1 ? '' : 's'}, ${es.reduce((a, e) => a + e.sites.length, 0)} sites`;
+  $('#list').innerHTML = es.slice(0, 400).map(e => `<li data-id="${e.id}" class="${e.id === sel ? 'sel' : ''}" tabindex="0"><i style="background:${C(e.kind)}"></i><span class="nm">${esc(S.get(e.base).name)}${notLive() && CHGE.has(e.id) ? `<em class="chgtag">${LIVEPLAN.engineers.some(x => x.id === e.id) ? 'changed' : 'new'}</em>` : ''}</span><span class="rt">${e.legs.length && e.maxPeak ? `${e.maxPeak} min${(k => k ? `, ${kmS(k)}` : '')(e.legs.find(l => l.peak === e.maxPeak)?.km)}` : ''}</span>
+    <span class="meta">${e.id}: ${KIND[e.kind].name}, ${engLine(e)}</span></li>`).join('');
+}
+$('#q').addEventListener('input', list);
+$('#list').addEventListener('click', ev => { const li = ev.target.closest('li'); if (li) select(li.dataset.id, true); });
+$('#list').addEventListener('keydown', ev => { const li = ev.target.closest('li'); if (li && ev.key === 'Enter') select(li.dataset.id, true); });
+
+// ---------- geometry ----------
+const ll = a => { const o = []; for (let i = 0; i < a.length; i += 2) o.push([a[i + 1], a[i]]); return o; };
+function hull(pts) {
+  const p = pts.slice().sort((a, b) => a[0] - b[0] || a[1] - b[1]); if (p.length < 3) return p;
+  const cr = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]); const lo = [], up = [];
+  for (const q of p) { while (lo.length >= 2 && cr(lo[lo.length - 2], lo[lo.length - 1], q) <= 0) lo.pop(); lo.push(q); }
+  for (const q of p.slice().reverse()) { while (up.length >= 2 && cr(up[up.length - 2], up[up.length - 1], q) <= 0) up.pop(); up.push(q); }
+  return lo.slice(0, -1).concat(up.slice(0, -1));
+}
+function shape(ids, r = 650) {   // buffered convex hull around a pool patch
+  const all = ids.map(id => S.get(id)).filter(s => !s.boat), sch = all.filter(s => s.type === 'school'), pts = sch.length ? sch : all, lat0 = pts.reduce((a, s) => a + s.lat, 0) / pts.length;
+  const kx = 111320 * Math.cos(lat0 * Math.PI / 180), ky = 110540, ring = [];
+  for (const s of pts) for (let i = 0; i < 24; i++) { const a = i / 24 * 2 * Math.PI; ring.push([s.lng * kx + Math.cos(a) * r, s.lat * ky + Math.sin(a) * r]); }
+  const h = hull(ring).map(([x, y]) => [x / kx, y / ky]); h.push(h[0]); return h;
+}
+const fc = f => ({ type: 'FeatureCollection', features: f });
+let siteF = [], linkF = [], hullF = [], spokeF = [], CHG = new Set(), CHGE = new Set();
+function buildFeatures() {
+siteF = []; linkF = []; hullF = []; spokeF = [];
+for (const e of P.engineers) {
+  const b = S.get(e.base);
+  if (e.kind === 'pool') hullF.push({ type: 'Feature', properties: { e: e.id, k: e.kind, z: e.zone, chg: CHGE.has(e.id) ? 1 : 0 }, geometry: { type: 'Polygon', coordinates: [shape(e.sites)] } });
+  for (const l of e.legs) {
+    const t = S.get(l.to); if (t.boat) continue;
+    const f = { type: 'Feature', properties: { e: e.id, t: l.to, k: e.kind, z: e.zone, m: l.peak ?? 0, band: bandOf(l.peak), chg: CHGE.has(e.id) ? 1 : 0 }, geometry: { type: 'LineString', coordinates: [[b.lng, b.lat], [t.lng, t.lat]] } };
+    (e.kind === 'pool' ? spokeF : linkF).push(f);
+  }
+  for (const id of e.sites) {
+    const s = S.get(id), leg = legOf(e, id);
+    siteF.push({ type: 'Feature', properties: { id, e: e.id, k: e.kind, z: s.zone, g: s.g || 'O', u: s.users, off: s.type === 'office' ? 1 : 0, base: id === e.base && e.sites.length > 1 ? 1 : 0,
+      band: e.kind === 'national' ? 'site' : leg ? bandOf(leg.peak) : 'base', approx: s.approx ? 1 : 0, chg: CHG.has(id) ? 1 : 0 }, geometry: { type: 'Point', coordinates: [s.lng, s.lat] } });
+  }
+}
+}
+buildFeatures();
+
+// ---------- map ----------
+const UAE = [[51.7, 22.85], [57.6, 26.45]];
+const map = new maplibregl.Map({
+  container: 'map', bounds: UAE, fitBoundsOptions: { padding: 16 }, minZoom: 6, maxZoom: 16, maxBounds: [[50.8, 21.9], [58.6, 27.3]],
+  dragRotate: false, pitchWithRotate: false, attributionControl: false,
+  style: { version: 8, sources: {}, layers: [{ id: 'bg', type: 'background', paint: { 'background-color': V('--land') } }] }
+});
+map.touchZoomRotate.disableRotation(); map.keyboard.disableRotation(); map.boxZoom.disable();
+map.scrollZoom.setWheelZoomRate(1 / 300); map.scrollZoom.setZoomRate(1 / 80);
+map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+const scaleCtl = new maplibregl.ScaleControl({ unit: 'metric' }), attrCtl = new maplibregl.AttributionControl({ compact: true, customAttribution: B.attribution });
+map.addControl(scaleCtl, 'bottom-left');
+map.addControl(attrCtl, 'bottom-right');
+class HomeCtl { onAdd() { const d = document.createElement('div'); d.className = 'maplibregl-ctrl maplibregl-ctrl-group'; d.innerHTML = '<button type="button" class="homebtn" title="Show the whole UAE" aria-label="Show the whole UAE">UAE</button>'; d.onclick = () => { clearSel(); $('#zone').value = ''; applyFilter(); map.fitBounds(UAE, { padding: 16, duration: 900 }); }; return d; } onRemove() {} }
+map.addControl(new HomeCtl(), 'top-right');
+
+const COL = { chg: V('--chg'), nat: C('national'), pair: C('city_shared'), pool: C('pool'), poolk: V('--poolk'), rem: C('remote_shared'), boy: V('--boy'), girl: V('--girl'), mix: V('--mix'), off: '#8D97A6', t1: V('--t1'), t2: V('--t2'), t3: V('--t3'), ink: V('--ink'), hi: V('--hi') };
+const kindCol = ['match', ['get', 'k'], 'national', COL.nat, 'city_shared', COL.pair, 'pool', COL.pool, 'remote_shared', COL.rem, COL.off];
+const genCol = ['match', ['get', 'g'], 'B', COL.boy, 'G', COL.girl, 'M', COL.mix, COL.off];
+const driveCol = ['match', ['get', 'band'], 't1', COL.t1, 't2', COL.t2, 't3', COL.t3, 'base', COL.ink, 'site', '#C9D1DC', '#C9D1DC'];
+const radAt = (add = 0) => ['interpolate', ['linear'], ['zoom'], 6, ['+', 1.6 + add, ['*', 0.055, ['sqrt', ['get', 'u']]]], 10, ['+', 3 + add, ['*', 0.12, ['sqrt', ['get', 'u']]]], 14, ['+', 5 + add, ['*', 0.2, ['sqrt', ['get', 'u']]]]];
+const rad = radAt();
+let mode = 'cov', sel = null, googleOn = false;
+
+// ---------- Google Maps basemap: tiles come through this site's server (the key stays there). The built-in map stays
+// underneath, and is all you see when the file is opened on its own or Google is unreachable. ----------
+class Ctl { constructor(cls, html) { this.cls = cls; this.html = html; } onAdd() { const d = document.createElement('div'); d.className = 'maplibregl-ctrl ' + this.cls; d.innerHTML = this.html; this.el = d; return d; } onRemove() { this.el.remove(); } }
+async function useGoogle() {
+  if (!location.protocol.startsWith('http')) return;
+  try { const r = await fetch('tiles/ok'); if (!r.ok || !(await r.json()).ok) return; } catch { return; }
+  googleOn = true;
+  map.addSource('g', { type: 'raster', tiles: [location.origin + '/tiles/{z}/{x}/{y}'], tileSize: 256, maxzoom: 20 });
+  map.addLayer({ id: 'g', type: 'raster', source: 'g', paint: { 'raster-fade-duration': 150 } }, 'leaders');
+  for (const m of placeMk) m.getElement().style.display = 'none';
+  const logo = new Ctl('glogo', '<img src="__LOGO_GOOGLE__" alt="Google Maps" width="105" height="22">'), attr = new Ctl('gattr', '');
+  map.removeControl(attrCtl); map.removeControl(scaleCtl);
+  map.addControl(logo, 'bottom-left'); map.addControl(scaleCtl, 'bottom-left'); map.addControl(attr, 'bottom-right');
+  let t = 0;
+  const upd = () => { clearTimeout(t); t = setTimeout(async () => { const b = map.getBounds(), f = n => n.toFixed(4);
+    try { const j = await (await fetch(`tiles/attr/${Math.round(map.getZoom())}/${f(b.getNorth())}/${f(b.getSouth())}/${f(b.getEast())}/${f(b.getWest())}`)).json(); attr.el.textContent = j.copyright || 'Map data © Google'; } catch {} }, 250); };
+  upd(); map.on('moveend', upd);
+  requestAnimationFrame(clampCards);
+}
+
+map.on('load', () => {
+  const [b0, b1, b2, b3] = B.box;
+  const rect = (x0, y0, x1, y1) => ({ type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [[[x0, y0], [x1, y0], [x1, y1], [x0, y1], [x0, y0]]] } });
+  map.addSource('sea', { type: 'geojson', data: fc(B.sea.map(p => ({ type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [ll(p)] } })).concat([rect(b1 - 0.6, b2, 58.6, 27.6), rect(b3, 23.95, 58.6, b2 + 0.001)])) });
+  map.addSource('isl', { type: 'geojson', data: fc(B.islands.map(p => ({ type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [ll(p)] } }))) });
+  map.addSource('mway', { type: 'geojson', data: fc(B.motorway.map(l => ({ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: ll(l) } }))) });
+  map.addSource('prim', { type: 'geojson', data: fc(B.primary.map(l => ({ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: ll(l) } }))) });
+  map.addLayer({ id: 'sea', type: 'fill', source: 'sea', paint: { 'fill-color': V('--sea'), 'fill-antialias': false } });
+  map.addLayer({ id: 'isl', type: 'fill', source: 'isl', paint: { 'fill-color': V('--land'), 'fill-outline-color': V('--seal') } });
+  map.addLayer({ id: 'prim', type: 'line', source: 'prim', minzoom: 8, layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#FFFFFF', 'line-width': ['interpolate', ['linear'], ['zoom'], 8, 0.6, 13, 3], 'line-opacity': ['interpolate', ['linear'], ['zoom'], 8, 0, 9, 1] } });
+  map.addLayer({ id: 'mway-case', type: 'line', source: 'mway', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': V('--mway'), 'line-width': ['interpolate', ['linear'], ['zoom'], 6, 1.2, 13, 7] } });
+  map.addLayer({ id: 'mway', type: 'line', source: 'mway', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#FFFFFF', 'line-width': ['interpolate', ['linear'], ['zoom'], 6, 0.5, 13, 4.5] } });
+  useGoogle();
+
+
+  map.addSource('leaders', { type: 'geojson', data: fc(P.zones.map(z => ({ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: [[z.lng, z.lat], CARD[z.id].slice(0, 2)] } }))) });
+  map.addLayer({ id: 'leaders', type: 'line', source: 'leaders', maxzoom: 8.4, paint: { 'line-color': COL.ink, 'line-width': 1, 'line-dasharray': [2, 2], 'line-opacity': 0.45 } });
+  map.addSource('hulls', { type: 'geojson', data: fc(hullF) });
+  map.addSource('links', { type: 'geojson', data: fc(linkF) });
+  map.addSource('spokes', { type: 'geojson', data: fc(spokeF) });
+  map.addSource('sites', { type: 'geojson', data: fc(siteF) });
+  map.addLayer({ id: 'hull-fill', type: 'fill', source: 'hulls', paint: { 'fill-color': COL.pool, 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 7, 0.18, 10, 0.12, 13, 0.08] } });
+  map.addLayer({ id: 'hull-line', type: 'line', source: 'hulls', layout: { 'line-join': 'round' }, paint: { 'line-color': COL.poolk, 'line-width': ['interpolate', ['linear'], ['zoom'], 7, 0.8, 12, 1.6], 'line-dasharray': [3, 2], 'line-opacity': 0.75 } });
+  map.addLayer({ id: 'spokes', type: 'line', source: 'spokes', minzoom: 9, layout: { 'line-cap': 'round' }, paint: { 'line-color': COL.poolk, 'line-width': ['interpolate', ['linear'], ['zoom'], 9, 0.6, 13, 1.4], 'line-opacity': ['interpolate', ['linear'], ['zoom'], 9, 0, 10, 0.55] } });
+  map.addLayer({ id: 'links-hit', type: 'line', source: 'links', paint: { 'line-color': '#000', 'line-opacity': 0, 'line-width': 12 } });
+  map.addLayer({ id: 'links', type: 'line', source: 'links', layout: { 'line-cap': 'round' }, paint: { 'line-color': ['match', ['get', 'k'], 'remote_shared', COL.rem, COL.pair], 'line-width': ['interpolate', ['linear'], ['zoom'], 6, 1.2, 10, 2.4, 14, 3.5] } });
+  map.addLayer({ id: 'chg-line', type: 'line', source: 'links', filter: ['==', ['get', 'chg'], 1], layout: { 'line-cap': 'round' }, paint: { 'line-color': COL.chg, 'line-width': ['interpolate', ['linear'], ['zoom'], 6, 1.6, 12, 3.2], 'line-dasharray': [2, 1.6] } });
+  map.addLayer({ id: 'chg-hull', type: 'line', source: 'hulls', filter: ['==', ['get', 'chg'], 1], paint: { 'line-color': COL.chg, 'line-width': 2, 'line-dasharray': [2, 1.6] } });
+  map.addLayer({ id: 'sel-line', type: 'line', source: 'links', filter: ['==', ['get', 'e'], ''], paint: { 'line-color': COL.hi, 'line-width': 7, 'line-opacity': 0.9 } });
+  map.addLayer({ id: 'sel-hull', type: 'line', source: 'hulls', filter: ['==', ['get', 'e'], ''], paint: { 'line-color': COL.hi, 'line-width': 4 } });
+  map.addLayer({ id: 'chg-halo', type: 'circle', source: 'sites', filter: ['==', ['get', 'chg'], 1], paint: { 'circle-radius': radAt(7), 'circle-color': 'rgba(109,40,217,0.16)', 'circle-stroke-color': COL.chg, 'circle-stroke-width': 2 } });
+  // Claude's attempts, shown while it plans: a grey dashed line back to the old engineer, and a pulsing ring on the site
+  map.addSource('ghost', { type: 'geojson', data: fc([]) });
+  map.addLayer({ id: 'ghost-line', type: 'line', source: 'ghost', layout: { 'line-cap': 'round' }, paint: { 'line-color': '#7A8597', 'line-width': ['interpolate', ['linear'], ['zoom'], 6, 1.4, 12, 2.6], 'line-dasharray': [0.6, 1.8], 'line-opacity': 0.95 } });
+  map.addLayer({ id: 'try-ring', type: 'circle', source: 'sites', filter: ['in', ['get', 'id'], ['literal', []]], paint: { 'circle-radius': radAt(13), 'circle-color': 'rgba(109,40,217,0.08)', 'circle-stroke-color': COL.chg, 'circle-stroke-width': 2.5, 'circle-stroke-opacity': 0.9 } });
+  map.addLayer({ id: 'find', type: 'circle', source: 'sites', filter: ['==', ['get', 'id'], ''], paint: { 'circle-radius': radAt(10), 'circle-color': 'rgba(0,0,0,0)', 'circle-stroke-color': COL.ink, 'circle-stroke-width': 2.5 } });
+  map.addLayer({ id: 'sel-ring', type: 'circle', source: 'sites', filter: ['==', ['get', 'e'], ''], paint: { 'circle-radius': radAt(5), 'circle-color': 'rgba(0,0,0,0)', 'circle-stroke-color': COL.hi, 'circle-stroke-width': 3.5 } });
+  map.addLayer({ id: 'sites', type: 'circle', source: 'sites', filter: ['==', ['get', 'off'], 0], paint: { 'circle-radius': rad, 'circle-color': kindCol, 'circle-stroke-color': ['match', ['get', 'k'], 'pool', COL.poolk, '#FFFFFF'], 'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 6, 0.8, 11, 1.6], 'circle-opacity': ['case', ['==', ['get', 'approx'], 1], 0.7, 1] } });
+  // offices: a ringed dot (white centre) so they read differently from schools without needing a symbol layer
+  map.addLayer({ id: 'offices', type: 'circle', source: 'sites', filter: ['==', ['get', 'off'], 1], paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 3, 10, 5.5, 14, 8], 'circle-color': kindCol, 'circle-stroke-color': COL.poolk, 'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 6, 0.8, 11, 1.4], 'circle-opacity': 0.95 } });
+  map.addLayer({ id: 'office-dot', type: 'circle', source: 'sites', filter: ['==', ['get', 'off'], 1], paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 1, 10, 2, 14, 3], 'circle-color': '#FFFFFF' } });
+
+  labels(); applyMode(); applyFilter(); renderPicks();
+
+  // hover: one card for whatever is under the pointer (site first, then a pair line, then a pool patch)
+  const tip = $('#tip'), wrap = $('.mapwrap');
+  map.on('mousemove', ev => {
+    const hit = map.queryRenderedFeatures(ev.point, { layers: ['sites', 'offices', 'links-hit', 'hull-fill'] });
+    const site = hit.find(f => f.layer.id === 'sites' || f.layer.id === 'offices'), link = hit.find(f => f.layer.id === 'links-hit'), patch = hit.find(f => f.layer.id === 'hull-fill');
+    let html = '';
+    if (site) html = siteCard(S.get(site.properties.id));
+    else if (link) html = engCard(E.get(link.properties.e));
+    else if (patch) html = engCard(E.get(patch.properties.e));
+    map.getCanvas().style.cursor = html ? 'pointer' : '';
+    if (!html) { tip.hidden = true; return; }
+    tip.innerHTML = html; tip.hidden = false;
+    const W = wrap.clientWidth, Hh = wrap.clientHeight, w = tip.offsetWidth, h = tip.offsetHeight;
+    let x = ev.point.x + 16, y = ev.point.y + 16;
+    if (x + w > W - 8) x = ev.point.x - w - 16;
+    if (y + h > Hh - 8) y = Math.max(8, Hh - h - 8);
+    tip.style.left = x + 'px'; tip.style.top = y + 'px';
+  });
+  map.getCanvas().addEventListener('mouseleave', () => { tip.hidden = true; });
+  map.on('click', ev => {
+    const hit = map.queryRenderedFeatures(ev.point, { layers: ['sites', 'offices', 'links-hit', 'hull-fill'] });
+    const f = hit.find(f => f.layer.id === 'sites' || f.layer.id === 'offices') || hit.find(f => f.layer.id === 'links-hit') || hit.find(f => f.layer.id === 'hull-fill');
+    const shift = ev.originalEvent?.shiftKey;
+    if (!f) { if (!shift) { clearSel(); setPicks([]); } return; }
+    const item = f.layer.id === 'sites' || f.layer.id === 'offices' ? { type: 'site', id: f.properties.id } : { type: 'eng', id: f.properties.e };
+    if (shift) { togglePick(item); return; }
+    select(f.properties.e, false, item.type === 'site' ? item.id : undefined); setPicks([item]);
+  });
+  map.on('zoom', zoneCardVis);
+  map.on('moveend', () => { labelVis(); clampCards(); });
+  addEventListener('resize', () => requestAnimationFrame(clampCards));
+});
+
+// ---------- hover cards ----------
+function siteCard(s) {
+  const e = engOf(s), leg = legOf(e, s.id), z = Z.get(s.zone);
+  const sizeLine = s.type === 'office' ? esc(s.stype) : `${esc(s.size)}${s.qsize && s.qsize !== s.size ? `, qualified as ${esc(s.qsize)}` : ''}`;
+  const usersLine = s.type === 'office' ? `${fmt(s.users)}${s.usersAssumed ? ' (assumed)' : ''}` : `${fmt(s.users)} <span style="color:var(--mut)">(${fmt(s.st)} students, ${fmt(s.sf)} staff)</span>`;
+  let eng = '';
+  if (e.kind === 'national') eng = `<b>${e.id}: Emirati national, ${e.gender.toLowerCase()}</b><span>Works at this school full time. Not shared.</span>`;
+  else if (e.kind === 'city_shared' || e.kind === 'remote_shared') {
+    const others = e.sites.filter(id => id !== s.id).map(id => S.get(id));
+    const legTo = o => s.id === e.base ? legOf(e, o.id) : o.id === e.base ? leg : null;
+    eng = `<b>${e.id}: ${KIND[e.kind].name.toLowerCase()}, ${e.gender.toLowerCase()}</b><span>${others.length ? `Also covers ${others.map(o => { const l = legTo(o); return `<b style="display:inline;font:inherit;font-weight:600">${esc(o.name)}</b>${l && l.peak != null ? `: ${l.peak} min ${PK}, ${l.off} min ${OFW}, ${l.km} km` : o.boat || s.boat ? ' (boat)' : ''}`; }).join('; ')}.` : 'Covers only this school.'} ${s.id === e.base && others.length ? 'Based here (the larger school).' : others.length ? `Based at ${esc(S.get(e.base).name)}.` : ''}</span>`;
+  } else {
+    const sc = e.sites.filter(id => S.get(id).type === 'school').length;
+    eng = `<b>${e.id}: city pool engineer, ${e.gender.toLowerCase()}</b><span>Home patch of ${e.sites.length} sites (${sc} school${sc === 1 ? '' : 's'}, ${e.sites.length - sc} office${e.sites.length - sc === 1 ? '' : 's'}). ${s.id === e.base ? 'This is the patch base.' : leg && leg.peak != null ? `${leg.peak} min from the patch base ${PK}, ${leg.off} min ${OFW}, ${kmS(leg.km)} by road.` : ''} Dispatched by ticket by the zone lead.</span>`;
+  }
+  return `<div class="th" style="--c:${C(e.kind)}"><div class="tn">${esc(s.name)}</div>${s.nameAr ? `<div class="ta">${esc(s.nameAr)}</div>` : ''}
+    <div class="tg">${gTag(s.g)}<span class="tag O">${s.type === 'office' ? 'Office' : s.cr}</span>${s.rural ? '<span class="tag O">Rural</span>' : ''}</div></div>
+    <dl><dt>${s.type === 'office' ? 'Site code' : 'School no.'}</dt><dd>${esc(s.no)}</dd><dt>Size</dt><dd>${sizeLine}</dd><dt>Users</dt><dd>${usersLine}</dd>
+    <dt>Zone</dt><dd>${esc(z.label)}</dd><dt>Team Lead</dt><dd>${esc(z.lead)}</dd>${s.cycle ? `<dt>Cycles</dt><dd>${esc(s.cycle.replace(/KGs/g, 'KG').replace(/Cycle(\d)/g, 'Cycle $1').split(' ').join(' ').replace(/(\d) (?=[KC])/g, '$1, ').replace(/KG (?=C)/, 'KG, '))}</dd>` : ''}</dl>
+    <div class="te">${eng}</div>${CHG.has(s.id) ? `<div class="tchg">Pending change (simulated): ${LIVEENG.get(s.id) ? `was covered by ${esc(LIVEENG.get(s.id))}` : 'new'}</div>` : ''}${s.note ? `<div class="tf">${esc(s.note)}</div>` : ''}<div class="tx">Click to see this engineer; shift-click to pick several and ask about them</div>`;
+}
+function engCard(e) {
+  const z = Z.get(e.zone), sc = e.sites.filter(id => S.get(id).type === 'school').length;
+  const rows = e.sites.slice(0, 8).map(id => { const s = S.get(id), l = legOf(e, id); return `<dt>${id === e.base ? 'Base' : l && l.peak != null ? `${l.peak} min, ${kmS(l.km)}` : s.boat ? 'Boat' : ''}</dt><dd>${esc(s.name)}</dd>`; }).join('');
+  return `<div class="th" style="--c:${C(e.kind)}"><div class="tn">${e.id}: ${KIND[e.kind].name}</div>
+    <div class="tg"><span class="tag O">${esc(e.gender)}</span><span class="tag O">${esc(e.nat)}</span><span class="tag O">${esc(z.label)}</span></div></div>
+    <dl>${rows}${e.sites.length > 8 ? `<dt></dt><dd>and ${e.sites.length - 8} more</dd>` : ''}</dl>
+    <div class="te"><span>${sc} school${sc === 1 ? '' : 's'}${e.sites.length > sc ? ` and ${e.sites.length - sc} office${e.sites.length - sc === 1 ? '' : 's'}` : ''}, ${fmt(e.users)} users. Drive times are from the base ${GOO ? 'at 7:30 am (Google Maps)' : 'at school-run peak'}. Team Lead: ${esc(z.lead)}.</span></div>
+    <div class="tx">Click to open this engineer</div>`;
+}
+
+// ---------- labels: places, zone cards, pair drive times ----------
+let zoneMk = [], placeMk = [], minMk = [];
+// zone cards sit over sea or open desert at country zoom, joined to the zone's centre by a dashed leader
+const CARD = { RAK: [55.35, 26.28, 'right'], 'AJM-UAQ': [54.95, 25.88, 'right'], 'DXB-SHJ': [54.6, 25.36, 'right'], 'AUH-B': [53.85, 24.86, 'right'], 'AUH-A': [53.55, 24.3, 'right'],
+  'KFK-DBA': [56.5, 25.78, 'left'], 'FUJ-KLB': [56.4, 24.78, 'left'], 'AAN-A': [56.4, 24.2, 'left'], 'AAN-B': [55.3, 23.35, 'top'], DHF: [52.75, 23.3, 'top'] };
+function labels() {
+  const PLACES = [['Dubai', 25.17, 55.27], ['Sharjah', 25.32, 55.47], ['Ajman', 25.43, 55.52], ['Umm Al Quwain', 25.56, 55.66], ['Ras Al Khaimah', 25.73, 56.0], ['Fujairah', 25.15, 56.28], ['Khor Fakkan', 25.36, 56.32], ['Abu Dhabi', 24.43, 54.45], ['Al Ain', 24.17, 55.73], ['Madinat Zayed', 23.62, 53.73], ['Ruwais', 24.1, 52.73], ['Arabian Gulf', 25.1, 53.5, 'sea'], ['Gulf of Oman', 24.9, 56.95, 'sea']];
+  for (const [n, la, lo, k] of PLACES) { const el = document.createElement('div'); el.className = 'place' + (k ? ' sea' : ''); el.textContent = n; placeMk.push(new maplibregl.Marker({ element: el }).setLngLat([lo, la]).addTo(map)); }
+  planLabels();
+}
+function planLabels() {
+  for (const m of zoneMk) m.mk.remove(); for (const m of minMk) m.mk.remove(); zoneMk = []; minMk = [];
+  for (const z of P.zones) {
+    const el = document.createElement('button'); el.className = 'zcard'; el.type = 'button';
+    el.innerHTML = `<b>${esc(z.label)}</b><span class="zl">Team Lead: ${esc(z.lead)}</span><div class="zn"><span>${z.schools} schools</span><span>${z.eng} engineers</span></div><div class="zn">${KORDER.filter(k => z.byKind[k]).map(k => `<span title="${z.byKind[k]} ${KIND[k].plural}"><i style="background:${C(k)}"></i>${z.byKind[k]} ${{ national: 'national', remote_shared: 'remote', city_shared: 'shared', pool: 'pool' }[k]}</span>`).join('')}</div>`;
+    el.setAttribute('aria-label', `${z.label}, Team Lead ${z.lead}: ${z.schools} schools, ${z.eng} engineers. Zoom to this zone.`);
+    el.onclick = () => { $('#zone').value = z.id; applyFilter(); flyZone(z.id); setPicks([{ type: 'zone', id: z.id }]); };
+    const at = CARD[z.id] || [z.lng, z.lat, 'bottom'];
+    zoneMk.push({ el, mk: new maplibregl.Marker({ element: el, anchor: at[2] }).setLngLat([at[0], at[1]]).addTo(map) });
+  }
+  for (const e of P.engineers) {
+    if (e.kind !== 'city_shared') continue;
+    for (const l of e.legs) {
+      const a = S.get(e.base), b = S.get(l.to), el = document.createElement('div');
+      el.className = 'mlbl' + (l.peak > P.sla ? ' long' : ''); el.textContent = `${l.peak} min${l.km ? `, ${kmS(l.km)}` : ''}`;
+      minMk.push({ e, el, mk: new maplibregl.Marker({ element: el }).setLngLat([(a.lng + b.lng) / 2, (a.lat + b.lat) / 2]).addTo(map) });
+    }
+  }
+  zoneCardVis(); labelVis();
+}
+function zoneCardVis() { const z = map.getZoom(); for (const m of zoneMk) { const on = z < 8.4 && !ISO; m.mk.setOpacity(on ? '1' : '0'); m.el.style.pointerEvents = on ? 'auto' : 'none'; m.el.tabIndex = on ? 0 : -1; } clampCards(); }
+// keep every zone card fully inside the map and clear of the map key, whatever the window size
+function clampCards() {
+  if (map.getZoom() >= 8.4) return;
+  const c = map.getContainer().getBoundingClientRect(), G = 6;
+  // cards stay clear of the map key and the map's own controls (zoom buttons, Google logo, scale, copyright)
+  const placed = ['.msearch', '.draftbar:not([hidden])', '.selbar:not([hidden])', '.livebar:not([hidden])', '.isobar:not([hidden])', '.cmpbar:not([hidden])', '.legend', '.maplibregl-ctrl-top-right', '.maplibregl-ctrl-bottom-left', '.maplibregl-ctrl-bottom-right']
+    .map(q => document.querySelector(q)?.getBoundingClientRect()).filter(r => r && r.width && r.height)
+    .map(r => ({ left: r.left, right: r.right, top: r.top, bottom: r.bottom }));
+  const hit = (r, q) => r.left < q.right + G && r.right > q.left - G && r.top < q.bottom + G && r.bottom > q.top - G;
+  const inside = r => r.left >= c.left + 8 && r.right <= c.right - 8 && r.top >= c.top + 8 && r.bottom <= c.bottom - 8;
+  const mv = (r, dx, dy) => ({ left: r.left + dx, right: r.right + dx, top: r.top + dy, bottom: r.bottom + dy });
+  for (const m of zoneMk) {
+    m.mk.setOffset([0, 0]);
+    const r0 = m.el.getBoundingClientRect();
+    let dx = Math.min(0, c.right - 8 - r0.right) + Math.max(0, c.left + 8 - r0.left), dy = Math.min(0, c.bottom - 8 - r0.bottom) + Math.max(0, c.top + 8 - r0.top);
+    const free = (x, y) => { const r = mv(r0, x, y); return inside(r) && !placed.some(q => hit(r, q)); };
+    if (!free(dx, dy)) {
+      // every escape position: clear of each obstacle on one side, and combinations of an x from one and a y from another
+      const xs = [dx], ys = [dy];
+      for (const q of placed) { xs.push(q.left - G - 1 - r0.right, q.right + G + 1 - r0.left); ys.push(q.top - G - 1 - r0.bottom, q.bottom + G + 1 - r0.top); }
+      let best = null;
+      for (const x of xs) for (const y of ys) if (free(x, y)) { const d = Math.hypot(x - dx, y - dy); if (!best || d < best[0]) best = [d, x, y]; }
+      if (best) [, dx, dy] = best;
+    }
+    placed.push(mv(r0, dx, dy));
+    if (dx || dy) m.mk.setOffset([dx, dy]);
+  }
+}
+let visE = new Set(P.engineers.map(e => e.id));
+function labelVis() {
+  const z = map.getZoom();
+  for (const m of placeMk) m.getElement().style.display = !googleOn && z < 11.5 ? '' : 'none';
+  const W = map.getContainer().clientWidth, Hh = map.getContainer().clientHeight, placed = [];
+  for (const m of minMk) m.el.style.display = 'none';
+  if (z < 10.2) return;
+  const cand = minMk.filter(m => visE.has(m.e.id)).sort((a, b) => (b.e.id === sel) - (a.e.id === sel));
+  for (const m of cand) {
+    const p = map.project(m.mk.getLngLat()), w = m.el.textContent.length * 6.5 + 14, h = 18;
+    const r = { x0: p.x - w / 2, x1: p.x + w / 2, y0: p.y - h / 2, y1: p.y + h / 2 };
+    if (r.x1 < 0 || r.x0 > W || r.y1 < 0 || r.y0 > Hh) continue;
+    if (placed.some(q => r.x0 < q.x1 + 4 && r.x1 > q.x0 - 4 && r.y0 < q.y1 + 3 && r.y1 > q.y0 - 3)) continue;
+    placed.push(r); m.el.style.display = '';
+  }
+}
+
+// ---------- colour modes & filters ----------
+function applyMode() {
+  const fill = mode === 'cov' ? kindCol : mode === 'gender' ? genCol : driveCol;
+  map.setPaintProperty('sites', 'circle-color', fill);
+  map.setPaintProperty('sites', 'circle-stroke-color', mode === 'cov' ? ['match', ['get', 'k'], 'pool', COL.poolk, '#FFFFFF'] : '#FFFFFF');
+  map.setPaintProperty('offices', 'circle-color', mode === 'cov' ? kindCol : mode === 'gender' ? COL.off : driveCol);
+  map.setPaintProperty('offices', 'circle-stroke-color', mode === 'cov' ? COL.poolk : '#5F6B80');
+  map.setPaintProperty('links', 'line-color', mode === 'drive' ? ['match', ['get', 'band'], 't1', COL.t1, 't2', COL.t2, COL.t3] : mode === 'gender' ? '#9AA4B3' : ['match', ['get', 'k'], 'remote_shared', COL.rem, COL.pair]);
+  map.setPaintProperty('spokes', 'line-color', mode === 'drive' ? ['match', ['get', 'band'], 't1', COL.t1, 't2', COL.t2, COL.t3] : COL.poolk);
+  map.setPaintProperty('spokes', 'line-opacity', mode === 'drive' ? ['interpolate', ['linear'], ['zoom'], 7, 0.5, 10, 0.85] : ['interpolate', ['linear'], ['zoom'], 9, 0, 10, 0.55]);
+  map.setLayerZoomRange('spokes', mode === 'drive' ? 6 : 9, 24);
+  map.setPaintProperty('hull-fill', 'fill-opacity', mode === 'cov' ? ['interpolate', ['linear'], ['zoom'], 7, 0.18, 10, 0.12, 13, 0.08] : 0.05);
+  map.setPaintProperty('hull-line', 'line-opacity', mode === 'cov' ? 0.75 : 0.3);
+  legend();
+}
+const curFilter = () => ({ zone: $('#zone').value });
+const visibleE = (e, f) => shown.has(e.kind) && (!f.zone || e.zone === f.zone);
+function applyFilter() {
+  const f = curFilter(); let ids = P.engineers.filter(e => visibleE(e, f)).map(e => e.id);
+  if (ISO) { const keep = new Set([...ISO.engs, ...ISO.sites.map(id => S.get(id)?.eng)]); ids = ids.filter(id => keep.has(id)); }
+  visE = new Set(ids);
+  if (map.getLayer('sites')) {
+    const lit = ['in', ['get', 'e'], ['literal', ids]];
+    const site = ISO ? ['all', lit, ['in', ['get', 'id'], ['literal', ISO.sites]]] : lit;            // only the isolated places
+    const line = ISO ? ['all', lit, ['in', ['get', 't'], ['literal', ISO.sites]]] : lit;             // only lines to them
+    const area = ISO ? ['all', lit, ['in', ['get', 'e'], ['literal', ISO.engs]]] : lit;             // pool patches only for engineers asked about
+    map.setFilter('sites', ['all', ['==', ['get', 'off'], 0], site]);
+    map.setFilter('offices', ['all', ['==', ['get', 'off'], 1], site]);
+    map.setFilter('office-dot', ['all', ['==', ['get', 'off'], 1], site]);
+    for (const l of ['links', 'links-hit', 'spokes']) map.setFilter(l, line);
+    for (const l of ['hull-fill', 'hull-line']) map.setFilter(l, area);
+    map.setFilter('chg-line', ['all', ['==', ['get', 'chg'], 1], line]); map.setFilter('chg-hull', ['all', ['==', ['get', 'chg'], 1], area]); map.setFilter('chg-halo', ['all', ['==', ['get', 'chg'], 1], site]);
+    labelVis(); zoneCardVis();
+  }
+  list();
+}
+// ---------- "show only these": hide everything else on the map until "Show all" ----------
+function isolate(ps, label, opts = {}) {
+  const sites = new Set(), engs = new Set();
+  for (const p of ps) {
+    if (p.type === 'site' && S.has(p.id)) { const x = S.get(p.id), e = E.get(x.eng); sites.add(x.id); if (e?.base) sites.add(e.base); }
+    else if (p.type === 'eng' && E.has(p.id)) { const e = E.get(p.id); engs.add(e.id); e.sites.forEach(id => sites.add(id)); }
+    else if (p.type === 'zone' && Z.has(p.id)) for (const e of P.engineers.filter(e => e.zone === p.id)) { engs.add(e.id); e.sites.forEach(id => sites.add(id)); }
+  }
+  return isolateSets({ sites: [...sites], engs: [...engs] }, label, opts);
+}
+function isolateSets(sets, label, { fromPreview = false, compare = false, fit = true } = {}) {
+  if (!sets.sites.length) return false;
+  if (CMP && !compare) exitCompare();
+  ISO = null; showEverything(''); clearSel();
+  ISO = { sites: sets.sites, engs: sets.engs, fromPreview, compare };
+  $('.mapwrap').classList.add('isolating');
+  applyFilter();
+  const bar = $('#isobar');
+  if (fromPreview || compare || !label) bar.hidden = true;
+  else { bar.innerHTML = `<span><b>${esc(label)}</b>; everything else is hidden</span><button type="button" id="isoall">Show all</button>`; bar.hidden = false; $('#isoall').onclick = unisolate; }
+  const pts = sets.sites.filter(id => S.has(id) && !S.get(id).boat);
+  if (fit && pts.length) map.fitBounds(boundsOf(pts, 0.012), { padding: { top: 90, bottom: 120, left: 70, right: 70 }, maxZoom: 13.5, duration: 1000 });
+  return true;
+}
+function unisolate() {
+  if (!ISO) return;
+  if (ISO.compare) { exitCompare(); return; }
+  ISO = null; $('#isobar').hidden = true; $('.mapwrap').classList.remove('isolating'); applyFilter();
+}
+// the sites and engineers a change touches: the sites that move, plus every site of the engineers who gain or lose work
+function changeSets(before, after) {
+  const bS = new Map(before.sites.map(x => [x.id, x])), aS = new Map(after.sites.map(x => [x.id, x]));
+  const bE = new Map(before.engineers.map(x => [x.id, x])), aE = new Map(after.engineers.map(x => [x.id, x]));
+  const moved = after.sites.filter(x => bS.get(x.id) && bS.get(x.id).eng !== x.eng).map(x => x.id), engs = new Set();
+  for (const id of moved) { engs.add(bS.get(id).eng); engs.add(aS.get(id).eng); }
+  for (const e of after.engineers) { const b = bE.get(e.id); if (!b || b.gender !== e.gender || b.kind !== e.kind || b.base !== e.base) engs.add(e.id); }
+  for (const e of before.engineers) if (!aE.has(e.id)) engs.add(e.id);
+  const sites = new Set(moved);
+  for (const id of engs) { bE.get(id)?.sites.forEach(x => sites.add(x)); aE.get(id)?.sites.forEach(x => sites.add(x)); }
+  return { moved, sites: [...sites], engs: [...engs].filter(Boolean) };
+}
+const legIn = (p, sid) => { const s = p.sites.find(x => x.id === sid), e = s && p.engineers.find(x => x.id === s.eng); if (!e) return null; if (e.base === sid) return { peak: 0, km: 0 }; return e.legs.find(x => x.to === sid) || null; };
+
+// ---------- before / after: a presented change (simulated plan or a proposal), with only what it touches on the map ----------
+let CMP = null, cmpPlay = 0;
+function cmpSource() {
+  if (VIEWING?.plan) return { before: LIVEPLAN, after: VIEWING.plan, what: VIEWING.version ? 'This version' : 'This proposal' };
+  if (draft.ops.length && SIM) return { before: LIVEPLAN, after: SIM.res.plan, what: 'The simulated changes' };
+  return null;
+}
+function enterCompare(side = 'after', { fit = true } = {}) {
+  const src = cmpSource(); if (!src) { exitCompare(); return; }
+  const sets = changeSets(src.before, src.after); if (!sets.sites.length) { exitCompare(); return; }
+  const drives = sets.sites.map(id => { const lb = legIn(src.before, id), la = legIn(src.after, id); return { id, b: lb?.peak ?? null, a: la?.peak ?? null, kb: lb?.km ?? null, ka: la?.km ?? null }; }).filter(d => d.b != null && d.a != null && d.a !== d.b);
+  const big = drives.sort((x, y) => Math.abs(y.a - y.b) - Math.abs(x.a - x.b))[0];
+  CMP = { ...src, ...sets, big, side };
+  cmpSide(side);
+  isolateSets(sets, '', { compare: true, fit });
+  $('.mapwrap').classList.add('comparing');
+}
+function cmpSide(side) {
+  if (!CMP) return;
+  CMP.side = side;
+  if (side === 'before') renderPlan(CMP.before, CMP.moved, []); else renderPlan(CMP.after, CMP.moved, CMP.engs.filter(id => CMP.after.engineers.some(e => e.id === id)));
+  // after: a grey dashed line from each moved site back to the engineer it had before
+  const bS = new Map(CMP.before.sites.map(x => [x.id, x])), bE = new Map(CMP.before.engineers.map(x => [x.id, x]));
+  const ghosts = side === 'after' ? CMP.moved.map(id => { const x = bS.get(id), ob = bS.get(bE.get(x.eng)?.base); return ob && !x.boat && !ob.boat ? { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: [[ob.lng, ob.lat], [x.lng, x.lat]] } } : null; }).filter(Boolean) : [];
+  if (map.getSource('ghost')) map.getSource('ghost').setData(fc(ghosts));
+  const n = CMP.moved.length, nm = id => S.get(id)?.name || id, d = CMP.big;
+  const ne = CMP.engs.length, what = side === 'before' ? `<b>Before:</b> the live plan for the ${CMP.sites.length} sites this touches` : `<b>After:</b> ${n ? `${n} site${n === 1 ? '' : 's'} change${n === 1 ? 's' : ''} engineer` : ne ? `${ne} engineer${ne === 1 ? '' : 's'} change${ne === 1 ? 's' : ''}` : `${esc(CMP.what.toLowerCase())}`}`;
+  const drive = d && side === 'after' && d.a !== d.b ? `; ${esc(nm(d.id))} <span class="${d.a > d.b ? 'up' : 'dn'}">${d.b} → ${d.a} min${d.kb != null && d.ka != null ? ` (${kmS(d.kb)} → ${kmS(d.ka)})` : ''}</span>` : '';
+  const bar = $('#cmpbar');
+  bar.innerHTML = `<div class="seg" role="group" aria-label="Before or after the change"><button type="button" data-s="before" aria-pressed="${side === 'before'}">Before</button><button type="button" data-s="after" aria-pressed="${side === 'after'}">After</button></div><span class="ct">${what}${drive}</span><button type="button" class="cb" id="cmpplay" aria-pressed="${!!cmpPlay}">${cmpPlay ? 'Pause' : 'Play'}</button><button type="button" class="cb" id="cmpall">Show all</button>`;
+  bar.hidden = false;
+}
+function exitCompare() {
+  if (!CMP) return;
+  CMP = null; clearInterval(cmpPlay); cmpPlay = 0;
+  $('#cmpbar').hidden = true; $('.mapwrap').classList.remove('comparing');
+  if (map.getSource('ghost') && !PREVIEW) map.getSource('ghost').setData(fc([]));
+  if (ISO?.compare) { ISO = null; $('.mapwrap').classList.remove('isolating'); }
+  restoreView();
+}
+function restoreView() {
+  if (VIEWING?.plan) renderPlan(VIEWING.plan, VIEWING.proposal.changedSites, VIEWING.proposal.changedEngs || []);
+  else if (draft.ops.length && SIM) renderPlan(SIM.res.plan, SIM.res.changedSites, SIM.res.changedEngs);
+  else renderPlan(LIVEPLAN);
+}
+$('#cmpbar').addEventListener('click', ev => {
+  const b = ev.target.closest('button'); if (!b || !CMP) return;
+  if (b.dataset.s) { clearInterval(cmpPlay); cmpPlay = 0; cmpSide(b.dataset.s); }
+  else if (b.id === 'cmpall') exitCompare();
+  else if (b.id === 'cmpplay') {
+    if (cmpPlay) { clearInterval(cmpPlay); cmpPlay = 0; cmpSide(CMP.side); }
+    else { cmpPlay = setInterval(() => { if (CMP) cmpSide(CMP.side === 'after' ? 'before' : 'after'); }, 1400); cmpSide(CMP.side === 'after' ? 'before' : 'after'); }
+  }
+});
+addEventListener('keydown', ev => {
+  if (!(CMP || PREVIEW?.res) || /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName) || ev.metaKey || ev.ctrlKey || ev.altKey) return;
+  const side = ev.key === 'b' || ev.key === 'B' ? 'before' : ev.key === 'a' || ev.key === 'A' ? 'after' : null; if (!side) return;
+  if (PREVIEW?.res) pvSide(side); else { clearInterval(cmpPlay); cmpPlay = 0; cmpSide(side); }
+});
+$('#zone').addEventListener('change', () => { applyFilter(); $('#zone').value ? flyZone($('#zone').value) : map.fitBounds(UAE, { padding: 16, duration: 900 }); });
+$$('#mode button').forEach(b => b.onclick = () => { mode = b.dataset.m; $$('#mode button').forEach(x => x.setAttribute('aria-pressed', x === b)); if (map.getLayer('sites')) applyMode(); });
+
+function legend() {
+  const dot = (fill, stroke = '#fff', r = 5) => `<svg width="18" height="16" viewBox="0 0 18 16" aria-hidden="true"><circle cx="9" cy="8" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="1.4"/></svg>`;
+  const sq = fill => `<svg width="18" height="16" viewBox="0 0 18 16" aria-hidden="true"><circle cx="9" cy="8" r="5.5" fill="${fill}" stroke="${fill === COL.off ? '#5F6B80' : COL.poolk}" stroke-width="1.2"/><circle cx="9" cy="8" r="2" fill="#fff"/></svg>`;
+  const ln = (col, dash) => `<svg width="18" height="16" viewBox="0 0 18 16" aria-hidden="true"><line x1="1" y1="8" x2="17" y2="8" stroke="${col}" stroke-width="3" ${dash ? 'stroke-dasharray="3 2"' : ''}/></svg>`;
+  const area = `<svg width="18" height="16" viewBox="0 0 18 16" aria-hidden="true"><rect x="1.5" y="2.5" width="15" height="11" rx="5" fill="${COL.pool}" fill-opacity=".16" stroke="${COL.poolk}" stroke-dasharray="3 2"/></svg>`;
+  let h = '';
+  if (mode === 'cov') h = `<div class="r">${dot(COL.nat)}Emirati national, on site</div><div class="r">${ln(COL.pair)}City shared engineer: 2 schools</div><div class="r">${dot(COL.pool, COL.poolk)}City pool engineer: small school</div><div class="r">${sq(COL.pool)}Office (pool engineer)</div><div class="r">${area}One pool engineer's patch</div><div class="r">${ln(COL.rem)}Remote shared engineer</div><div class="hint">Bigger dot, more users. Faded dots: location to confirm.</div>`;
+  if (mode === 'gender') h = `<div class="r">${dot(COL.boy)}Boys' school</div><div class="r">${dot(COL.girl)}Girls' school</div><div class="r">${dot(COL.mix)}Mixed school</div><div class="r">${sq(COL.off)}Office (any engineer)</div><div class="hint">Girls' schools always have a female engineer.</div>`;
+  if (mode === 'drive') h = `<div class="r">${ln(COL.t1)}15 min or less from the engineer</div><div class="r">${ln(COL.t2)}16–30 min</div><div class="r">${ln(COL.t3)}Over 30 min</div><div class="r">${dot(COL.ink)}Engineer's base</div><div class="r">${dot('#C9D1DC')}Emirati national, on site</div><div class="hint">${GOO ? 'Google Maps, typical 7:30 am traffic.' : 'Peak school-run traffic, door to door.'}</div>`;
+  if (CHG.size || CHGE.size) h += `<div class="r"><svg width="18" height="16" viewBox="0 0 18 16" aria-hidden="true"><circle cx="9" cy="8" r="6" fill="rgba(109,40,217,.16)" stroke="${COL.chg}" stroke-width="2"/></svg>${VIEWING?.version ? 'Changed in this version' : VIEWING ? 'Changed by this proposal' : 'Pending change (simulated)'}</div>`;
+  $('#legend').innerHTML = h;
+}
+
+// ---------- selection ----------
+function boundsOf(ids, pad = 0.006) { const pts = ids.map(id => S.get(id)).filter(s => !s.boat); return [[Math.min(...pts.map(p => p.lng)) - pad, Math.min(...pts.map(p => p.lat)) - pad], [Math.max(...pts.map(p => p.lng)) + pad, Math.max(...pts.map(p => p.lat)) + pad]]; }
+function flyZone(id) { const ids = P.sites.filter(s => s.zone === id && !s.boat).map(s => s.id); map.fitBounds(boundsOf(ids, 0.03), { padding: { top: 50, bottom: 50, left: 50, right: 50 }, duration: 1000, maxZoom: 12 }); }
+function select(id, fly, focus) {
+  const e = E.get(id); if (!e) return; sel = id;
+  for (const [l, k] of [['sel-line', 'e'], ['sel-hull', 'e'], ['sel-ring', 'e']]) map.setFilter(l, ['==', ['get', k], id]);
+  const z = Z.get(e.zone), sc = e.sites.filter(i => S.get(i).type === 'school').length;
+  const rows = e.sites.map(i => { const s = S.get(i), l = legOf(e, i);
+    return `<tr data-site="${i}" class="${i === focus ? 'hit' : ''}"><td>${esc(s.name)}<br><small style="color:var(--mut)">${s.type === 'office' ? `${esc(s.stype)}, site code ${esc(s.no)}` : `${esc(s.size)}, ${gWord(s.g).toLowerCase()} school, no. ${esc(s.no)}`}, ${fmt(s.users)} users</small></td><td>${i === e.base && e.sites.length > 1 ? 'Base' : s.boat ? 'Boat' : l && l.peak != null ? `${l.peak} min ${PK}<br><small style="color:var(--mut)">${l.off} min ${OFW}, ${l.km} km</small><span class="live" data-to="${i}" hidden></span>` : 'On site'}</td></tr>`; }).join('');
+  const why = { national: 'Remote school: one Emirati national, full time, never shared.', city_shared: 'City Medium, Large or X-Large schools: one non-national engineer for two nearby schools of the same gender in the same zone.', pool: 'City Small and X-Small schools and offices have few tickets. The zone lead dispatches pool engineers by ticket; this is the engineer\'s home patch.', remote_shared: 'The two smallest remote schools share one non-national engineer.' }[e.kind];
+  $('#detail').style.setProperty('--c', C(e.kind));
+  $('#detail').innerHTML = `<div class="dh"><div><h3>${e.id}</h3><div class="kind">${KIND[e.kind].name}</div></div><button class="x" id="dx" aria-label="Close">×</button></div>
+    <dl><dt>Engineer</dt><dd>${esc(e.gender)}, ${esc(e.nat === 'Emirati national' ? e.nat : e.nat.toLowerCase())}</dd><dt>Zone</dt><dd>${esc(z.label)}</dd><dt>Team Lead</dt><dd>${esc(z.lead)}</dd>
+    <dt>Covers</dt><dd>${sc} school${sc === 1 ? '' : 's'}${e.sites.length > sc ? `, ${e.sites.length - sc} office${e.sites.length - sc === 1 ? '' : 's'}` : ''}, ${fmt(e.users)} users</dd></dl>
+    <table><thead><tr><th>Site</th><th>Drive from base</th></tr></thead><tbody>${rows}</tbody></table><p class="livecap" id="livecap" hidden></p>
+    <p class="dask"><button type="button" id="dask">Ask AI about ${focus && S.get(focus) ? esc(S.get(focus).name) : e.id}</button></p>
+    <p class="note">${why}</p>${e.note && e.kind !== 'national' ? `<p class="note">${esc(e.note)}</p>` : ''}${e.flags.includes('mixed') ? `<p class="note flag">This engineer covers boys' and girls' schools; they are female.</p>` : ''}`;
+  $('#detail').hidden = false; $('#tip').hidden = true;
+  $('#dx').onclick = clearSel;
+  $('#dask').onclick = () => { setPicks(focus ? [{ type: 'site', id: focus }] : [{ type: 'eng', id }]); openAI(); };
+  liveTimes(e);
+  if (focus) document.querySelector(`#detail tr[data-site="${focus}"]`)?.scrollIntoView({ block: 'nearest' });
+  $$('#list li').forEach(l => l.classList.toggle('sel', l.dataset.id === id));
+  labelVis();
+  if (fly) map.fitBounds(boundsOf(e.sites), { padding: { top: 60, bottom: 60, left: Math.min(420, map.getContainer().clientWidth * 0.45), right: 60 }, maxZoom: 13.5, duration: 1000 });
+}
+// live traffic on click: Google's usual time for this hour vs right now, through the local server (keys stay there)
+let LIVE = location.protocol.startsWith('http') ? null : false, liveSeq = 0;
+async function liveTimes(e) {
+  const legs = e.legs.filter(l => l.peak != null && l.km > 0), seq = ++liveSeq;
+  if (!legs.length || LIVE === false) return;
+  const spans = legs.map(l => document.querySelector(`#detail .live[data-to="${l.to}"]`));
+  spans.forEach(sp => { if (sp) { sp.hidden = false; sp.className = 'live wait'; sp.textContent = 'Checking live traffic…'; } });
+  const b = S.get(e.base), pt = s => ({ lat: s.lat, lng: s.lng });
+  try {
+    const r = await fetch('api/live', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pairs: legs.map(l => ({ a: pt(b), b: pt(S.get(l.to)) })) }) });
+    const j = await r.json(); if (!r.ok || j.error) throw new Error(j.error || r.status);
+    LIVE = true; if (seq !== liveSeq) return;
+    j.results.forEach((v, i) => { const sp = spans[i]; if (!sp) return;
+      if (!v) { sp.hidden = true; return; }
+      const d = v.now - v.typical, cls = d >= Math.max(3, v.typical * 0.2) ? 'up' : d <= -Math.max(3, v.typical * 0.2) ? 'dn' : '';
+      sp.className = 'live'; sp.innerHTML = `Typically ${v.typical} min at this hour, now <b class="${cls}">${v.now} min</b>`; });
+    const cap = $('#livecap'); cap.hidden = false;
+    cap.textContent = `Live from Google Maps at ${new Date(j.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}. "Typically" is Google's usual traffic for this weekday and hour.`;
+  } catch (err) {
+    if (seq !== liveSeq) return;
+    if (LIVE === null) LIVE = false;
+    spans.forEach(sp => { if (sp) sp.hidden = true; });
+    const cap = $('#livecap'); if (cap && LIVE !== false) { cap.hidden = false; cap.textContent = 'Live traffic is not available right now.'; }
+  }
+}
+function clearSel() { sel = null; $('#detail').hidden = true; for (const l of ['sel-line', 'sel-hull', 'sel-ring']) if (map.getLayer(l)) map.setFilter(l, ['==', ['get', 'e'], '']); $$('#list li.sel').forEach(l => l.classList.remove('sel')); }
+
+// ---------- search: schools (English or Arabic name, School no.), offices, engineers, zones and Team Leads ----------
+const norm = v => String(v ?? '').toLowerCase().normalize('NFKD').replace(/[̀-ًͯ-ٰٟـ]/g, '')
+  .replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+const TORDER = { zone: 0, school: 1, office: 2, engineer: 3 }, TNAME = { zone: 'Zone', school: 'School', office: 'Office', engineer: 'Engineer' };
+const IDX = [
+  ...P.zones.map(z => ({ t: 'zone', id: z.id, title: z.label, key: norm(z.id), tn: norm(z.label), hay: norm([z.label, z.name, z.id, z.lead].join(' ')) })),
+  ...P.sites.map(s => ({ t: s.type === 'office' ? 'office' : 'school', id: s.id, title: s.name, ar: s.nameAr, key: norm(s.no), tn: norm(s.name), ta: norm(s.nameAr),
+    hay: norm([s.name, s.nameAr, s.no, s.area, s.stype].join(' ')) })),
+  ...P.engineers.map(e => ({ t: 'engineer', id: e.id, title: e.id, key: norm(e.id), tn: norm(e.id), hay: norm(e.id + ' ' + e.id.replace(/-/g, '')) })),
+];
+function findAll(q) {
+  const n = norm(q); if (!n) return [];
+  const toks = n.split(' '), hits = [];
+  for (const it of IDX) {
+    if (!toks.every(t => it.hay.includes(t))) continue;
+    const sc = it.key === n ? 0 : it.tn.startsWith(n) || it.ta?.startsWith(n) ? 1 : (' ' + it.tn + ' ' + (it.ta || '')).includes(' ' + toks[0]) ? 2 : 3;
+    hits.push([sc, TORDER[it.t], it.tn.length, it]);
+  }
+  return hits.sort((a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2]).slice(0, 8).map(h => h[3]);
+}
+let mHits = [], mAct = 0;
+function mRender() {
+  const q = $('#mq').value, ar = /[؀-ۿ]/.test(q), ul = $('#mres');
+  mHits = findAll(q); mAct = Math.min(mAct, Math.max(0, mHits.length - 1));
+  if (!norm(q)) { ul.hidden = true; $('#mq').setAttribute('aria-expanded', 'false'); return; }
+  ul.innerHTML = mHits.length ? mHits.map((it, i) => {
+    let dot = '', title = it.title, sub = '';
+    if (it.t === 'zone') { const z = Z.get(it.id); dot = '<i class="z"></i>'; sub = `Team Lead: ${z.lead}, ${z.schools} schools, ${z.eng} engineers`; }
+    else if (it.t === 'engineer') { const e = E.get(it.id); dot = `<i style="background:${C(e.kind)}"></i>`; sub = `${KIND[e.kind].name}, based at ${S.get(e.base).name}`; }
+    else { const s = S.get(it.id), e = engOf(s); dot = `<i style="background:${C(e.kind)}"></i>`; if (ar && s.nameAr) title = s.nameAr;
+      sub = it.t === 'office' ? `Office, site code ${s.no}, ${zoneName(s.zone)}, engineer ${e.id}` : `School no. ${s.no}, ${zoneName(s.zone)}, engineer ${e.id}${ar && s.nameAr ? `, ${s.name}` : ''}`; }
+    return `<li role="option" id="mr${i}" data-i="${i}" class="${i === mAct ? 'act' : ''}" aria-selected="${i === mAct}">${dot}<span class="t">${esc(title)}</span><span class="ty">${TNAME[it.t]}</span><span class="s">${esc(sub)}</span></li>`;
+  }).join('') : `<li class="none">Nothing matches "${esc(q.trim())}". Try part of a school's name, its School no., an engineer ID such as DXB-SHJ-C03, or a Team Lead's name.</li>`;
+  ul.hidden = false; $('#mq').setAttribute('aria-expanded', 'true');
+  $('#mq').setAttribute('aria-activedescendant', mHits.length ? 'mr' + mAct : '');
+}
+function mClose() { $('#mres').hidden = true; $('#mq').setAttribute('aria-expanded', 'false'); }
+function showEverything(zone) {
+  if (ISO) unisolate();
+  let changed = false;
+  if (shown.size !== KORDER.length) { shown = new Set(KORDER); changed = true; $$('#bar button, #keys button').forEach(b => b.classList.remove('off')); $$('#chips .chip').forEach(c => c.setAttribute('aria-pressed', true)); }
+  if ($('#zone').value && $('#zone').value !== zone) { $('#zone').value = ''; changed = true; }
+  if (changed) applyFilter();
+}
+function mChoose(it) {
+  if (!it) return;
+  mClose(); $('#mq').value = it.title; $('#mq').blur();
+  const side = Math.min(210, map.getContainer().clientWidth * 0.22);
+  if (it.t === 'zone') { clearSel(); showEverything(it.id); $('#zone').value = it.id; applyFilter(); flyZone(it.id); setPicks([{ type: 'zone', id: it.id }]); return; }
+  if (it.t === 'engineer') { const e = E.get(it.id); showEverything(e.zone); select(e.id, true); setPicks([{ type: 'eng', id: e.id }]); return; }
+  const s = S.get(it.id), e = engOf(s);
+  showEverything(s.zone); select(e.id, false, s.id); setPicks([{ type: 'site', id: s.id }]);
+  map.flyTo({ center: [s.lng, s.lat], zoom: Math.max(map.getZoom(), 13), offset: [side, 0], duration: 1100 });
+}
+$('#mq').addEventListener('input', () => { mAct = 0; mRender(); });
+$('#mq').addEventListener('focus', () => { if ($('#mq').value) mRender(); });
+$('#mq').addEventListener('keydown', ev => {
+  const open = !$('#mres').hidden && mHits.length;
+  if (ev.key === 'ArrowDown' && open) { ev.preventDefault(); mAct = (mAct + 1) % mHits.length; mRender(); $('#mr' + mAct)?.scrollIntoView({ block: 'nearest' }); }
+  else if (ev.key === 'ArrowUp' && open) { ev.preventDefault(); mAct = (mAct - 1 + mHits.length) % mHits.length; mRender(); $('#mr' + mAct)?.scrollIntoView({ block: 'nearest' }); }
+  else if (ev.key === 'Enter') { ev.preventDefault(); mChoose(mHits[mAct]); }
+  else if (ev.key === 'Escape') { ev.stopPropagation(); if (!$('#mres').hidden) mClose(); else { $('#mq').value = ''; $('#mq').blur(); } }
+});
+$('#mres').addEventListener('pointerdown', ev => { const li = ev.target.closest('li[data-i]'); if (li) { ev.preventDefault(); mChoose(mHits[+li.dataset.i]); } });
+$('#mres').addEventListener('pointermove', ev => { const li = ev.target.closest('li[data-i]'); if (li && +li.dataset.i !== mAct) { mAct = +li.dataset.i; $$('#mres li').forEach((l, i) => { l.classList.toggle('act', i === mAct); l.setAttribute('aria-selected', i === mAct); }); } });
+document.addEventListener('pointerdown', ev => { if (!ev.target.closest('#msearch')) mClose(); });
+addEventListener('keydown', ev => { if (ev.key === '/' && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName)) { ev.preventDefault(); $('#mq').focus(); $('#mq').select(); } });
+
+// ---------- redraw everything from a plan (live, simulated or a proposal) ----------
+function renderPlan(p, changedSites = [], changedEngs = []) {
+  setPlan(p); CHG = new Set(changedSites); CHGE = new Set(changedEngs);
+  renderHeader(); renderOverview(); renderZones(); renderMethod(); buildFeatures();
+  if (map.getSource('sites')) {
+    for (const [id, f] of [['hulls', hullF], ['links', linkF], ['spokes', spokeF], ['sites', siteF]]) map.getSource(id).setData(fc(f));
+    planLabels(); applyMode(); applyFilter();
+  } else list();
+  if (sel) { if (E.has(sel)) select(sel, false); else clearSel(); }
+  picks = picks.filter(k => (k.type === 'site' ? S : k.type === 'eng' ? E : Z).has(k.id));
+  renderPicks(); legend();
+}
+
+// ---------- picks: what the assistant is asked about (click one thing; shift-click several) ----------
+let picks = [];
+const pkey = p => p.type + ':' + p.id;
+function setPicks(a) { picks = a; renderPicks(); }
+function togglePick(p) { const i = picks.findIndex(x => pkey(x) === pkey(p)); if (i >= 0) picks.splice(i, 1); else picks.push(p); renderPicks(); }
+const pickName = p => p.type === 'site' ? S.get(p.id)?.name : p.type === 'zone' ? Z.get(p.id)?.label : p.id;
+const pickCol = p => p.type === 'site' ? (engOf(S.get(p.id)) ? C(engOf(S.get(p.id)).kind) : '#8D97A6') : p.type === 'eng' ? C(E.get(p.id).kind) : '';
+function pickSites() { const o = new Set(); for (const p of picks) { if (p.type === 'site') o.add(p.id); else if (p.type === 'eng') E.get(p.id)?.sites.forEach(id => o.add(id)); } return [...o]; }
+function renderPicks() {
+  if (map.getLayer('find')) map.setFilter('find', ['in', ['get', 'id'], ['literal', pickSites()]]);
+  const bar = $('#selbar');
+  if (picks.length > 1) {
+    bar.innerHTML = `<span><b>${picks.length} picked:</b> ${picks.map(p => esc(pickName(p))).join(', ')}</span><button type="button" class="p" id="sbask">Ask AI about these</button><button type="button" id="sbclr">Clear</button>`;
+    bar.hidden = false; $('#sbask').onclick = openAI; $('#sbclr').onclick = () => setPicks([]);
+  } else bar.hidden = true;
+  $('#ai-ctx').innerHTML = picks.length
+    ? `<span>Asking about</span>${picks.slice(0, picks.length > 6 ? 5 : 6).map((p, i) => `<span class="pk"><i class="${p.type === 'zone' ? 'z' : ''}" style="background:${pickCol(p)}"></i><span>${esc(pickName(p))}</span><button type="button" data-i="${i}" aria-label="Remove ${esc(pickName(p))}">×</button></span>`).join('')}${picks.length > 6 ? `<span>and ${picks.length - 5} more</span><button type="button" class="pkclr" data-all="1">Clear</button>` : ''}`
+    : '<span>Asking about the whole plan. Click a school, engineer or zone on the map to ask about it; shift-click to pick several.</span>';
+  renderSugg();
+}
+$('#ai-ctx').addEventListener('click', ev => { if (ev.target.closest('button[data-all]')) { setPicks([]); return; } const b = ev.target.closest('button[data-i]'); if (b) { picks.splice(+b.dataset.i, 1); renderPicks(); } });
+
+// ---------- the assistant ----------
+const chat = [];
+let aiBusy = false, rq = 0;
+function openAI() { $$('.tabs button').forEach(x => x.setAttribute('aria-selected', x.dataset.p === 'ai')); for (const p of ['overview', 'ai', 'zones', 'engineers', 'method']) $('#p-' + p).hidden = p !== 'ai'; showSide(); sizeSide(); setTimeout(() => $('#ai-q').focus(), 30); }
+function suggestions() {
+  const d = VIEWING ? VIEWING.proposal.ops : draft.ops;
+  if (d.length) return ['Summarise the impact of these changes', 'Do these changes break any rules?', 'Which schools get a longer drive?'];
+  if (!picks.length) return ['Which zones are most stretched, and why?', 'What edge cases should I know about?', 'How were the 43 pool engineers split between zones?', 'Which schools are more than 30 minutes from their engineer?'];
+  if (picks.length > 1) return ['Compare these', 'How far apart are these, and who covers each?', 'Who covers these if their engineers are off?'];
+  const p = picks[0];
+  if (p.type === 'zone') return ['Brief me on this zone', "How were this zone's pool engineers chosen?", 'What are the risks in this zone?'];
+  if (p.type === 'eng') return ['Why does this engineer cover these sites?', 'Is this workload fair compared with the rest of the zone?', 'What happens if this engineer is removed?'];
+  const s = S.get(p.id), e = s && engOf(s);
+  if (!e) return [];
+  if (e.kind === 'national') return ['Why does this school get its own national?', 'Who covers it if the national is off?'];
+  if (e.kind === 'city_shared') return ['Why is this school paired with the other one?', 'Is there a closer school it could be paired with?', 'Who covers it if its engineer is off?'];
+  if (e.kind === 'pool') return ['Why is this site in this pool patch?', 'Who covers it if its engineer is off?', 'How far is it from the patch base?'];
+  return ['Why do these two remote schools share an engineer?', 'Who covers them if the engineer is off?'];
+}
+function renderSugg() { $('#ai-sugg').innerHTML = aiBusy ? '' : suggestions().map(q => `<button type="button" class="sugg">${esc(q)}</button>`).join(''); }
+$('#ai-sugg').addEventListener('click', ev => { const b = ev.target.closest('.sugg'); if (b) sendAI(b.textContent); });
+
+function refChip(id) {
+  if (S.has(id)) { const s = S.get(id), e = engOf(s); return `<button type="button" class="ref" data-ref="site:${id}"><i style="background:${e ? C(e.kind) : '#8D97A6'}"></i>${esc(s.name)}</button>`; }
+  if (E.has(id)) { const e = E.get(id); return `<button type="button" class="ref" data-ref="eng:${id}"><i style="background:${C(e.kind)}"></i>${id}</button>`; }
+  if (Z.has(id)) return `<button type="button" class="ref" data-ref="zone:${id}"><i class="z"></i>${esc(Z.get(id).label)}</button>`;
+  return esc(id);
+}
+function md(src) {   // the small piece of Markdown the assistant uses: paragraphs, lists, tables, bold, italics, [[id]] links
+  const inline = t => esc(t).replace(/&lt;br\s*\/?&gt;/gi, '<br>').replace(/&lt;\/?(?:p|b|strong|i|em|u|span|div|small)\b[^&]*?&gt;/gi, '').replace(/&amp;nbsp;/g, ' ').replace(/\[\[([\w-]+)\]\]/g, (m, id) => refChip(id)).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/(^|[\s(])[*_](?!\s)([^*_]+?)[*_](?=[\s).,;:!?]|$)/g, '$1<i>$2</i>').replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\[([^\]\n]{1,160})\]\((https?:\/\/[^\s)"]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>').replace(/(^|[\s(])(https?:\/\/[^\s<)"]+)/g, '$1<a href="$2" target="_blank" rel="noopener">$2</a>');
+  const L = src.replace(/\r/g, '').split('\n'), isRow = l => /^\s*\|.*\|\s*$/.test(l), isLi = l => /^\s*([-*•]|\d+[.)])\s+/.test(l), isH = l => /^#{1,6}\s/.test(l);
+  let out = '', i = 0;
+  while (i < L.length) {
+    const l = L[i];
+    if (isRow(l)) { const rows = []; while (i < L.length && isRow(L[i])) rows.push(L[i++]); const cells = r => r.trim().replace(/^\||\|$/g, '').split('|').map(c => c.trim()); const body = rows.filter(r => !/^\s*\|[\s:|-]+\|\s*$/.test(r)); out += `<table class="mdt">${body.map((r, k) => `<tr>${cells(r).map(c => k === 0 ? `<th>${inline(c)}</th>` : `<td>${inline(c)}</td>`).join('')}</tr>`).join('')}</table>`; continue; }
+    if (isLi(l)) { const ol = /^\s*\d/.test(l), items = []; while (i < L.length && isLi(L[i])) items.push(L[i++].replace(/^\s*([-*•]|\d+[.)])\s+/, '')); out += `<${ol ? 'ol' : 'ul'}>${items.map(x => `<li>${inline(x)}</li>`).join('')}</${ol ? 'ol' : 'ul'}>`; continue; }
+    if (isH(l)) { out += `<p class="mdh">${inline(l.replace(/^#+\s*/, ''))}</p>`; i++; continue; }
+    if (!l.trim()) { i++; continue; }
+    const para = []; while (i < L.length && L[i].trim() && !isRow(L[i]) && !isLi(L[i]) && !isH(L[i])) para.push(L[i++]);
+    out += `<p>${para.map(inline).join('<br>')}</p>`;
+  }
+  return out;
+}
+const fixIds = c => c.replace(/\[\[([^\]\n]{1,40})\]\]/g, (m, id) => '[[' + id.replace(/[‐-―−]/g, '-').trim() + ']]');
+// engineer, zone and site ids written as plain text (sometimes with typographic hyphens) become links too
+const linkIds = t => t.replace(/(\[\[[^\]\n]*\]\])|\b([A-Z]{2,4}(?:[-\u2010-\u2015\u2212][A-Z]{1,4}){0,2}(?:[-\u2010-\u2015\u2212][NRCP]\d{2})?|[SN]\d{2,3})\b/g, (m, linked, id) => {
+  if (linked) return m; const k = id.replace(/[\u2010-\u2015\u2212]/g, '-'); return E.has(k) || Z.has(k) || S.has(k) ? `[[${k}]]` : m;
+});
+function shownText(c) {
+  let t = linkIds(fixIds(c).replace(/https?:\/\/[^\s)\]]*[?&]version=(s[\w-]{16,40})/g, (m, id) => versionLink(id)).replace(/[\u00A0\u2007\u202F]/g, ' ').replace(/<changes>[\s\S]*?(<\/changes>|$)/g, '').replace(/<forward[^>]*>?/g, '').replace(/【[^】]*】/g, ''));
+  t = t.replace(/([^\n\[]{1,120}?)\s*\(\[\[([\w-]+)\]\]\)/g, (m, before, id) => { const name = S.get(id)?.name || Z.get(id)?.label, b = before.replace(/[*_]+$/, '').trimEnd(); return name && b.endsWith(name) ? b.slice(0, -name.length).replace(/[*_]+$/, '') + `[[${id}]]` : m; });
+  t = t.replace(/\[\[([\w-]+)\]\](\s*\(([^)\n]{1,120})\)|\s+([^\n]{1,120}))?/g, (m, id, rest, inParen, after) => {
+    const name = S.get(id)?.name || Z.get(id)?.label; if (!name || !rest) return m;
+    if (inParen && inParen.trim() === name) return `[[${id}]]`;
+    if (after && after.replace(/^[–—:-]\s*/, '').startsWith(name)) return `[[${id}]]` + rest.slice(rest.indexOf(name) + name.length);
+    return m;
+  });
+  // and a name written just before its own link
+  t = t.replace(/([^\n\[]{1,120}?)\s*\[\[([\w-]+)\]\]/g, (m, before, id) => { const name = S.get(id)?.name || Z.get(id)?.label; return name && before.endsWith(name) ? before.slice(0, -name.length) + `[[${id}]]` : m; });
+  return t.trim();
+}
+function renderChat() {
+  const log = $('#ai-log'), atEnd = log.scrollHeight - log.scrollTop - log.clientHeight < 40;
+  const planner = AI_MODELS?.changes?.provider === 'Anthropic' ? AI_MODELS.changes.label : '';
+  log.innerHTML = (chat.length ? '' : `<div class="ai-hello"><p><b>Ask anything about the plan.</b> For example why a school shares an engineer, who covers it if that engineer is off, or which zones are most stretched. Answers use the plan's own data and link to the map.</p><p>You can also ask for changes, such as "move this school to DXB-SHJ-P03" or "add a pool engineer in Al Ain B".${planner ? ` ${esc(planner)} works them out step by step, and you can watch each attempt on the map.` : ''} They are simulated and sent for approval only when you choose.</p><p>To ask about a file, attach it with the paperclip, drag it here or paste a screenshot: images, PDFs, Excel, CSV or text.</p>${ONLINE ? '' : '<p class="err">The assistant needs the online map: open it from the link you were given.</p>'}</div>`)
+    + chat.map((m, i) => {
+      if (m.role === 'user') return `<div class="msg u">${m.ctx?.length ? `<div class="ctx">About ${esc(m.ctx.join(', '))}</div>` : ''}${m.files?.length ? `<div class="ufiles">${m.files.map(f => fileChip(f)).join('')}</div>` : ''}<div class="bub">${esc(m.content)}</div></div>`;
+      const txt = shownText(m.content), refs = [...new Set([...linkIds(fixIds(m.content)).matchAll(/\[\[([\w-]+)\]\]/g)].map(x => x[1]).filter(id => S.has(id) || E.has(id) || Z.has(id)))];
+      const cl = m.meta?.provider === 'Anthropic', label = m.meta?.label || 'The assistant';
+      const wait = !m.pending || txt ? '' : cl ? (m.steps.length ? '' : `<p class="wait">${esc(label)} is starting to plan…</p>`) : `<p class="wait">${esc(label)} is ${m.thinking ? 'thinking' : 'reading your question'}…</p>`;
+      return `<div class="msg a">${stepsHTML(m, i)}${txt ? md(txt) : wait}${m.pending && txt ? '<p class="wait">…</p>' : ''}${m.stopped ? '<p class="wait">Stopped.</p>' : ''}${confirmCard(m, i)}${changesCard(m)}${!m.pending && refs.length > 1 ? `<button type="button" class="showall" data-i="${i}">Show these ${refs.length} on the map</button>` : ''}${m.error ? `<p class="err">${esc(m.error)}</p>` : ''}${byHTML(m)}</div>`;
+    }).join('');
+  if (atEnd || aiBusy) log.scrollTop = log.scrollHeight;
+  const send = $('#ai-send'); send.disabled = !ONLINE; send.textContent = aiBusy ? 'Stop' : 'Ask'; send.classList.toggle('stop', aiBusy);
+  $('#ai-new').hidden = !chat.length || aiBusy; $('#p-ai').classList.toggle('chatting', chat.length > 0); renderSugg();
+}
+// a change that would break an MOE rule waits for the user's click; t is the answer or one of its staged steps
+function confirmCard(t, i, k) {
+  const c = t.confirm; if (!c) return '';
+  const at = `data-i="${i}"${k != null ? ` data-k="${k}"` : ''}`, n = c.logs.filter(l => l.ok).length;
+  return `<div class="rule-card" role="alert"><b>This would break ${c.rules.length === 1 ? 'an MOE rule' : `${c.rules.length} MOE rules`}</b><ul>${c.rules.map(r => `<li>${esc(r.text)}</li>`).join('')}</ul><p>The change${n === 1 ? '' : 's'}: ${c.logs.filter(l => l.ok).map(l => esc(l.text)).join('; ')}.</p><p>Breaking it only changes the simulation. Sithesvaran Thirumaran or Sanath Swaroop still has to approve it before the real plan changes, and they will see that you chose to break it.</p><div class="dact"><button type="button" class="p brk" ${at}>Break the rule${c.rules.length === 1 ? '' : 's'} and simulate</button><button type="button" class="nobrk" ${at}>Don't apply</button></div></div>`;
+}
+function changesCard(t) {
+  if (!t.changes) return '';
+  return `<div class="chg-card"><b>${t.changes.some(c => c.ok) ? 'Simulated on the map, pending approval' : 'No change was made'}</b><ul>${t.changes.map(c => `<li class="${c.ok ? '' : 'bad'}">${esc(c.text)}</li>`).join('')}</ul>${t.broke?.length ? `<p class="broke">You chose to break: ${t.broke.map(esc).join(' ')}</p>` : ''}</div>`;
+}
+const versionLink = id => `${location.origin}${location.pathname}?version=${encodeURIComponent(id)}`;
+// who answered: Ollama for questions, Claude for plan changes (Ollama passes those on)
+function byHTML(m) {
+  if (!m.meta) return '';
+  const cl = m.meta.provider === 'Anthropic';
+  const t = cl ? (m.meta.mode === 'files' ? `Answered by ${m.meta.label}, which can read the attached file (${m.meta.note})` : `Planned by ${m.meta.label}${m.meta.via ? `, passed on by ${m.meta.via} on Ollama` : ''}`) : `${m.meta.mode === 'change' ? 'Planned' : 'Answered'} by ${m.meta.label} on Ollama`;
+  return `<p class="by${cl ? ' cl' : ''}"><i aria-hidden="true"></i>${esc(t)}</p>`;
+}
+// the planning steps, streamed: hand-off, reasoning, engineers looked at, changes tried
+const dtxt = v => v.drive_before == null || v.drive_after == null ? '' : `${v.drive_before} → ${v.drive_after} min${v.km_before != null && v.km_after != null ? ` (${kmS(v.km_before)} → ${kmS(v.km_after)})` : ''}`;
+const dcls = v => v.drive_after > v.drive_before ? 'up' : v.drive_after < v.drive_before ? 'dn' : '';
+function stepsHTML(m, i) {
+  if (!m.steps?.length) return '';
+  const last = m.steps[m.steps.length - 1];
+  const st = m.steps.filter(x => x.type !== 'think' || x.text.trim() || (m.pending && x === last));
+  if (!st.length) return '';
+  const open = m.stepsOpen ?? true, n = st.filter(x => ['tool', 'try', 'stage', 'version'].includes(x.type)).length, who = m.meta?.label || 'The planner';
+  const nv = st.filter(x => x.type === 'version' && x.phase === 'done' && x.ok).length, ef = m.meta?.effort ? ` (${esc(m.meta.effort)} effort)` : '';
+  const head = m.pending ? `<span class="ps-dot" aria-hidden="true"></span><b>${esc(who)} is planning${ef}</b>`
+    : `<b>How ${esc(who)} planned this</b><span>${n ? `${n} step${n === 1 ? '' : 's'}, ` : ''}${nv ? `${nv} version${nv === 1 ? '' : 's'} saved, ` : ''}${Math.max(1, Math.round(((m.t1 || Date.now()) - m.t0) / 1000))} s</span>`;
+  return `<div class="psteps"><button type="button" class="ps-head" data-i="${i}" aria-expanded="${open}">${head}<span class="ps-n">${open ? 'Hide steps' : 'Show steps'}</span></button>${open ? `<ol class="ps-list">${st.map(x => stepHTML(m, x, i, m.pending && x === last)).join('')}</ol>` : ''}</div>`;
+}
+function stepHTML(m, x, i, live) {
+  const k = m.steps.indexOf(x), bad = x.bad || x.error || (x.phase === 'done' && x.ok === false);
+  let b = '';
+  if (x.type === 'think') b = `<b>${live ? 'Thinking…' : 'Thought it through'}</b>${x.text.trim() ? `<p class="ps-txt${x.open ? ' open' : ''}" data-i="${i}" data-k="${k}" title="${x.open ? 'Show less' : 'Show all'}">${esc(x.text.trim())}</p>` : ''}`;
+  else if (x.type === 'note') b = `<b>Note</b><div class="ps-note">${md(x.text)}</div>`;
+  else if (x.type === 'handoff' || x.type === 'fallback') b = `<b>${esc(x.title)}</b><p>${esc(x.text)}</p>`;
+  else if (x.type === 'tool') {
+    const head = x.phase === 'done' ? x.title : `Looking for engineers who could take ${x.title || '…'}`;
+    const row = r => `<tr><td>${refChip(r.engineer)}</td><td class="n">${r.drive_min ?? '–'} min${r.km != null ? `<small>, ${kmS(r.km)}</small>` : ''}</td><td class="${r.rule ? 'no' : ''}">${esc(r.gender || '')}${r.rule ? `: ${esc(r.rule)}` : `, ${r.sites} site${r.sites === 1 ? '' : 's'} now`}</td></tr>`;
+    b = `<b>${esc(head)}</b>${x.error ? `<p class="ps-rule">${esc(x.error)}</p>` : ''}${x.rows?.length ? `<table class="ps-t">${x.current ? `<tr class="cur"><td>${refChip(x.current.engineer)}</td><td class="n">${x.current.drive_min ?? '–'} min${x.current.km != null ? `<small>, ${kmS(x.current.km)}</small>` : ''}</td><td>${esc(x.current.gender || '')}, covers it now</td></tr>` : ''}${x.rows.map(row).join('')}</table>` : ''}`;
+  } else if (x.type === 'try') {
+    b = `<b>${x.phase === 'done' ? 'Tried' : 'Trying'}: ${esc(x.title || '…')}</b>${x.error ? `<p class="ps-rule">${esc(x.error)}</p>` : ''}${(x.results || []).filter(r => !r.ok).map(r => `<p class="ps-rule">${esc(r.text)}</p>`).join('')}`
+      + (x.moved?.length ? `<ul class="ps-mv">${x.moved.map(v => `<li>${refChip(v.site)} ${refChip(v.from)} → ${refChip(v.to)} <span class="${dcls(v)}">${dtxt(v)}</span></li>`).join('')}</ul>` : '')
+      + (x.rules?.length ? `<p class="ps-rule">Breaks: ${x.rules.map(esc).join(' ')}</p>` : x.phase === 'done' && x.ok ? '<p>No MOE rule broken.</p>' : '')
+      + (x.watch?.length ? `<p>Watch: ${x.watch.map(esc).join(' ')}</p>` : '')
+      + (x.phase === 'done' && x.ok && x.ops?.length && !m.pending ? `<button type="button" class="ps-map" data-i="${i}" data-k="${k}">Show this attempt on the map</button>` : '');
+  } else if (x.type === 'stage') {
+    b = `<b>${x.phase === 'done' ? 'Put on your simulated plan' : 'Putting on your simulated plan'}: ${esc(x.title || '…')}</b>${x.error ? `<p class="ps-rule">${esc(x.error)}</p>` : ''}${(x.results || []).filter(r => !r.ok).map(r => `<p class="ps-rule">${esc(r.text)}</p>`).join('')}`
+      + (x.moved?.length ? `<ul class="ps-mv">${x.moved.map(v => `<li>${refChip(v.site)} ${refChip(v.from)} → ${refChip(v.to)} <span class="${dcls(v)}">${dtxt(v)}</span></li>`).join('')}</ul>` : '')
+      + confirmCard(x, i, k) + changesCard(x);
+  } else if (x.type === 'version') {
+    const link = x.versionId ? versionLink(x.versionId) : '';
+    b = `<b>${x.phase === 'done' && x.ok ? 'Saved a version' : 'Saving a version'}: ${esc(x.title || '…')}</b>${x.error ? `<p class="ps-rule">${esc(x.error)}</p>` : ''}${x.summary ? `<p>${esc(x.summary)}</p>` : ''}`
+      + (link ? `<div class="vrow"><a href="${esc(link)}" target="_blank" rel="noopener">Open this version</a><button type="button" class="vcopy" data-link="${esc(link)}">Copy link</button></div><p class="vnote">Not published: only people with the link can open it.</p>` : '');
+  }
+  return `<li class="ps ${x.type}${bad ? ' bad' : ''}${live ? ' live' : ''}"><span class="ps-ic" aria-hidden="true"></span><div class="ps-b">${b}</div></li>`;
+}
+let renderQueued = false;
+const scheduleChat = () => { if (!renderQueued) { renderQueued = true; requestAnimationFrame(() => { renderQueued = false; renderChat(); }); } };
+function goTo(p) {
+  if (p.type === 'zone') { showEverything(p.id); $('#zone').value = p.id; applyFilter(); flyZone(p.id); return; }
+  if (p.type === 'eng') { const e = E.get(p.id); if (e) { showEverything(e.zone); select(e.id, true); } return; }
+  const s = S.get(p.id); if (!s) return;
+  showEverything(s.zone); select(s.eng, false, s.id);
+  map.flyTo({ center: [s.lng, s.lat], zoom: Math.max(map.getZoom(), 13), offset: [Math.min(210, map.getContainer().clientWidth * 0.22), 0], duration: 1000 });
+}
+$('#ai-log').addEventListener('click', async ev => {
+  const ph = ev.target.closest('.ps-head'); if (ph) { const m = chat[+ph.dataset.i]; m.stepsOpen = !(m.stepsOpen ?? true); renderChat(); return; }
+  const pt = ev.target.closest('.ps-txt'); if (pt) { const x = chat[+pt.dataset.i].steps[+pt.dataset.k]; x.open = !x.open; renderChat(); return; }
+  const pm = ev.target.closest('.ps-map'); if (pm) { const x = chat[+pm.dataset.i].steps[+pm.dataset.k]; previewOps(x.ops, x.title, x.moved, false); return; }
+  const vc = ev.target.closest('.vcopy'); if (vc) { copyText(vc.dataset.link, vc); return; }
+  const brk = ev.target.closest('.brk, .nobrk');
+  if (brk) {
+    const m = chat[+brk.dataset.i], t = brk.dataset.k != null ? m?.steps[+brk.dataset.k] : m, c = t?.confirm; if (!c) return;
+    t.confirm = null;
+    if (brk.classList.contains('brk')) await applyOps(t, c.ops, c.rules);
+    else t.changes = [{ ok: false, text: 'Not applied: you kept the rule.' }];
+    renderChat(); return;
+  }
+  const r = ev.target.closest('.ref'); if (r) { const [type, ...id] = r.dataset.ref.split(':'); goTo({ type, id: id.join(':') }); return; }
+  const sh = ev.target.closest('.showall'); if (sh) {
+    const m = chat[+sh.dataset.i], ids = [...new Set([...fixIds(m.content).matchAll(/\[\[([\w-]+)\]\]/g)].map(x => x[1]))];
+    const ps = ids.map(id => S.has(id) ? { type: 'site', id } : E.has(id) ? { type: 'eng', id } : Z.has(id) ? { type: 'zone', id } : null).filter(Boolean);
+    isolate(ps, `Showing only the ${ps.length} place${ps.length === 1 ? '' : 's'} in this answer`); setPicks(ps);
+  }
+});
+let aiAbort = null;
+const rid = () => Math.random().toString(36).slice(2, 9);
+async function copyText(text, btn) {
+  let ok = false;
+  try { await navigator.clipboard.writeText(text); ok = true; } catch {
+    try { const ta = document.createElement('textarea'); ta.value = text; ta.style.cssText = 'position:fixed;left:-9999px'; document.body.appendChild(ta); ta.select(); ok = document.execCommand('copy'); ta.remove(); } catch {}
+  }
+  if (btn) { const t = btn.textContent; btn.textContent = ok ? 'Copied' : 'Copy failed: open the link and copy it from the address bar'; setTimeout(() => { btn.textContent = t; }, ok ? 1500 : 4000); }
+}
+// changes the planner puts on the simulated plan are staged one after another, as they arrive
+function queueStage(m, x) {
+  m.stageQ = (m.stageQ || Promise.resolve()).then(async () => {
+    if (VIEWING) { x.changes = [{ ok: false, text: 'You are looking at a saved version or a proposal. Open the live plan to make changes.' }]; return; }
+    endPreview(); await stageOps(x, x.ops.map(o => ({ ...o, _id: rid() }))); scheduleChat();
+  }).catch(e => { x.error = e.message; });
+}
+// one streamed event from api/ask (see tools/assistant.mjs)
+function onAIEvent(m, j) {
+  if (j.meta) {
+    m.meta = j.meta;
+    if (j.meta.via) m.steps.push({ type: 'handoff', title: `Passed to ${j.meta.label}`, text: `${j.meta.via} saw that this changes the plan and handed it over.` });
+    if (j.meta.reason) m.steps.push({ type: 'fallback', bad: true, title: `${j.meta.label} is planning this instead`, text: `${j.meta.reason}.` });
+    return;
+  }
+  if (j.restart) { m.content = ''; m.thinking = false; endPreview(); return; }
+  if (j.s === 'thinking') { m.thinking = true; if (m.meta?.provider === 'Anthropic') m.steps.push({ type: 'think', text: '' }); return; }
+  if (j.think) { let x = m.steps[m.steps.length - 1]; if (!x || x.type !== 'think') m.steps.push(x = { type: 'think', text: '' }); x.text += j.think; return; }
+  if (j.demote) { const t = shownText(m.content); if (t) m.steps.push({ type: 'note', text: t }); m.content = ''; return; }
+  if (j.tool) {
+    const t = j.tool; let x = m.steps.find(y => y.id === t.id);
+    if (!x) m.steps.push(x = { type: { try_changes: 'try', stage_changes: 'stage', save_version: 'version' }[t.name] || 'tool', id: t.id });
+    Object.assign(x, t, { title: t.title || x.title || '' });
+    if (t.phase === 'done' && t.name === 'try_changes' && t.ok && t.ops?.length) previewOps(t.ops, t.title, t.moved, true);
+    if (t.phase === 'done' && t.name === 'stage_changes' && t.ok && t.ops?.length) queueStage(m, x);
+    return;
+  }
+  if (j.t) m.content += j.t;
+}
+async function sendAI(q) {
+  q = (q || '').trim(); if (aiBusy || !ONLINE || attaching) return;
+  if (!q && attached.length) q = attached.length === 1 ? 'Please read the attached file.' : 'Please read the attached files.';
+  if (!q) return;
+  openAI();
+  chat.push({ role: 'user', content: q, ctx: picks.map(pickName), ...(attached.length ? { files: attached } : {}) }); attached = []; renderFiles();
+  const m = { role: 'assistant', content: '', pending: true, steps: [], t0: Date.now() }; chat.push(m);
+  $('#ai-q').value = ''; aiBusy = true; aiAbort = new AbortController(); renderChat();
+  try {
+    const r = await fetch('api/ask', { method: 'POST', signal: aiAbort.signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
+      messages: withFiles(chat.filter(x => x !== m && !x.error && !x.stopped).slice(-10)), picks, draftOps: VIEWING ? VIEWING.proposal.ops : draft.ops }) });
+    if (!r.ok) throw new Error(r.status === 401 ? 'Your sign-in has expired: reload the page and sign in again.' : `The assistant is not available right now (${r.status}).`);
+    const reader = r.body.getReader(), dec = new TextDecoder(); let buf = '';
+    for (;;) {
+      const { done, value } = await reader.read(); if (done) break;
+      buf += dec.decode(value, { stream: true }); const ls = buf.split('\n'); buf = ls.pop();
+      for (const l of ls) { if (!l.trim()) continue; let j; try { j = JSON.parse(l); } catch { continue; } if (j.error) throw new Error(j.error); onAIEvent(m, j); scheduleChat(); }
+    }
+    await m.stageQ;
+    m.pending = false; m.t1 = Date.now(); endPreview();
+    const cm = m.content.match(/<changes>([\s\S]*?)<\/changes>/);
+    if (cm) {
+      let ops; try { ops = JSON.parse(cm[1].replace(/[‐-―−]/g, '-')); } catch { ops = []; }
+      const sig = ({ _id, _bad, ack, ...o }) => JSON.stringify(Object.keys(o).sort().map(k => [k, o[k]])), have = new Set(draft.ops.map(sig));
+      ops = (Array.isArray(ops) ? ops : [ops]).filter(o => o && typeof o.op === 'string' && !have.has(sig(o))).map(o => ({ ...o, _id: rid() }));   // already staged by the planner: not again
+      if (VIEWING) m.changes = [{ ok: false, text: 'You are looking at a saved version or a proposal. Open the live plan to make changes.' }];
+      else if (ops.length) await stageOps(m, ops);
+    }
+    if (!VIEWING && !CMP && m.steps.some(x => x.type === 'stage' && x.changes?.some(c => c.ok))) enterCompare('after');   // finish on the before / after of everything staged
+  } catch (err) { try { await m.stageQ; } catch {} m.pending = false; m.t1 = Date.now(); endPreview(); if (err.name === 'AbortError') m.stopped = true; else m.error = err.message; }
+  aiBusy = false; aiAbort = null; renderChat();
+}
+// a change that breaks an MOE rule is not simulated until the user chooses to break it; the approvers still decide
+async function stageOps(m, ops) {
+  const cur = SIM ? SIM.res.plan : LIVEPLAN, had = new Set(PlanEngine.checks(cur).map(c => c.key));
+  const prev = await PlanEngine.simulate(LIVEPLAN, [...draft.ops, ...ops]);
+  const rules = PlanEngine.checks(prev.plan).filter(c => c.level === 'rule' && !had.has(c.key)).map(c => ({ key: c.key, text: c.text }));
+  const logs = prev.log.filter(l => l.i >= draft.ops.length).map(l => ({ ok: l.ok, text: l.text }));
+  if (rules.length && logs.some(l => l.ok)) { m.confirm = { ops, rules, logs }; return; }
+  await applyOps(m, ops);
+}
+async function applyOps(m, ops, rules = []) {
+  if (rules.length) for (const o of ops) o.ack = rules.map(r => r.key);
+  draft.ops.push(...ops); saveDraft(); await resimulate();
+  const ids = new Set(ops.map(o => o._id));
+  m.changes = SIM.res.log.filter(l => ids.has(draft.ops[l.i]?._id)).map(l => ({ ok: l.ok, text: l.text }));
+  m.broke = rules.map(r => r.text);
+  for (const c of m.changes.filter(c => !c.ok)) { const k = SIM.res.log.find(l => l.text === c.text); if (k) draft.ops[k.i]._bad = true; }
+  if (draft.ops.some(o => o._bad)) { draft.ops = draft.ops.filter(o => !o._bad); saveDraft(); await resimulate(); }
+  if (m.changes.some(c => c.ok)) enterCompare('after');
+}
+$('#ai-form').addEventListener('submit', ev => { ev.preventDefault(); if (aiBusy) aiAbort?.abort(); else sendAI($('#ai-q').value); });
+// ---------- files attached to the next question: images, PDFs, Excel, CSV and text ----------
+// Spreadsheets and text are read here and sent as text; images (shrunk to 1600 px) and PDFs are sent as base64.
+// Claude reads images and PDFs; Ollama's model reads text only. A request carries at most FILE_BUDGET of file data.
+const FILE_BUDGET = 3.2e6;
+let attached = [], attaching = 0, fileErr = '';
+const fmtSize = n => n > 1e6 ? `${(n / 1e6).toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1e3))} KB`;
+const fileSize = f => f.data ? f.data.length * 0.75 : (f.text || '').length;
+function fileChip(f, i) {
+  const ico = f.kind === 'image' && f.data ? `<img src="data:${f.mime};base64,${f.data}" alt="">` : `<span class="fi">${f.kind === 'pdf' ? 'PDF' : /\.(xlsx|xls|xlsm|ods)$/i.test(f.name) ? 'XLS' : /\.csv$/i.test(f.name) ? 'CSV' : 'TXT'}</span>`;
+  return `<span class="af" title="${esc(f.name)}">${ico}<span class="fn">${esc(f.name)}</span><small>${fmtSize(f.size || fileSize(f))}</small>${i != null ? `<button type="button" data-i="${i}" aria-label="Remove ${esc(f.name)}">×</button>` : ''}</span>`;
+}
+function renderFiles() {
+  const el = $('#ai-files');
+  el.innerHTML = attached.map((f, i) => fileChip(f, i)).join('') + (attaching ? '<span class="af"><span class="fn">Reading…</span></span>' : '') + (fileErr ? `<span class="af bad">${esc(fileErr)}</span>` : '');
+  el.hidden = !el.innerHTML;
+}
+const b64 = buf => { let s = ''; const a = new Uint8Array(buf); for (let i = 0; i < a.length; i += 0x8000) s += String.fromCharCode.apply(null, a.subarray(i, i + 0x8000)); return btoa(s); };
+async function shrinkImage(file) {
+  const bmp = await createImageBitmap(file), k = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
+  if (k === 1 && file.size < 900e3) return { mime: file.type, data: b64(await file.arrayBuffer()) };
+  const c = document.createElement('canvas'); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+  const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(bmp, 0, 0, c.width, c.height);
+  return { mime: 'image/jpeg', data: c.toDataURL('image/jpeg', 0.86).split(',')[1] };
+}
+let XLSXmod = null;
+async function readFile(file) {
+  const name = (file.name || 'pasted image').slice(0, 120), cap = t => t.length > 150000 ? t.slice(0, 150000) + '\n[The rest of the file was cut: it is too long.]' : t;
+  if (/^image\/(png|jpe?g|webp|gif)$/.test(file.type)) { const im = await shrinkImage(file); return { name, kind: 'image', ...im, size: im.data.length * 0.75 }; }
+  if (file.type === 'application/pdf' || /\.pdf$/i.test(name)) { if (file.size > 3e6) throw new Error(`${name} is over 3 MB; attach a smaller PDF.`); return { name, kind: 'pdf', mime: 'application/pdf', data: b64(await file.arrayBuffer()), size: file.size }; }
+  if (/\.(xlsx|xls|xlsm|ods)$/i.test(name)) {
+    try { XLSXmod ||= await import('https://cdn.sheetjs.com/xlsx-0.20.3/package/xlsx.mjs'); } catch { throw new Error(`Could not open the Excel reader. Save ${name} as CSV and attach that.`); }
+    const wb = XLSXmod.read(await file.arrayBuffer());
+    const text = wb.SheetNames.slice(0, 6).map(n => `Sheet "${n}" (CSV):\n${XLSXmod.utils.sheet_to_csv(wb.Sheets[n], { blankrows: false })}`).join('\n\n');
+    return { name, kind: 'text', text: cap(text), size: file.size };
+  }
+  if (/\.(csv|tsv|txt|md|json)$/i.test(name) || file.type.startsWith('text/')) return { name, kind: 'text', text: cap(await file.text()), size: file.size };
+  throw new Error(`${name}: attach images, PDFs, Excel, CSV or text files.`);
+}
+async function addFiles(list) {
+  fileErr = ''; const files = [...list].slice(0, 8 - attached.length);
+  if (!files.length) return;
+  attaching++; renderFiles();
+  for (const f of files) {
+    try { const r = await readFile(f); if (attached.reduce((n, x) => n + fileSize(x), 0) + fileSize(r) > FILE_BUDGET) throw new Error(`${r.name} would make the attachments too large (3 MB at most).`); attached.push(r); }
+    catch (e) { fileErr = e.message; }
+  }
+  attaching--; renderFiles(); $('#ai-q').focus();
+}
+// the conversation as sent: files go with their message, newest first, until the size budget is used
+function withFiles(msgs) {
+  let left = FILE_BUDGET;
+  const out = msgs.map(x => ({ role: x.role, content: x.content, files: x.files }));
+  for (let i = out.length - 1; i >= 0; i--) {
+    if (!out[i].files) { delete out[i].files; continue; }
+    out[i].files = out[i].files.map(f => { const n = fileSize(f); if (n <= left) { left -= n; return { name: f.name, kind: f.kind, mime: f.mime, data: f.data, text: f.text }; } return { name: f.name, kind: f.kind, omitted: true }; });
+  }
+  return out;
+}
+$('#ai-clip').addEventListener('click', () => $('#ai-file').click());
+$('#ai-file').addEventListener('change', ev => { addFiles(ev.target.files); ev.target.value = ''; });
+$('#ai-files').addEventListener('click', ev => { const b = ev.target.closest('button[data-i]'); if (b) { attached.splice(+b.dataset.i, 1); fileErr = ''; renderFiles(); } });
+$('#ai-q').addEventListener('paste', ev => { const fs = [...(ev.clipboardData?.files || [])]; if (fs.length) { ev.preventDefault(); addFiles(fs); } });
+{ const pane = $('#p-ai'); let depth = 0;
+  pane.addEventListener('dragenter', ev => { if ([...ev.dataTransfer.types].includes('Files')) { depth++; pane.classList.add('drop'); } });
+  pane.addEventListener('dragleave', () => { if (--depth <= 0) { depth = 0; pane.classList.remove('drop'); } });
+  pane.addEventListener('dragover', ev => { if ([...ev.dataTransfer.types].includes('Files')) ev.preventDefault(); });
+  pane.addEventListener('drop', ev => { ev.preventDefault(); depth = 0; pane.classList.remove('drop'); if (ev.dataTransfer.files.length) addFiles(ev.dataTransfer.files); }); }
+$('#ai-new').addEventListener('click', () => { if (aiBusy) return; chat.length = 0; attached = []; fileErr = ''; renderFiles(); endPreview(); renderChat(); $('#ai-q').focus(); });
+$('#ai-q').addEventListener('keydown', ev => { if (ev.key === 'Enter' && !ev.shiftKey && !ev.isComposing) { ev.preventDefault(); sendAI($('#ai-q').value); } });
+$('#ai-q').addEventListener('input', () => { const t = $('#ai-q'); t.style.height = 'auto'; t.style.height = Math.min(140, t.scrollHeight) + 'px'; });
+
+// ---------- Claude's attempts, shown on the map as it plans ----------
+let PREVIEW = null, pulseRaf = 0;
+const REDUCED = matchMedia('(prefers-reduced-motion: reduce)');
+let pvWanted = 'after';   // the side the user picked while Claude plans; kept from one attempt to the next
+async function previewOps(ops, title, moved = [], live = true) {
+  if (VIEWING || !ops?.length || !map.getSource('ghost')) return;
+  const prev = SIM ? SIM.res.plan : LIVEPLAN, tok = (PREVIEW?.tok || 0) + 1; PREVIEW = { tok, live };
+  const res = await PlanEngine.simulate(LIVEPLAN, [...draft.ops, ...ops]);
+  if (PREVIEW?.tok !== tok) return;
+  if (CMP) exitCompare();
+  const d = (moved || []).filter(v => v.drive_before != null && v.drive_after != null).sort((a, b) => Math.abs(b.drive_after - b.drive_before) - Math.abs(a.drive_after - a.drive_before) || b.drive_after - a.drive_after)[0];
+  Object.assign(PREVIEW, { before: prev, res, sets: changeSets(prev, res.plan), title, moved: moved || [], d, who: chat[chat.length - 1]?.meta?.label || 'The planner' });
+  pvSide(live ? pvWanted : 'after');
+  isolateSets(PREVIEW.sets, '', { fromPreview: true });
+  $('.mapwrap').classList.add('previewing');
+  pulse();
+}
+// show Claude's attempt, or the plan as it was before it
+function pvSide(side) {
+  const pv = PREVIEW; if (!pv?.res) return;
+  pv.side = side; if (pv.live) pvWanted = side;
+  if (side === 'before') renderPlan(pv.before, pv.sets.moved, []); else renderPlan(pv.res.plan, pv.res.changedSites, pv.res.changedEngs);
+  const bS = new Map(pv.before.sites.map(x => [x.id, x])), bE = new Map(pv.before.engineers.map(x => [x.id, x]));
+  const ghosts = side === 'after' ? pv.sets.moved.map(id => { const x = bS.get(id), ob = bS.get(bE.get(x.eng)?.base); return ob && !x.boat && !ob.boat ? { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: [[ob.lng, ob.lat], [x.lng, x.lat]] } } : null; }).filter(Boolean) : [];
+  map.getSource('ghost').setData(fc(ghosts));
+  map.setFilter('try-ring', ['in', ['get', 'id'], ['literal', pv.sets.moved]]);
+  const d = pv.d, lb = $('#livebar');
+  const what = side === 'before' ? `<b>Before:</b> the plan without ${pv.live ? 'this attempt' : 'it'}` : `<b>${pv.live ? `${esc(pv.who)} is trying` : 'Attempt'}:</b> ${esc(pv.title || '')}`;
+  lb.innerHTML = `<span class="dot" aria-hidden="true"></span><div class="seg" role="group" aria-label="Before or after this attempt"><button type="button" data-s="before" aria-pressed="${side === 'before'}">Before</button><button type="button" data-s="after" aria-pressed="${side === 'after'}">After</button></div><span class="lt">${what}</span>${d && side === 'after' ? `<span class="ld">${pv.moved.length > 1 ? `${pv.moved.length} sites; longest change: ` : ''}drive ${dtxt(d)}</span>` : ''}${pv.live ? '' : '<button type="button" id="lbback">Back to the plan</button>'}`;
+  lb.classList.toggle('live', pv.live); lb.hidden = false;
+}
+$('#livebar').addEventListener('click', ev => { const b = ev.target.closest('button[data-s]'); if (b) pvSide(b.dataset.s); else if (ev.target.closest('#lbback')) endPreview(); });
+function pulse() {
+  cancelAnimationFrame(pulseRaf);
+  if (!map.getLayer('try-ring')) return;
+  map.setPaintProperty('try-ring', 'circle-stroke-width', 2.5); map.setPaintProperty('try-ring', 'circle-stroke-opacity', 0.9);
+  if (!PREVIEW?.live || REDUCED.matches) return;
+  const t0 = performance.now();
+  const f = now => { if (!PREVIEW?.live) { map.setPaintProperty('try-ring', 'circle-stroke-width', 2.5); map.setPaintProperty('try-ring', 'circle-stroke-opacity', 0.9); return; } const ph = (Math.sin((now - t0) / 240) + 1) / 2; map.setPaintProperty('try-ring', 'circle-stroke-width', 1.5 + 3 * ph); map.setPaintProperty('try-ring', 'circle-stroke-opacity', 0.35 + 0.6 * ph); pulseRaf = requestAnimationFrame(f); };
+  pulseRaf = requestAnimationFrame(f);
+}
+function endPreview() {
+  if (!PREVIEW) return;
+  PREVIEW = null; pvWanted = 'after'; cancelAnimationFrame(pulseRaf); if (ISO?.fromPreview) unisolate();
+  if (map.getSource('ghost')) { map.getSource('ghost').setData(fc([])); map.setFilter('try-ring', ['in', ['get', 'id'], ['literal', []]]); }
+  $('#livebar').hidden = true; $('.mapwrap').classList.remove('previewing');
+  if (VIEWING) return;
+  restoreView();
+}
+
+// ---------- simulated changes ("draft proposal"), kept in this browser until sent or discarded ----------
+let draft = { ops: [] }, SIM = null;
+function loadDraft() { try { const d = JSON.parse(localStorage.getItem('moe-draft-v1') || 'null'); if (d && Array.isArray(d.ops)) draft = { ops: d.ops }; } catch {} }
+function saveDraft() { try { localStorage.setItem('moe-draft-v1', JSON.stringify({ ops: draft.ops })); } catch {} }
+const apiDrive = async pairs => { const r = await fetch('api/drive', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pairs }) }); if (!r.ok) throw new Error('drive'); return (await r.json()).results; };
+async function resimulate() {
+  if (VIEWING) return;
+  if (!draft.ops.length) { SIM = null; if (CMP) exitCompare(); renderPlan(LIVEPLAN); renderDraft(); return; }
+  const res = await PlanEngine.simulate(LIVEPLAN, draft.ops, { drive: ONLINE ? apiDrive : null });
+  SIM = { res, imp: PlanEngine.impact(LIVEPLAN, res) };
+  renderPlan(res.plan, res.changedSites, res.changedEngs); renderDraft();
+  if (CMP) enterCompare(CMP.side, { fit: false });   // an undo or a new change: the comparison follows
+}
+function renderDraft() {
+  const bar = $('#draftbar'), box = $('#draftbox');
+  if (VIEWING?.version) {   // a saved map version, opened from its link
+    const v = VIEWING.proposal, n = v.log.filter(l => l.ok).length, link = versionLink(v.id), rules = (v.warnings || []).filter(w => w.level === 'rule');
+    bar.innerHTML = `<span><b>Version: ${esc(v.name)}</b>: ${n} change${n === 1 ? '' : 's'}, not published</span><button type="button" id="dbcmp">Before / after</button><button type="button" id="dbcopy">Copy link</button><button type="button" class="p" id="dbuse">Use these changes</button><button type="button" id="dblive">Show the live plan</button>`;
+    bar.hidden = false; $('#dbcmp').onclick = () => enterCompare('after'); $('#dbcopy').onclick = ev => copyText(link, ev.currentTarget); $('#dbuse').onclick = useVersion; $('#dblive').onclick = () => { location.href = location.pathname; };
+    const pg = v.groups || { headline: v.lines || [], zones: [], warnings: [], resolved: [], moves: [] };
+    box.innerHTML = `<div class="dbox"><div class="dh"><b>Version: ${esc(v.name)}</b><span>not published</span></div>${v.summary ? `<p style="margin:4px 0;font-size:12.5px">${esc(v.summary)}</p>` : ''}<p class="vnote" style="margin:2px 0 6px">Saved ${esc(String(v.createdAt || '').slice(0, 10))}${v.createdBy ? ` by ${esc(v.createdBy)}` : ''}. Only people with the link can open it. Nothing has been sent for approval.</p><ol>${v.log.filter(l => l.ok).map(l => `<li>${esc(l.text)}</li>`).join('')}</ol>${rules.length ? `<div class="rules-broken"><b>MOE rules this version breaks</b><ul>${rules.map(w => `<li>${esc(w.text)}</li>`).join('')}</ul></div>` : ''}<details open><summary>Impact on the plan</summary><ul>${[...pg.headline, ...pg.zones].map(l => `<li>${esc(l)}</li>`).join('')}${(pg.warnings || []).map(l => `<li class="w">${esc(l)}</li>`).join('')}</ul></details>${pg.moves?.length ? `<details><summary>${pg.moves.length} site${pg.moves.length === 1 ? '' : 's'} change engineer</summary><ul>${pg.moves.map(l => `<li>${esc(l)}</li>`).join('')}</ul></details>` : ''}<div class="dact"><button type="button" class="p" id="duse">Use these changes</button><button type="button" id="dcopy">Copy link</button></div><p class="vnote" style="margin:6px 0 0">"Use these changes" puts them on your own simulated plan in this browser, replacing any simulated changes you have, so you can change them or request approval.</p></div>`;
+    $('#duse').onclick = useVersion; $('#dcopy').onclick = ev => copyText(link, ev.currentTarget);
+    requestAnimationFrame(clampCards); return;
+  }
+  if (VIEWING) {
+    const pr = VIEWING.proposal, d = VIEWING.decision, n = pr.log.filter(l => l.ok).length;
+    bar.innerHTML = `<span><b>Proposal from ${esc(pr.requester)}</b>: ${n} change${n === 1 ? '' : 's'}, ${d ? (d.decision === 'approved' ? `approved by ${esc(d.byName)}` : d.decision === 'rejected' ? `rejected by ${esc(d.byName)}` : d.decision === 'withdrawn' ? 'withdrawn' : 'out of date') : 'waiting for approval'}</span><button type="button" id="dbcmp">Before / after</button><button type="button" id="dbrev">Details</button><button type="button" class="p" id="dblive">Show the live plan</button>`;
+    bar.hidden = false; $('#dbcmp').onclick = () => enterCompare('after'); $('#dbrev').onclick = openAI; $('#dblive').onclick = () => { location.href = location.pathname; };
+    const pg = pr.groups || { headline: pr.lines, zones: [], warnings: [], resolved: [], moves: [] };
+    box.innerHTML = `<div class="dbox"><div class="dh"><b>Proposal from ${esc(pr.requester)}</b><span>${d ? esc(d.decision) : 'waiting for approval'}</span></div>${pr.note ? `<p style="margin:4px 0;font-size:12.5px">“${esc(pr.note)}”</p>` : ''}<ol>${pr.log.filter(l => l.ok).map(l => `<li>${esc(l.text)}</li>`).join('')}</ol><details open><summary>Impact on the plan</summary><ul>${[...pg.headline, ...pg.zones].map(l => `<li>${esc(l)}</li>`).join('')}${pg.warnings.map(l => `<li class="w">${esc(l)}</li>`).join('')}</ul></details>${pg.moves.length ? `<details><summary>${pg.moves.length} sites change engineer</summary><ul>${pg.moves.map(l => `<li>${esc(l)}</li>`).join('')}</ul></details>` : ''}</div>`;
+    requestAnimationFrame(clampCards); return;
+  }
+  const n = draft.ops.length;
+  if (!n) { bar.hidden = true; box.innerHTML = ''; requestAnimationFrame(clampCards); return; }
+  const log = SIM?.res.log || [], g = SIM ? PlanEngine.impactGroups(SIM.imp) : { headline: [], zones: [], warnings: [], resolved: [], moves: [] };
+  bar.innerHTML = `<span><b>Simulated plan:</b> ${n} change${n === 1 ? '' : 's'}, not yet approved</span><button type="button" id="dbcmp">Before / after</button><button type="button" id="dbsave" ${ONLINE_PROP ? '' : 'disabled title="Needs the online map"'}>Save as version</button><button type="button" id="dbrev">Review</button><button type="button" class="p" id="dbreq" ${ONLINE_PROP ? '' : 'disabled title="Needs the online map"'}>Request plan update</button><button type="button" id="dbdis">Discard</button>`;
+  bar.hidden = false; $('#dbcmp').onclick = () => enterCompare('after'); $('#dbsave').onclick = openSaveVersion; $('#dbrev').onclick = openAI; $('#dbreq').onclick = openRequest; $('#dbdis').onclick = discardDraft;
+  box.innerHTML = `<div class="dbox"><div class="dh"><b>Simulated changes</b><span>not approved yet</span></div>
+    <ol>${draft.ops.map((o, i) => { const l = log.find(x => x.i === i); return `<li class="${l && !l.ok ? 'bad' : ''}">${esc(l ? l.text : o.op)}<button type="button" class="undo" data-i="${i}">Undo</button></li>`; }).join('')}</ol>
+    ${ruleList()}<details${chat.length ? '' : ' open'}><summary>Impact on the plan</summary><ul>${[...g.headline, ...g.zones].map(l => `<li>${esc(l)}</li>`).join('')}${(SIM?.imp.warnings || []).filter(w => w.level !== 'rule').map(w => `<li class="w">Watch: ${esc(w.text)}</li>`).join('')}${g.resolved.map(l => `<li>${esc(l)}</li>`).join('')}</ul></details>
+    ${g.moves.length ? `<details><summary>${g.moves.length} site${g.moves.length === 1 ? '' : 's'} change engineer</summary><ul>${g.moves.map(l => `<li>${esc(l)}</li>`).join('')}</ul></details>` : ''}
+    <div class="dact"><button type="button" class="p" id="dreq" ${ONLINE_PROP ? '' : 'disabled title="Needs the online map"'}>Request plan update</button><button type="button" id="dsave" ${ONLINE_PROP ? '' : 'disabled title="Needs the online map"'}>Save as version</button><button type="button" id="ddis">Discard all</button></div></div>`;
+  $('#dreq').onclick = openRequest; $('#dsave').onclick = openSaveVersion; $('#ddis').onclick = discardDraft;
+  requestAnimationFrame(clampCards);
+}
+$('#draftbox').addEventListener('click', async ev => { const u = ev.target.closest('.undo'); if (u) { draft.ops.splice(+u.dataset.i, 1); saveDraft(); await resimulate(); } });
+function ruleList() {
+  const rules = (SIM?.imp.warnings || []).filter(w => w.level === 'rule'); if (!rules.length) return '';
+  const ack = new Set(draft.ops.flatMap(o => o.ack || []));
+  return `<div class="rules-broken"><b>MOE rules these changes break</b><ul>${rules.map(w => `<li>${esc(w.text)}${ack.has(w.key) ? ' <span>You chose to break this.</span>' : ''}</li>`).join('')}</ul></div>`;
+}
+async function discardDraft() { draft.ops = []; saveDraft(); await resimulate(); }
+
+// ---------- map versions: save the simulated changes under a name, with a private link (not published, not sent) ----------
+function openSaveVersion() {
+  if (!draft.ops.length || !SIM) return;
+  const dlg = $('#reqdlg'), n = SIM.res.log.filter(l => l.ok).length;
+  dlg.innerHTML = `<form method="dialog" id="svf"><h3 id="reqh">Save as a map version</h3>
+    <p>Saves ${n === 1 ? 'this simulated change' : `these ${n} simulated changes`} as a separate version of the map with its own link. It is not published and nothing is sent: only people you give the link to can open it.</p>
+    <label for="svn">Name</label><input id="svn" required maxlength="80" placeholder="For example: Option A, Umm Sqaim to DXB-SHJ-P03">
+    <label for="svs">Note (optional)</label><textarea id="svs" maxlength="600" placeholder="What this version changes and why"></textarea>
+    <p class="err" id="sverr" hidden></p>
+    <div class="acts"><button type="button" id="svc">Cancel</button><button type="submit" class="p" id="svgo">Save version</button></div></form>`;
+  dlg.showModal(); $('#svc').onclick = () => dlg.close();
+  $('#svf').onsubmit = async ev => {
+    ev.preventDefault();
+    const name = $('#svn').value.trim(); if (!name) return;
+    let who = ''; try { who = localStorage.getItem('moe-name') || ''; } catch {}
+    $('#svgo').disabled = true; $('#svgo').textContent = 'Saving…'; $('#sverr').hidden = true;
+    try {
+      const r = await fetch('api/scenarios', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, summary: $('#svs').value, ops: draft.ops.map(({ _id, _bad, ...o }) => o), createdBy: who || 'the map' }) });
+      const j = await r.json(); if (!r.ok) throw new Error(j.error || `Not saved (${r.status}).`);
+      const link = versionLink(j.id);
+      dlg.innerHTML = `<form method="dialog"><h3>Version saved</h3><p class="ok">"${esc(j.name)}" is saved. It is not published: only people with this link can open it.</p>
+        <div class="vlinkbox"><input readonly value="${esc(link)}" aria-label="Link to this version" id="svlink"><button type="button" id="svcopy">Copy link</button></div>
+        <div class="acts"><a class="sugg" href="${esc(link)}" target="_blank" rel="noopener">Open it</a><button type="submit" class="p">Close</button></div></form>`;
+      $('#svcopy').onclick = ev2 => copyText(link, ev2.currentTarget); $('#svlink').onfocus = e2 => e2.target.select();
+    } catch (err) { $('#sverr').textContent = err.message; $('#sverr').hidden = false; $('#svgo').disabled = false; $('#svgo').textContent = 'Save version'; }
+  };
+}
+// "Use these changes": a version's changes become this browser's simulated plan (replacing it), shown before / after
+function useVersion() {
+  if (!VIEWING?.version) return;
+  try { localStorage.setItem('moe-draft-v1', JSON.stringify({ ops: VIEWING.proposal.ops.map(o => ({ ...o, _id: rid() })) })); sessionStorage.setItem('moe-open-compare', '1'); } catch {}
+  location.href = location.pathname;
+}
+
+// ---------- "Request plan update": name, note, send; the approvers get an email ----------
+function openRequest() {
+  if (!draft.ops.length || !SIM) return;
+  const dlg = $('#reqdlg'), lines = PlanEngine.impactLines(SIM.imp), rules = SIM.imp.warnings.filter(w => w.level === 'rule');
+  let name = ''; try { name = localStorage.getItem('moe-name') || ''; } catch {}
+  dlg.innerHTML = `<form method="dialog" id="reqf"><h3 id="reqh">Request plan update</h3>
+    <p>Sithesvaran Thirumaran and Sanath Swaroop will get an email with these changes and their impact. The live plan changes only when one of them confirms.</p>
+    <ul>${SIM.res.log.filter(l => l.ok).map(l => `<li>${esc(l.text)}</li>`).join('')}${lines.filter(l => /^Watch/.test(l)).map(l => `<li class="w">${esc(l)}</li>`).join('')}</ul>
+    ${rules.length ? `<div class="rules-broken"><b>These changes break ${rules.length === 1 ? 'an MOE rule' : `${rules.length} MOE rules`}</b><ul>${rules.map(w => `<li>${esc(w.text)}</li>`).join('')}</ul><label class="ackbox"><input type="checkbox" id="reqack"> I understand, and I want the approvers to decide. They will see that I chose to break ${rules.length === 1 ? 'this rule' : 'these rules'}.</label></div>` : ''}
+    <label for="reqn">Your name</label><input id="reqn" autocomplete="name" required maxlength="80" value="${esc(name)}">
+    <label for="reqnote">Note for the approvers (optional)</label><textarea id="reqnote" maxlength="600" placeholder="Why these changes?"></textarea>
+    <p class="err" id="reqerr" hidden></p>
+    <div class="acts"><button type="button" id="reqc">Cancel</button><button type="submit" class="p" id="reqs">Send for approval</button></div></form>`;
+  dlg.showModal();
+  $('#reqc').onclick = () => dlg.close();
+  if (rules.length) { $('#reqs').disabled = true; $('#reqack').onchange = () => { $('#reqs').disabled = !$('#reqack').checked; }; }
+  $('#reqf').onsubmit = async ev => {
+    ev.preventDefault();
+    const requester = $('#reqn').value.trim(); if (!requester) return;
+    try { localStorage.setItem('moe-name', requester); } catch {}
+    $('#reqs').disabled = true; $('#reqs').textContent = 'Sending…'; $('#reqerr').hidden = true;
+    try {
+      const r = await fetch('api/proposals', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ requester, note: $('#reqnote').value, ops: draft.ops.map(({ _id, ...o }, k) => (k === 0 && rules.length ? { ...o, ack: [...new Set([...(o.ack || []), ...rules.map(w => w.key)])] } : o)) }) });
+      const j = await r.json(); if (!r.ok) throw new Error(j.error || `Not sent (${r.status}).`);
+      draft.ops = []; saveDraft(); await resimulate();
+      dlg.innerHTML = `<form method="dialog"><h3>Sent for approval</h3><p class="ok">${esc((j.sentTo || []).join(' and ') || 'The approvers')} ${j.sentTo?.length === 1 ? 'has' : 'have'} been emailed.${j.error ? ` ${esc(j.error)}` : ''}</p><p>The map shows the live plan again. Once a change is confirmed, everyone sees the new plan.</p>
+        <div class="acts"><a class="sugg" href="?proposal=${encodeURIComponent(j.id)}">See the proposal on the map</a><button type="submit" class="p">Close</button></div></form>`;
+    } catch (err) { $('#reqerr').textContent = err.message; $('#reqerr').hidden = false; $('#reqs').disabled = false; $('#reqs').textContent = 'Send for approval'; }
+  };
+}
+
+// ---------- start: the live plan, a proposal from an email link, or this browser's simulated changes ----------
+async function boot() {
+  loadDraft();
+  if (location.protocol.startsWith('http')) {
+    try { const r = await fetch('api/plan'); if (r.ok) { const j = await r.json(); LIVEPLAN = j.plan; LIVEMETA = j.meta; ONLINE = true; ONLINE_PROP = !!j.proposals; AI_MODELS = j.ai || null; } } catch {}
+  }
+  LIVEENG = new Map(LIVEPLAN.sites.map(s => [s.id, s.eng]));
+  const pid = new URLSearchParams(location.search).get('proposal');
+  if (pid && ONLINE) {
+    try {
+      const r = await fetch('api/proposals/' + encodeURIComponent(pid)); const j = await r.json();
+      if (r.ok && j.plan) { VIEWING = { proposal: j.proposal, decision: j.decision, plan: j.plan }; LIVEENG = new Map((await (await fetch('api/plan')).json()).plan.sites.map(s => [s.id, s.eng])); renderPlan(j.plan, j.proposal.changedSites, j.proposal.changedEngs || []); renderDraft(); renderChat(); map.getSource('sites') ? enterCompare('after') : map.once('load', () => enterCompare('after')); return; }
+    } catch {}
+  }
+  const vid = new URLSearchParams(location.search).get('version');
+  if (vid && ONLINE) {
+    try {
+      const r = await fetch('api/scenarios/' + encodeURIComponent(vid)); const j = await r.json();
+      if (r.ok && j.plan) { VIEWING = { proposal: j.version, decision: null, plan: j.plan, version: true }; renderPlan(j.plan, j.version.changedSites, j.version.changedEngs || []); renderDraft(); renderChat(); map.getSource('sites') ? enterCompare('after') : map.once('load', () => enterCompare('after')); return; }
+      renderPlan(LIVEPLAN); renderDraft(); renderChat();
+      const bar = $('#draftbar'); bar.innerHTML = `<span><b>This map version could not be opened.</b> ${esc(j.error || 'The link may be wrong.')}</span><button type="button" class="p" id="dblive">Show the live plan</button>`; bar.hidden = false; $('#dblive').onclick = () => { location.href = location.pathname; };
+      return;
+    } catch {}
+  }
+  if (draft.ops.length) await resimulate(); else { renderPlan(LIVEPLAN); renderDraft(); }
+  renderChat();
+  let openCmp = false; try { openCmp = sessionStorage.getItem('moe-open-compare') === '1'; sessionStorage.removeItem('moe-open-compare'); } catch {}
+  if (openCmp && draft.ops.length) map.getSource('sites') ? enterCompare('after') : map.once('load', () => enterCompare('after'));
+}
+boot();
+
+// ---------- wiring ----------
+$$('.tabs button').forEach(b => b.onclick = () => { $$('.tabs button').forEach(x => x.setAttribute('aria-selected', x === b)); for (const p of ['overview', 'ai', 'zones', 'engineers', 'method']) $('#p-' + p).hidden = p !== b.dataset.p; sizeSide(); if (b.dataset.p === 'ai') setTimeout(() => $('#ai-q').focus(), 30); });
+
+// ---------- the side panel: wider for Ask AI; drag its edge to resize (remembered per tab type); hide it to give the map the screen ----------
+const SIDE_KEY = 'moe-side-v1';
+let sidePref = (() => { try { return JSON.parse(localStorage.getItem(SIDE_KEY)) || {}; } catch { return {}; } })();
+const saveSide = () => { try { localStorage.setItem(SIDE_KEY, JSON.stringify(sidePref)); } catch {} };
+const sideMode = () => ($('#p-ai').hidden ? 'other' : 'ai');
+const sideRoom = () => $('.main').clientWidth;
+function sideWidth(mode) {
+  const room = sideRoom(), want = sidePref[mode] || (mode === 'ai' ? Math.max(560, Math.round(room * 0.36)) : 420);
+  return Math.round(Math.min(Math.max(320, room - 380), Math.max(320, want)));
+}
+function sizeSide() { $('#side').style.setProperty('--side-w', sideWidth(sideMode()) + 'px'); }
+function hideSide() { $('.main').classList.add('collapsed'); $('#side-show').hidden = false; sidePref.collapsed = true; saveSide(); $('#side-show').focus(); }
+function showSide() { if (!$('.main').classList.contains('collapsed')) return; $('.main').classList.remove('collapsed'); $('#side-show').hidden = true; sidePref.collapsed = false; saveSide(); }
+$('#side-hide').onclick = hideSide;
+$('#side-show').onclick = () => { showSide(); sizeSide(); };
+{ const grip = $('#side-grip'), side = $('#side'); let start = null;
+  grip.addEventListener('pointerdown', ev => { if (ev.button !== 0) return; ev.preventDefault(); grip.setPointerCapture(ev.pointerId); const r = side.getBoundingClientRect(); start = { left: r.left, k: r.width / side.offsetWidth || 1 }; side.classList.add('dragging'); });
+  grip.addEventListener('pointermove', ev => { if (!start) return; const w = (ev.clientX - start.left) / start.k; sidePref[sideMode()] = Math.round(Math.min(Math.max(320, sideRoom() - 380), Math.max(320, w))); sizeSide(); });
+  const end = () => { if (!start) return; start = null; side.classList.remove('dragging'); saveSide(); };
+  grip.addEventListener('pointerup', end); grip.addEventListener('pointercancel', end);
+  grip.addEventListener('dblclick', () => { delete sidePref[sideMode()]; saveSide(); sizeSide(); });
+  grip.addEventListener('keydown', ev => { if (ev.key !== 'ArrowLeft' && ev.key !== 'ArrowRight') return; ev.preventDefault(); sidePref[sideMode()] = sideWidth(sideMode()) + (ev.key === 'ArrowRight' ? 40 : -40); sizeSide(); saveSide(); });
+  grip.tabIndex = 0;
+  if (sidePref.collapsed && innerWidth > 820) { $('.main').classList.add('collapsed'); $('#side-show').hidden = false; }
+  sizeSide(); addEventListener('resize', sizeSide);
+  // the map fills whatever room the panel leaves
+  let rq = 0; new ResizeObserver(() => { cancelAnimationFrame(rq); rq = requestAnimationFrame(() => map.resize()); }).observe($('#map')); }
+$('#p-zones').addEventListener('click', ev => { const tr = ev.target.closest('tr.zr'); if (tr) { $('#zone').value = tr.dataset.z; applyFilter(); flyZone(tr.dataset.z); } });
+$('#p-zones').addEventListener('keydown', ev => { const tr = ev.target.closest('tr.zr'); if (tr && ev.key === 'Enter') { $('#zone').value = tr.dataset.z; applyFilter(); flyZone(tr.dataset.z); } });
+addEventListener('keydown', ev => { if (ev.key === 'Escape' && !$('#reqdlg').open) { clearSel(); setPicks([]); if (ISO && !ISO.fromPreview) unisolate(); } });
+$('#lgt').onclick = () => { const o = $('#lgt').getAttribute('aria-expanded') === 'true'; $('#lgt').setAttribute('aria-expanded', !o); $('#lgt').textContent = o ? 'Show' : 'Hide'; $('#legend').hidden = o; if (map.loaded()) clampCards(); };
+if (innerWidth < 820) $('#lgt').click();
+list(); legend();
+})();
+</script>

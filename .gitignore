@@ -1,0 +1,30 @@
+# Secrets: never commit keys, passwords or tokens (see README, "Settings")
+.env
+.env.*
+**/.env*
+!.env.example
+.vercel/
+
+# Dependencies
+node_modules/
+
+# Generated builds (rebuilt by the tools/ scripts)
+dist/
+deploy/moe-option-remote-map/lib/
+public/coverage-map.html
+public/standalone.html
+public/standalone-present.html
+
+# Local caches and analysis
+route-cache.json
+graphify-out/
+.remember/
+__pycache__/
+*.pyc
+.DS_Store
+
+# Raw source material, kept outside git (see README, "Data")
+*.xlsx
+*.pptx
+*.vtt
+Transcript*.txt

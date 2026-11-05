@@ -1,0 +1,5 @@
+{
+  "outputDirectory": "public",
+  "rewrites": [{ "source": "/((?!robots\\.txt$).*)", "destination": "/api/index?path=/$1" }],
+  "functions": { "api/index.js": { "maxDuration": 300 } }
+}
