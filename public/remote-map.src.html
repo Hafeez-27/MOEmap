@@ -375,6 +375,9 @@ dialog.req::backdrop{background:rgba(21,35,59,.35)}
 /* map labels (HTML markers: no font server needed) */
 .place{font:600 12px var(--cond);color:#7A8597;opacity:.85;text-shadow:0 0 3px var(--land),0 0 3px var(--land),0 0 3px var(--land);white-space:nowrap;pointer-events:none}
 .place.sea{font-style:italic;color:#7F9DB5;text-shadow:0 0 3px var(--sea)}
+.hqm{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink);white-space:nowrap;pointer-events:auto}
+.hqm b{background:var(--ink);color:#fff;border-radius:3px;padding:1px 4px;font:700 10px var(--cond);letter-spacing:.02em}
+.hqm span{background:rgba(255,255,255,.88);border-radius:3px;padding:0 4px}
 .zcard{background:var(--sheet);border:1px solid var(--mist);border-radius:6px;padding:5px 8px 6px;font-size:11.5px;line-height:1.3;box-shadow:0 2px 10px rgba(21,35,59,.12);cursor:pointer;white-space:nowrap;transition:opacity .25s;min-width:150px}
 .zcard b{display:block;font:700 13.5px var(--cond);color:var(--ink)}
 .zcard .zl{color:var(--mut)}
@@ -506,6 +509,10 @@ const kmS = km => km == null || km === '' ? '' : `${+km === 0 ? 0 : +km < 10 ? (
 const legOf = (e, id) => e.legs.find(l => l.to === id);
 const zoneName = id => Z.get(id)?.label || id;
 const cnt = k => P.engineers.filter(e => e.kind === k).length;
+const QS = s => (P.model ? s.qsize : s.size) || s.size;                    // the 331 model classes city schools by qualified size
+const QWORD = () => P.model ? ' (by qualified size)' : '';
+const usedKinds = () => KORDER.filter(k => cnt(k) || (P !== LIVEPLAN && LIVEPLAN.engineers.some(e => e.kind === k)));
+const hqList = () => (P.hqSites || []).map(h => `${h.name.replace(/ HQ$/, '')} ${h.engineers}`).join(', ');
 const notLive = () => P !== LIVEPLAN;                                     // a simulated change, a version, a proposal or Claude's attempt
 const dMark = d => d ? `<em class="dm">${d > 0 ? '+' : '−'}${Math.abs(d)}</em>` : '';
 const liveCnt = k => LIVEPLAN.engineers.filter(e => e.kind === k).length;
@@ -514,10 +521,10 @@ const bandOf = m => m == null ? 'boat' : m <= 15 ? 't1' : m <= P.sla ? 't2' : 't
 
 // ---------- header: the headcount, as one bar ----------
 let shown = new Set(KORDER);
-const verNote = () => LIVEMETA.version ? ` Live plan version ${LIVEMETA.version}, approved ${new Date(LIVEMETA.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} by ${esc(LIVEMETA.by)}.` : '';
+const verNote = () => LIVEMETA.version ? ` Live plan version ${LIVEMETA.version}${LIVEMETA.rebuild ? ` (${esc(LIVEMETA.label || 'rebuilt')}), made live` : ', approved'} ${new Date(LIVEMETA.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} by ${esc(LIVEMETA.by)}.` : '';
 function renderHeader() {
-$('#sub').innerHTML = `${fmt(schools.length)} schools and ${offices.length} offices, every one with a named engineer. Remote schools each get their own Emirati national. City schools share engineers: bigger ones in pairs, small ones and offices in pools that each zone lead dispatches.${verNote()}`;
-const SEG = [...KORDER.map(k => ({ k, n: cnt(k), col: C(k), label: { national: 'Emirati nationals, one per remote school', remote_shared: 'remote shared', city_shared: 'city shared, two schools each', pool: `city pool, about ${Math.round(ST.pool_sites_avg || 5)} sites each` }[k] })), { k: 'hq', n: P.hq, col: '', label: 'at HQ (3 sites, not on this map)' }];
+$('#sub').innerHTML = `${fmt(schools.length)} schools and ${offices.length} offices${P.hqSites?.length ? `, plus ${P.hqSites.length} HQ sites` : ''}, every one with a named engineer. Remote schools each get their own Emirati national. City schools share engineers: bigger ones in pairs, small ones and offices in pools that each zone lead dispatches.${verNote()}`;
+const SEG = [...usedKinds().map(k => ({ k, n: cnt(k), col: C(k), label: { national: 'Emirati nationals, one per remote school', remote_shared: 'remote shared', city_shared: 'city shared, two schools each', pool: `city pool, about ${Math.round(ST.pool_sites_avg || 5)} sites each` }[k] })), { k: 'hq', n: P.hq, col: '', label: P.hqSites?.length ? `at HQ (${hqList()})` : 'at HQ (3 sites, not on this map)' }];
 $('#bar').innerHTML = SEG.map(s => `<button class="${s.k === 'hq' ? 'hq' : ''}" data-k="${s.k}" style="flex:${s.n} 0 0;${s.col ? `background:${s.col}` : ''}" aria-label="${s.n} ${esc(s.label)}" title="${s.n} ${esc(s.label)}"></button>`).join('');
 const liveN = k => k === 'hq' ? LIVEPLAN.hq : LIVEPLAN.engineers.filter(e => e.kind === k).length, dTxt = d => d ? `<em>${d > 0 ? '+' : '−'}${Math.abs(d)}</em>` : '';
 const total = P.engineers.length + P.hq, liveTotal = LIVEPLAN.engineers.length + LIVEPLAN.hq, dt = P === LIVEPLAN ? 0 : total - liveTotal;
@@ -543,6 +550,7 @@ const pools = P.engineers.filter(e => e.kind === 'pool');
 const rem = P.engineers.find(e => e.kind === 'remote_shared');
 const natF = P.engineers.filter(e => e.kind === 'national' && e.gender === 'Female').length;
 const qx = schools.filter(s => s.cr === 'City' && ['Medium', 'Large', 'X-Large'].includes(s.size) && ['X-Small', 'Small'].includes(s.qsize));
+const remoteN = schools.filter(s => s.cr === 'Remote').length, allRemote = cnt('national') >= remoteN, island = schools.find(s => s.cr === 'Island'), showRem = usedKinds().includes('remote_shared');
 const mixed = ST.mixed_pairs.map(id => E.get(id));
 const three = P.engineers.filter(e => e.kind === 'city_shared' && e.sites.length === 3), single = P.engineers.filter(e => e.kind === 'city_shared' && e.sites.length === 1);
 const keySvg = {
@@ -564,37 +572,38 @@ $('#p-overview').innerHTML = `${notLiveNote()}
     <div>${keySvg.size}<span>Bigger dot, more users (students and staff)</span></div>
   </div>
 
-  <h2>The four ways a site is covered</h2>
+  <h2>The ${['', '', 'two', 'three', 'four'][usedKinds().length] || usedKinds().length} ways a site is covered</h2>
   <div class="blk" style="--c:${C('national')}">
     <div class="blk-h"><b>${cnt('national')}</b>${notLive() ? dMark(cnt('national') - liveCnt('national')) : ''}<span>Emirati nationals</span></div>
-    <p>The ${cnt('national')} largest remote schools each get one Emirati national, working on site. Nationals are never shared with another school; MOE has confirmed this.</p>
-    <ul class="facts"><li><b>${cnt('national')}</b> of the ${schools.filter(s => s.cr === 'Remote').length} remote schools, ranked by users</li><li><b>${natF}</b> female nationals for girls' schools; ${P.engineers.filter(e => e.kind === 'national' && e.gender === 'Male or female').length} mixed schools can take either</li><li>No travel: the engineer is already there</li></ul>
+    <p>${allRemote ? `Every remote school gets its own Emirati national, working on site` : `The ${cnt('national')} largest remote schools each get one Emirati national, working on site`}. Nationals are never shared with another school; MOE has confirmed this.</p>
+    <ul class="facts"><li>${allRemote ? `<b>${cnt('national')}</b> remote schools, one national each` : `<b>${cnt('national')}</b> of the ${remoteN} remote schools, ranked by users`}</li><li><b>${natF}</b> female nationals for girls' schools; ${P.engineers.filter(e => e.kind === 'national' && e.gender === 'Male or female').length} mixed schools can take either</li><li>No travel: the engineer is already there</li></ul>
   </div>
   <div class="blk" style="--c:${C('city_shared')}">
     <div class="blk-h"><b>${cnt('city_shared')}</b>${notLive() ? dMark(cnt('city_shared') - liveCnt('city_shared')) : ''}<span>City shared engineers</span></div>
-    <p>The ${schools.filter(s => s.cr === 'City' && ['Medium', 'Large', 'X-Large'].includes(s.size)).length} Medium, Large and X-Large city schools are paired with the nearest school of the same gender in the same zone. One non-national engineer covers both, based at the larger one.</p>
+    <p>The ${schools.filter(s => s.cr === 'City' && ['Medium', 'Large', 'X-Large'].includes(QS(s))).length} Medium, Large and X-Large city schools${QWORD()} are paired with the nearest school of the same gender in the same zone. One non-national engineer covers both, based at the larger one.</p>
     <ul class="facts"><li>Half the pairs are <b>${ST.pair_median} minutes</b> apart or less ${GOO ? 'in 7:30 am school-run traffic (Google Maps)' : 'at school-run peak'}, and <b>${(ST.pair_km_median).toFixed(1)} km</b> apart or less</li>
-      <li><b>${qx.length}</b> of these schools are "qualified X-Small" in the workbook: Alef runs their student devices, so MOE supports staff only</li>
-      <li>${three.length} engineers cover 3 schools and ${single.length} covers 1, because some zones have odd numbers of schools</li></ul>
+      <li>${P.model ? `<b>${qx.length}</b> city schools are Medium or larger by register size but Small or X-Small by qualified size (Alef runs their student devices, so MOE supports staff only), so they are in the pool` : `<b>${qx.length}</b> of these schools are "qualified X-Small" in the workbook: Alef runs their student devices, so MOE supports staff only`}</li>
+      <li>${three.length} engineer${three.length === 1 ? ' covers' : 's cover'} 3 schools and ${single.length} ${single.length === 1 ? 'covers' : 'cover'} 1, because some zones have odd numbers of schools</li></ul>
     ${distBar(pBand, pairs.length)}
   </div>
   <div class="blk" style="--c:${C('pool')}">
     <div class="blk-h"><b>${cnt('pool')}</b>${notLive() ? dMark(cnt('pool') - liveCnt('pool')) : ''}<span>City pool engineers</span></div>
-    <p>The ${schools.filter(s => s.cr === 'City' && ['Small', 'X-Small'].includes(s.size)).length} Small and X-Small city schools and the ${offices.length} offices have few tickets. Each zone gets pool engineers in proportion to its workload, and the zone lead dispatches them by ticket. The map shows each one's suggested home patch.</p>
+    <p>The ${schools.filter(s => s.cr === 'City' && ['Small', 'X-Small'].includes(QS(s))).length} Small and X-Small city schools${QWORD()} and the ${offices.length} offices have few tickets. Each zone gets pool engineers in proportion to its workload, and the zone lead dispatches them by ticket. The map shows each one's suggested home patch.</p>
     <ul class="facts"><li><b>${ST.pool_sites_avg.toFixed(1)}</b> sites per pool engineer on average (most ${Math.min(...pools.map(e => e.sites.length))}–${ST.pool_sites_max})</li>
       <li>Half the sites are <b>${ST.pool_median_reach} minutes</b> or less from the patch base ${PK}</li>
       <li>Every girls' school has a female engineer: ${pools.filter(e => e.gender === 'Female').length} female pool engineers${ST.girls_small_with_city_engineer ? `, and ${ST.girls_small_with_city_engineer} small girls' school${ST.girls_small_with_city_engineer === 1 ? ' rides' : 's ride'} with a nearby female city engineer` : ''}</li></ul>
   </div>
-  <div class="blk" style="--c:${C('remote_shared')}">
+  ${showRem ? `<div class="blk" style="--c:${C('remote_shared')}">
     <div class="blk-h"><b>${cnt('remote_shared')}</b>${notLive() ? dMark(cnt('remote_shared') - liveCnt('remote_shared')) : ''}<span>Remote shared engineer${cnt('remote_shared') === 1 ? '' : 's'}</span></div>
     <p>${rem ? `The ${rem.sites.length === 2 ? 'two' : rem.sites.length} smallest remote schools share one non-national: ${rem.sites.map(id => esc(S.get(id).name)).join(' and ')}.` : 'No remote shared engineer in this plan.'}</p>
-  </div>
+  </div>` : ''}
 
   <h2>Still to confirm</h2>
   <ol class="confirm">
-    <li><b>Abu Moosa School:</b> the workbook gives "Not in Service" for its location. It is shown on Abu Musa island; if it is in service, it needs boat visits.</li>
-    ${mixed.length ? `<li><b>${mixed.length} boys + girls pairs</b> (${mixed.map(e => `${zoneName(e.zone)}`).join(', ')}): those zones have an odd number of both boys' and girls' city schools, so one pair must mix. Each gets a female engineer.</li>` : ''}
-    <li><b>${ST.ns_placeholders} offices are placeholders</b> and none of the ${offices.length} has a map location; they are placed by area. ${ST.ns_users_assumed} have no user count, so the workbook's 75 users is assumed. The on-ground count is 38 offices, not ${offices.length}.</li>
+    ${island ? `<li><b>${esc(island.name)}</b> is not in service in the workbook. It is on Abu Musa island and is visited by boat by ${esc(island.eng)}, the nearest pool engineer in ${esc(zoneName(island.zone))}; it is not counted in the plan.</li>` : `<li><b>Abu Moosa School:</b> the workbook gives "Not in Service" for its location. It is shown on Abu Musa island; if it is in service, it needs boat visits.</li>`}
+    ${mixed.length ? `<li><b>${mixed.length === 1 ? 'One boys + girls pair' : `${mixed.length} boys + girls pairs`}</b> (${mixed.map(e => `${zoneName(e.zone)}`).join(', ')}): ${mixed.length === 1 ? 'that zone has' : 'those zones have'} an odd number of both boys' and girls' city schools, so one pair must mix. ${mixed.length === 1 ? 'It gets' : 'Each gets'} a female engineer.</li>` : ''}
+    ${offices.every(o => !o.approx) ? `<li><b>The ${offices.length} offices</b> have real names and locations from the workbook (the earlier list of 48 had 10 unnamed placeholders, now dropped). ${ST.ns_users_assumed} have no user count, so the workbook's 75 users is assumed.</li>` : `<li><b>${ST.ns_placeholders} offices are placeholders</b> and none of the ${offices.length} has a map location; they are placed by area. ${ST.ns_users_assumed} have no user count, so the workbook's 75 users is assumed. The on-ground count is 38 offices, not ${offices.length}.</li>`}
+    ${P.hqSites?.length ? `<li><b>HQ sites:</b> ${esc(hqList())} engineers. "Ajman HQ" is taken to be the MOE Ajman Main Complex. HQ engineers stay at their HQ and are not field engineers.</li>` : ''}
     ${P.zones.filter(z => !schools.some(x => x.zone === z.id && x.cr === 'City')).map(z => { const pe = P.engineers.filter(e => e.zone === z.id && e.kind === 'pool'), no = offices.filter(x => x.zone === z.id).length; return pe.length ? `<li><b>${esc(z.label)}</b> has no city schools, so its ${pe.length === 1 ? 'single pool engineer covers' : `${pe.length} pool engineers cover`} only its ${no} office${no === 1 ? '' : 's'}.</li>` : ''; }).join('')}
     <li><b>${pBand.t3} city pair${pBand.t3 === 1 ? ' is' : 's are'} more than ${P.sla} minutes apart ${PK}</b>${pBand.t3 ? `, in ${[...new Set(pairs.filter(e => e.maxPeak > P.sla).map(e => zoneName(e.zone)))].join(', ')}, where same-gender schools inside one zone are far apart` : ''}. ${GOO ? 'At 10:30 am' : 'Off-peak'} they are shorter; hover a pair for both.</li>
   </ol>`;
@@ -611,29 +620,30 @@ $('#p-zones').innerHTML = `${notLiveNote()}<p>Each zone has a Team Lead who runs
     <div class="mini" title="${KORDER.map((k, i) => `${n[i]} ${KIND[k].plural}`).filter(t => !t.startsWith('0 ')).join(', ')}">${KORDER.map((k, i) => n[i] ? `<div style="flex:${n[i]} 0 0;background:${C(k)}"></div>` : '').join('')}</div></td>
     <td>${z.schools}<br><small>${z.remote} remote</small></td><td>${z.offices}</td><td><b>${z.eng}</b>${zd(z)}<br><small>${KORDER.map((k, i) => n[i] ? `${n[i]} ${{ national: 'nat.', remote_shared: 'rem.', city_shared: 'shared', pool: 'pool' }[k]}` : '').filter(Boolean).join(', ')}</small></td></tr>`).join('')}
   <tr class="tot"><td>All zones</td><td>${schools.length}</td><td>${offices.length}</td><td>${P.engineers.length}${notLive() ? dMark(P.engineers.length - LIVEPLAN.engineers.length) : ''}</td></tr></tbody></table>
-  <p class="count" style="margin-top:8px">Plus ${P.hq} HQ engineers at the 3 HQ sites, outside the zones.</p>`;
+  <p class="count" style="margin-top:8px">Plus ${P.hq} HQ engineers at the ${(P.hqSites || []).length || 3} HQ sites${P.hqSites?.length ? ` (${esc(hqList())})` : ''}, outside the zone counts.</p>`;
 }
 renderZones();
 
 // ---------- method ----------
+const allRemoteNow = () => cnt('national') >= schools.filter(s => s.cr === 'Remote').length;
 function renderMethod() {
 $('#p-method').innerHTML = `${notLiveNote()}<ul class="rules">
-  <li><b>Plan version</b><span>${LIVEMETA.version ? `Version ${LIVEMETA.version}, approved ${new Date(LIVEMETA.at).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Dubai' })} by ${esc(LIVEMETA.by)}${LIVEMETA.requester ? `, requested by ${esc(LIVEMETA.requester)}` : ''}. Changes are proposed with the assistant and approved by email.` : 'The original plan (version 0). Changes can be proposed with the assistant (Ask AI) and are applied once Sithesvaran Thirumaran or Sanath Swaroop approves them by email.'}</span></li>
-  <li><b>Headcount</b><span>${P.engineers.length + P.hq} engineers${notLive() ? ` ${dMark(P.engineers.length - LIVEPLAN.engineers.length)} vs the live plan` : ''}: ${P.hq} stay at HQ (3 sites, not mapped) and ${P.engineers.length} cover the ${schools.length} schools and ${offices.length} offices. ${cnt('national')} + ${cnt('remote_shared')} + ${cnt('city_shared')} + ${cnt('pool')} = ${P.engineers.length}.</span></li>
-  <li><b>Remote or city</b><span>Each school's "City / Remote" label and size category come from the project lead's workbook, with its zones, Team Leads and GPS (confirmed by the Team Leads). ${ST.closed_removed} closed schools are left out.</span></li>
-  <li><b>Remote schools</b><span>Ranked by supported users. The top ${cnt('national')} get one Emirati national each, on site, female for girls' schools.${(r => r ? ` The ${r.sites.length} smallest share one non-national.` : '')(P.engineers.find(e => e.kind === 'remote_shared'))}</span></li>
-  <li><b>City Medium, Large and X-Large</b><span>Paired inside each zone. Same gender first, then the shortest drive ${GOO ? 'in 7:30 am traffic (Google Maps)' : 'at school-run peak'}; the engineer is based at the larger school. Where a zone's numbers are odd, one engineer covers 3 schools in one zone and 1 school in another, so the total stays at ${cnt('city_shared')}. Where both boys' and girls' counts are odd, one pair mixes and gets a female engineer.</span></li>
-  <li><b>City Small, X-Small and offices</b><span>${cnt('pool')} pool engineers, split across zones by workload (half users, half number of sites), at least one per zone. Inside a zone, girls' schools go to female engineers; the rest are split into compact patches of similar workload. Offices accept any engineer. If a zone has too few small girls' schools to keep a female pool engineer busy, they ride with the nearest female city engineer instead.</span></li>
+  <li><b>Plan version</b><span>${LIVEMETA.version && LIVEMETA.rebuild ? `Version ${LIVEMETA.version}: ${esc(LIVEMETA.note || 'the plan rebuilt from a new workbook')}, made live ${new Date(LIVEMETA.at).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Dubai' })} by ${esc(LIVEMETA.by)}. Changes are proposed with the assistant and approved by email.` : LIVEMETA.version ? `Version ${LIVEMETA.version}, approved ${new Date(LIVEMETA.at).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Dubai' })} by ${esc(LIVEMETA.by)}${LIVEMETA.requester ? `, requested by ${esc(LIVEMETA.requester)}` : ''}. Changes are proposed with the assistant and approved by email.` : 'The original plan (version 0). Changes can be proposed with the assistant (Ask AI) and are applied once Sithesvaran Thirumaran or Sanath Swaroop approves them by email.'}</span></li>
+  <li><b>Headcount</b><span>${P.engineers.length + P.hq} engineers${notLive() ? ` ${dMark(P.engineers.length - LIVEPLAN.engineers.length)} vs the live plan` : ''}: ${P.hq} stay at HQ (${P.hqSites?.length ? esc(hqList()) : '3 sites, not mapped'}) and ${P.engineers.length} cover the ${schools.length} schools and ${offices.length} offices. ${usedKinds().map(k => cnt(k)).join(' + ')} = ${P.engineers.length}.</span></li>
+  <li><b>Remote or city</b><span>Each school's "City / Remote" label and ${P.model ? 'qualified size category (it allows for Alef-managed student devices)' : 'size category'} come from the project lead's workbook, with its zones, Team Leads and GPS (confirmed by the Team Leads). ${ST.closed_removed} closed schools are left out.</span></li>
+  <li><b>Remote schools</b><span>${allRemoteNow() ? `Every remote school gets its own Emirati national, on site, female for girls' schools.` : `Ranked by supported users. The top ${cnt('national')} get one Emirati national each, on site, female for girls' schools.`}${(r => r ? ` The ${r.sites.length} smallest share one non-national.` : '')(P.engineers.find(e => e.kind === 'remote_shared'))}</span></li>
+  <li><b>City Medium, Large and X-Large${QWORD()}</b><span>Paired inside each zone. Same gender first, then the shortest drive ${GOO ? 'in 7:30 am traffic (Google Maps)' : 'at school-run peak'}; the engineer is based at the larger school. Where a zone's number is odd, one engineer there covers 3 schools or 1 school, chosen so the total is exactly ${cnt('city_shared')}. Where both boys' and girls' counts are odd, one pair mixes and gets a female engineer.</span></li>
+  <li><b>City Small, X-Small${QWORD()} and offices</b><span>${cnt('pool')} pool engineers, split across zones by workload (half users, half number of sites), at least one per zone. Inside a zone, girls' schools go to female engineers; the rest are split into compact patches of similar workload. Offices accept any engineer. If a zone has too few small girls' schools to keep a female pool engineer busy, they ride with the nearest female city engineer instead.</span></li>
   ${GOO ? `<li><b>Drive times</b><span>From Google Maps: its typical traffic for a school-day Tuesday, leaving at 7:30 am (the school run) and at 10:30 am, looked up ${FETCHED}${TS.source === 'mixed' ? `; ${TS.google} of ${TS.legs} trips, the rest estimated from the road model scaled to Google's times` : ` for all ${TS.legs} trips engineers make`}. Pairs and patches were chosen on these times. Drive time only: allow a few minutes to park. Click an engineer to add live traffic: Google's usual time for this hour and the time right now. Live traffic needs the online version (or the project's local server); the map file opened on its own shows the typical times only.</span></li>` : ''}
   <li${GOO ? ' hidden' : ''}><b>Drive times</b><span>Door to door at the school-run peak (06:45–08:30 and 13:15–15:00): straight-line distance × a detour factor, at 30, 55 and 120 km/h for urban, suburban and highway roads, slowed by local traffic (×1.45 Dubai, Sharjah, Ajman; ×1.25 Abu Dhabi, Al Ain; ×1.1 elsewhere), +10% on rural roads, +8 minutes to leave and park. Off-peak times are shown alongside.</span></li>
   <li><b>Users</b><span>Supported users = students + all staff, from the workbook. Offices use the workbook's user counts, or 75 where none is given.</span></li>
 </ul>
-<p class="src">Sources: MOE EUC Zone Engineer Allocation, Option Remote workbook (Schools List_Updated, Non-School Sites, Zone Lead &amp; Pools Hub, national-breakup); call with the project lead, 3 Nov 2026; Al Manhal register (rural flags and Arabic names only)${GOO ? `; Google Maps Routes API, ${FETCHED}` : ''}. Engineer-by-engineer list: MOE-FE-Mapping-Option-Remote-323.xlsx.</p>`;
+<p class="src">Sources: ${P.model ? `MOE EUC Field Engineer Allocation workbook (Schools List, Non-Schools List with Map, Non-School Sites, Zone Lead &amp; Pools Hub); the project lead's ${P.total}-engineer breakdown, 6 Nov 2026` : `MOE EUC Zone Engineer Allocation, Option Remote workbook (Schools List_Updated, Non-School Sites, Zone Lead &amp; Pools Hub, national-breakup); call with the project lead, 3 Nov 2026`}; Al Manhal register (rural flags and Arabic names only)${GOO ? `; Google Maps Routes API, ${FETCHED}` : ''}. Engineer-by-engineer list: MOE-FE-Mapping-Option-Remote-${P.model ? P.total : 323}.xlsx.</p>`;
 }
 renderMethod();
 
 // ---------- engineer list ----------
-$('#chips').innerHTML = KORDER.map(k => `<button class="chip" data-k="${k}" aria-pressed="true"><i style="background:${C(k)}"></i>${KIND[k].name}</button>`).join('');
+$('#chips').innerHTML = usedKinds().map(k => `<button class="chip" data-k="${k}" aria-pressed="true"><i style="background:${C(k)}"></i>${KIND[k].name}</button>`).join('');
 $$('#chips .chip').forEach(c => c.onclick = () => toggleKind(c.dataset.k));
 for (const z of P.zones) $('#zone').insertAdjacentHTML('beforeend', `<option value="${z.id}">${esc(z.label)} (${esc(z.lead)})</option>`);
 const engLine = e => {
@@ -850,8 +860,15 @@ function labels() {
   for (const [n, la, lo, k] of PLACES) { const el = document.createElement('div'); el.className = 'place' + (k ? ' sea' : ''); el.textContent = n; placeMk.push(new maplibregl.Marker({ element: el }).setLngLat([lo, la]).addTo(map)); }
   planLabels();
 }
+let hqMk = [];
 function planLabels() {
-  for (const m of zoneMk) m.mk.remove(); for (const m of minMk) m.mk.remove(); zoneMk = []; minMk = [];
+  for (const m of zoneMk) m.mk.remove(); for (const m of minMk) m.mk.remove(); for (const m of hqMk) m.remove(); zoneMk = []; minMk = []; hqMk = [];
+  for (const h of P.hqSites || []) {      // HQ sites: their own engineers, not part of the field plan
+    const el = document.createElement('div'); el.className = 'hqm';
+    el.innerHTML = `<b>HQ</b><span>${esc(h.name)}: ${h.engineers} engineers</span>`;
+    el.title = `${h.fullName || h.name}: ${h.engineers} dedicated HQ engineers (not field engineers)`;
+    hqMk.push(new maplibregl.Marker({ element: el, anchor: 'left' }).setLngLat([h.lng, h.lat]).addTo(map));
+  }
   for (const z of P.zones) {
     const el = document.createElement('button'); el.className = 'zcard'; el.type = 'button';
     el.innerHTML = `<b>${esc(z.label)}</b><span class="zl">Team Lead: ${esc(z.lead)}</span><div class="zn"><span>${z.schools} schools</span><span>${z.eng} engineers</span></div><div class="zn">${KORDER.filter(k => z.byKind[k]).map(k => `<span title="${z.byKind[k]} ${KIND[k].plural}"><i style="background:${C(k)}"></i>${z.byKind[k]} ${{ national: 'national', remote_shared: 'remote', city_shared: 'shared', pool: 'pool' }[k]}</span>`).join('')}</div>`;
@@ -1063,7 +1080,7 @@ function legend() {
   const ln = (col, dash) => `<svg width="18" height="16" viewBox="0 0 18 16" aria-hidden="true"><line x1="1" y1="8" x2="17" y2="8" stroke="${col}" stroke-width="3" ${dash ? 'stroke-dasharray="3 2"' : ''}/></svg>`;
   const area = `<svg width="18" height="16" viewBox="0 0 18 16" aria-hidden="true"><rect x="1.5" y="2.5" width="15" height="11" rx="5" fill="${COL.pool}" fill-opacity=".16" stroke="${COL.poolk}" stroke-dasharray="3 2"/></svg>`;
   let h = '';
-  if (mode === 'cov') h = `<div class="r">${dot(COL.nat)}Emirati national, on site</div><div class="r">${ln(COL.pair)}City shared engineer: 2 schools</div><div class="r">${dot(COL.pool, COL.poolk)}City pool engineer: small school</div><div class="r">${sq(COL.pool)}Office (pool engineer)</div><div class="r">${area}One pool engineer's patch</div><div class="r">${ln(COL.rem)}Remote shared engineer</div><div class="hint">Bigger dot, more users. Faded dots: location to confirm.</div>`;
+  if (mode === 'cov') h = `<div class="r">${dot(COL.nat)}Emirati national, on site</div><div class="r">${ln(COL.pair)}City shared engineer: 2 schools</div><div class="r">${dot(COL.pool, COL.poolk)}City pool engineer: small school</div><div class="r">${sq(COL.pool)}Office (pool engineer)</div><div class="r">${area}One pool engineer's patch</div>${cnt('remote_shared') ? `<div class="r">${ln(COL.rem)}Remote shared engineer</div>` : ''}${P.hqSites?.length ? `<div class="r"><svg width="18" height="16" viewBox="0 0 18 16" aria-hidden="true"><rect x="3" y="2.5" width="12" height="11" rx="2" fill="${COL.ink}"/></svg>HQ site (its own HQ engineers)</div>` : ''}<div class="hint">Bigger dot, more users. Faded dots: location to confirm.</div>`;
   if (mode === 'gender') h = `<div class="r">${dot(COL.boy)}Boys' school</div><div class="r">${dot(COL.girl)}Girls' school</div><div class="r">${dot(COL.mix)}Mixed school</div><div class="r">${sq(COL.off)}Office (any engineer)</div><div class="hint">Girls' schools always have a female engineer.</div>`;
   if (mode === 'drive') h = `<div class="r">${ln(COL.t1)}15 min or less from the engineer</div><div class="r">${ln(COL.t2)}16–30 min</div><div class="r">${ln(COL.t3)}Over 30 min</div><div class="r">${dot(COL.ink)}Engineer's base</div><div class="r">${dot('#C9D1DC')}Emirati national, on site</div><div class="hint">${GOO ? 'Google Maps, typical 7:30 am traffic.' : 'Peak school-run traffic, door to door.'}</div>`;
   if (CHG.size || CHGE.size) h += `<div class="r"><svg width="18" height="16" viewBox="0 0 18 16" aria-hidden="true"><circle cx="9" cy="8" r="6" fill="rgba(109,40,217,.16)" stroke="${COL.chg}" stroke-width="2"/></svg>${VIEWING?.version ? 'Changed in this version' : VIEWING ? 'Changed by this proposal' : 'Pending change (simulated)'}</div>`;
@@ -1079,7 +1096,7 @@ function select(id, fly, focus) {
   const z = Z.get(e.zone), sc = e.sites.filter(i => S.get(i).type === 'school').length;
   const rows = e.sites.map(i => { const s = S.get(i), l = legOf(e, i);
     return `<tr data-site="${i}" class="${i === focus ? 'hit' : ''}"><td>${esc(s.name)}<br><small style="color:var(--mut)">${s.type === 'office' ? `${esc(s.stype)}, site code ${esc(s.no)}` : `${esc(s.size)}, ${gWord(s.g).toLowerCase()} school, no. ${esc(s.no)}`}, ${fmt(s.users)} users</small></td><td>${i === e.base && e.sites.length > 1 ? 'Base' : s.boat ? 'Boat' : l && l.peak != null ? `${l.peak} min ${PK}<br><small style="color:var(--mut)">${l.off} min ${OFW}, ${l.km} km</small><span class="live" data-to="${i}" hidden></span>` : 'On site'}</td></tr>`; }).join('');
-  const why = { national: 'Remote school: one Emirati national, full time, never shared.', city_shared: 'City Medium, Large or X-Large schools: one non-national engineer for two nearby schools of the same gender in the same zone.', pool: 'City Small and X-Small schools and offices have few tickets. The zone lead dispatches pool engineers by ticket; this is the engineer\'s home patch.', remote_shared: 'The two smallest remote schools share one non-national engineer.' }[e.kind];
+  const why = { national: 'Remote school: one Emirati national, full time, never shared.', city_shared: `City Medium, Large or X-Large schools${QWORD()}: one non-national engineer for two nearby schools of the same gender in the same zone.`, pool: 'City Small and X-Small schools and offices have few tickets. The zone lead dispatches pool engineers by ticket; this is the engineer\'s home patch.', remote_shared: 'The two smallest remote schools share one non-national engineer.' }[e.kind];
   $('#detail').style.setProperty('--c', C(e.kind));
   $('#detail').innerHTML = `<div class="dh"><div><h3>${e.id}</h3><div class="kind">${KIND[e.kind].name}</div></div><button class="x" id="dx" aria-label="Close">×</button></div>
     <dl><dt>Engineer</dt><dd>${esc(e.gender)}, ${esc(e.nat === 'Emirati national' ? e.nat : e.nat.toLowerCase())}</dd><dt>Zone</dt><dd>${esc(z.label)}</dd><dt>Team Lead</dt><dd>${esc(z.lead)}</dd>
@@ -1233,7 +1250,7 @@ function openAI() { $$('.tabs button').forEach(x => x.setAttribute('aria-selecte
 function suggestions() {
   const d = VIEWING ? VIEWING.proposal.ops : draft.ops;
   if (d.length) return ['Summarise the impact of these changes', 'Do these changes break any rules?', 'Which schools get a longer drive?'];
-  if (!picks.length) return ['Which zones are most stretched, and why?', 'What edge cases should I know about?', 'How were the 43 pool engineers split between zones?', 'Which schools are more than 30 minutes from their engineer?'];
+  if (!picks.length) return ['Which zones are most stretched, and why?', 'What edge cases should I know about?', `How were the ${cnt('pool')} pool engineers split between zones?`, 'Which schools are more than 30 minutes from their engineer?'];
   if (picks.length > 1) return ['Compare these', 'How far apart are these, and who covers each?', 'Who covers these if their engineers are off?'];
   const p = picks[0];
   if (p.type === 'zone') return ['Brief me on this zone', "How were this zone's pool engineers chosen?", 'What are the risks in this zone?'];

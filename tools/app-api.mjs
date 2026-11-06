@@ -34,7 +34,7 @@ export function makeApi({ env, basePlan, decisions, driveSeed, logos = {} }) {
     if (!store) return { meta: { version: 0 }, plan: basePlan };
     if (!fresh && liveCache && Date.now() - liveCache.t < 15000) return liveCache.v;
     const meta = await store.current(); const plan = meta.version ? await store.plan(meta.version) : basePlan;
-    const v = { meta: { version: meta.version || 0, at: meta.at, by: meta.by, proposal: meta.proposal, requester: meta.requester }, plan: plan || basePlan };
+    const v = { meta: { version: meta.version || 0, at: meta.at, by: meta.by, proposal: meta.proposal, requester: meta.requester, rebuild: meta.rebuild, label: meta.label, note: meta.note }, plan: plan || basePlan };
     liveCache = { t: Date.now(), v }; return v;
   }
 

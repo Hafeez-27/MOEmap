@@ -1,23 +1,23 @@
-"""Option Remote: 333 engineers = 10 HQ (fixed, not mapped) + 323 for 522 schools and 48 non-school sites.
+"""Option Remote, 331 model: 331 engineers = 9 HQ + 322 for 522 schools and 38 non-school sites.
 
-Source of truth: "MOE_EUC_Zone_Engineer_Allocation_200Nationals_Option4_Engineers Mapping-Option_Remote.xlsx"
-(sheet "Schools List_Updated": proposed zones, GPS confirmed by the team leads, City/Remote flag, size categories;
- "Non-School Sites"; "Zone Lead & Pools Hub Distribut"; "national-breakup"), the call with the project lead (3 Nov 2026)
-and his breakdown screenshots:
+Source of truth: "MOE_EUC_FE_Allocation_331.xlsx" (sheet "Schools List": proposed zones, GPS, City/Remote, size and
+*qualified* size categories; "Non-Schools List with Map": the 38 non-school sites and 3 HQ sites with real locations;
+"Non-School Sites": user counts where given; "Zone Lead & Pools Hub Distribut": zones and Team Leads) and the project
+lead's breakdown of 6 Nov 2026 ("331 FEs, 201 Nationals, based on qualified schools size category"):
 
-  Remote  National       200 schools -> 200 engineers  (top 200 remote schools by users, 1 Emirati national on site each)
-  Remote  Non-national     2 schools ->   1 engineer   (the 2 smallest remote schools)
-  City    Medium/Large/XL 158 schools ->  79 engineers  (1 non-national per 2 schools)
-  City    Small/X-Small   162 schools ┐
-  City    Non-school       48 sites   ┘->  43 engineers  (zone pool, ~4.9 sites each, managed by the zone lead)
-  HQ                        3 sites  ->  10 engineers  (fixed, outside this plan)
+  Remote  all sizes       201 schools -> 201 engineers  (1 Emirati national on site per school)
+  City    HQ                3 sites   ->   9 engineers  (3 Dubai HQ, 4 Abu Dhabi HQ, 2 Ajman HQ)
+  City    X-Large/Large/Medium (qualified) 142 schools -> 72 engineers (1 non-national per 2 schools)
+  City    Small/X-Small (qualified) 178 schools ┐
+  City    Non-school sites  38 sites  ┘->  49 engineers  (zone pool, about 3-4 schools and 1 non-school site each)
+  Island  Abu Moosa (not in service)  -> boat visits by the nearest pool engineer in its zone, not counted
 
 Rules: nationals are never shared. Shared and pool engineers stay inside their zone. Same gender first (girls' schools
 always get a female engineer); a boys + girls pair is only made where a zone's counts force it, and gets a female engineer.
 Shortest drive in 7:30 am school-run traffic decides the rest: Google Maps typical times (tools/google_times.py) once they are
 fetched with --google, else the simulator's road model.
 Run with --google to look up missing Google times (needs the Routes API on the key in .env); --google --dry-run counts them.
-Outputs: public/data/remote-plan.json, dist/MOE-FE-Mapping-Option-Remote-323.xlsx
+Outputs: public/data/remote-plan.json, dist/MOE-FE-Mapping-Option-Remote-331.xlsx
 """
 import json, math, os, sys, itertools, statistics, random
 from collections import Counter, defaultdict
@@ -28,10 +28,15 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import google_times as GT
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-WB = os.path.join(ROOT, 'MOE_EUC_Zone_Engineer_Allocation_200Nationals_Option4_Engineers Mapping-Option_Remote.xlsx')
+WB = os.path.join(ROOT, 'MOE_EUC_FE_Allocation_331.xlsx')
 MANHAL = os.path.join(ROOT, 'All Schools - Al Manhal.xlsx')
-TOTAL, HQ = 333, 10
-TARGET = {'national': 200, 'remote_shared': 1, 'city_shared': 79, 'pool': 43}
+TOTAL, HQ = 331, 9
+TARGET = {'national': 201, 'city_shared': 72, 'pool': 49}
+BIG, SMALL = ('Medium', 'Large', 'X-Large'), ('Small', 'X-Small')          # by *qualified* size category
+HQ_SITES = [('MOE Dubai HQ', 'Dubai HQ', 3), ('AUH HQ', 'Abu Dhabi HQ', 4), ('MOE Ajman Main Complex', 'Ajman HQ', 2)]
+FOLDER_ZONE = {'Ajman_Sharjah_UAQ': 'AJM-UAQ', 'Ras Al Khaima': 'RAK', 'Dubai_Sharjah': 'DXB-SHJ', 'Fujairah_Kalba': 'FUJ-KLB',
+               'Khorffakhan_Dibba': 'KFK-DBA', 'AUH Map - Zone A': 'AUH-A', 'AUH Map - Zone B': 'AUH-B', 'Alain Map - Zone A': 'AAN-A',
+               'Alain Map - Zone B': 'AAN-B', 'Dhafra': 'DHF'}
 SLA = 30
 GENDER_PEN = 400        # a boys + girls pair costs this many extra minutes in the matching: only when counts force it
 
@@ -81,7 +86,7 @@ def T(a, b): return travel(S[a], S[b])[0] or 0
 
 # ---------------------------------------------------------------- read the workbook
 wb = openpyxl.load_workbook(WB, read_only=True, data_only=True)
-rows = list(wb['Schools List_Updated'].iter_rows(values_only=True)); H = rows[3]
+rows = list(wb['Schools List' if 'Schools List' in wb.sheetnames else 'Schools List_Updated'].iter_rows(values_only=True)); H = rows[3]
 raw = [dict(zip(H, r)) for r in rows[4:] if r[0] is not None and r[5]]
 zrows = [r for r in wb['Zone Lead & Pools Hub Distribut'].iter_rows(values_only=True)]
 ZONES = []
@@ -113,10 +118,10 @@ for d in raw:
     if cr == 'Closed' or d['Zone ID'] == 'Removed': closed += 1; continue
     no = str(d['School no.']).strip()
     lat, lng, note, approx, boat = d['Latitude'], d['Longitude'], '', False, False
-    if not isinstance(lat, (int, float)):
-        # Abu Moosa School: the workbook gives "Not in Service" for its GPS; it is on Abu Musa island
-        lat, lng, approx, boat = 25.873, 55.033, True, True
-        note = 'The workbook gives "Not in Service" for this school\'s location. Shown on Abu Musa island; no road access, so no drive time.'
+    if not isinstance(lat, (int, float)) or cr == 'Not in service':
+        # Abu Moosa School: "Not in Service" in the workbook; on Abu Musa island. Boat visits by its zone's nearest pool engineer.
+        lat, lng, approx, boat, cr = 25.873, 55.033, True, True, 'Island'
+        note = 'Not in service in the workbook. On Abu Musa island, with no road access: boat visits by the nearest pool engineer in its zone, not counted in the 331.'
     m = MAN_GPS.get((round(float(lat), 4), round(float(lng), 4))) or MAN_ID.get(no) or MAN_ID.get(no + 'AD')
     g = {'Boys': 'B', 'Girls': 'G', 'Mix': 'M'}[d['Girls/ Boys']]
     sid = f'S{len(S) + 1:03d}'
@@ -128,38 +133,41 @@ for d in raw:
     S[sid]['oz'] = old_zone(S[sid]['lat'], S[sid]['lng'])
 schools = list(S.values())
 
-# non-school sites: no coordinates in the workbook. Placed at a school the site names (e.g. "4104"), else around the
-# centre of its area, and marked "location to confirm".
-AREA_XY = {'dubai': (25.265, 55.335), 'sharjah': (25.330, 55.420), 'ajman': (25.405, 55.470), 'ras al khaimah': (25.790, 55.950),
-           'fujairah': (25.125, 56.330), 'eastern sharjah': (25.030, 56.345), 'khor fakkan': (25.340, 56.345), 'alain': (24.215, 55.745),
-           'abu dhabi': (24.455, 54.385), 'al dhafra': (23.680, 53.710)}
+# non-school sites: the "Non-Schools List with Map" sheet gives real names and locations. The 3 HQ sites are not covered by
+# field engineers (they have their own 9) and are kept apart; the other 38 go into the zone pools. Users come from the
+# "Non-School Sites" sheet where its name matches, else the workbook's assumption of 75.
 ZONE_XY = {z: (statistics.median(s['lat'] for s in schools if s['zone'] == z), statistics.median(s['lng'] for s in schools if s['zone'] == z)) for z in LABEL}
-by_no = {s['no']: s for s in schools}
-NS_DEFAULT_USERS = 75     # the workbook's assumption for a non-school site with no user count
-rnd = random.Random(7)
-ns_rows = [r for r in wb['Non-School Sites'].iter_rows(values_only=True)][4:52]
-placed = Counter()
-for r in ns_rows:
-    num_, code, zone, _, name, area, stype, users, vip = r[:9]
-    name = (str(name).strip() if name else '') or f'Non-school site {code} (to confirm)'
-    placeholder = 'to confirm' in name.lower() or not r[4]
-    ref = next((s for s in schools if any(f'"{s["no"]}"' in name or f' {s["no"]}"' in name for _ in [0])), None)
-    if ref:
-        lat, lng, how = ref['lat'] + 0.0012, ref['lng'] + 0.0012, f'Placed at {ref["name"]} (named in the site title)'
-    else:
-        key = str(area or '').strip().lower()
-        base = AREA_XY.get(key) or ZONE_XY[zone]
-        k = placed[(zone, base)]; placed[(zone, base)] += 1
-        ang, rad = k * 2.4, 0.012 + 0.006 * k
-        lat, lng = base[0] + rad * math.sin(ang), base[1] + rad * math.cos(ang)
-        how = f'Placed near the centre of {area}' if AREA_XY.get(key) else 'Placed near the middle of its zone'
-    sid = f'N{len(ns_rows) and int(num_):02d}'
-    S[sid] = {'id': sid, 'no': str(code), 'name': name, 'nameAr': '', 'zone': zone, 'area': area or '', 'lat': lat, 'lng': lng, 'g': None, 'cr': 'City',
-              'size': 'Non-school', 'qsize': '', 'users': int(users) if users else NS_DEFAULT_USERS, 'usersAssumed': not users, 'st': 0, 'sf': 0,
-              'rural': False, 'cycle': '', 'lead': next(z['lead'] for z in ZONES if z['id'] == zone), 'type': 'office', 'stype': stype or 'To confirm',
-              'vip': vip == 'Y', 'approx': True, 'boat': False, 'placeholder': placeholder,
-              'note': how + '. Location to confirm.' + ('' if users else f' Users not given; the workbook assumes {NS_DEFAULT_USERS}.')}
+NS_DEFAULT_USERS = 75
+words = lambda t: {w for w in ''.join(c.lower() if c.isalnum() else ' ' for c in str(t or '')).split() if len(w) > 2 and w not in ('moe', 'the', 'and', 'center', 'centre', 'school')}
+ns_users = [(words(r[4]), r[7]) for r in [r for r in wb['Non-School Sites'].iter_rows(values_only=True)][4:52] if r[4] and r[7]]
+def users_for(name):
+    w = words(name); best = max(ns_users, key=lambda u: len(w & u[0]) / max(1, len(w | u[0])), default=None)
+    return best[1] if best and len(w & best[0]) >= 2 and len(w & best[0]) / max(1, len(w | best[0])) >= 0.5 else None
+def stype_of(n):
+    n = n.lower()
+    for k, t in (('hq', 'Head office'), ('store', 'Store / warehouse'), ('warehouse', 'Store / warehouse'), ('educational zone', 'Educational zone office'),
+                 ('special education', 'Special education centre'), ('training', 'Training centre'), ('assessment', 'Assessment / exam centre'),
+                 ('exam', 'Assessment / exam centre'), ('call center', 'Call and service centre'), ('complex', 'Education complex'), (' kg', 'Kindergarten site'),
+                 ('camp', 'Camp'), ('adult education', 'Adult education centre')):
+        if k in ' ' + n: return t
+    return 'Office'
+HQS = []
+for r in [r for r in wb['Non-Schools List with Map'].iter_rows(values_only=True)][1:]:
+    if not r or not r[0] or r[2] != 'Non-School': continue
+    folder, name, code, lat, lng = r[1], str(r[3]).strip(), str(r[4]).strip(), float(r[5]), float(r[6])
+    zone = FOLDER_ZONE[folder]
+    hq = next((h for h in HQ_SITES if h[0] == name), None)
+    if hq:
+        HQS.append({'id': f'H{len(HQS) + 1}', 'name': hq[1], 'fullName': name, 'code': code, 'zone': zone, 'lat': lat, 'lng': lng, 'engineers': hq[2]}); continue
+    u = users_for(name)
+    sid = f'N{sum(1 for x in S.values() if x["type"] == "office") + 1:02d}'
+    S[sid] = {'id': sid, 'no': code, 'name': name, 'nameAr': '', 'zone': zone, 'area': folder, 'lat': lat, 'lng': lng, 'g': None, 'cr': 'City',
+              'size': 'Non-school', 'qsize': '', 'users': int(u) if u else NS_DEFAULT_USERS, 'usersAssumed': not u, 'st': 0, 'sf': 0,
+              'rural': False, 'cycle': '', 'lead': next(z['lead'] for z in ZONES if z['id'] == zone), 'type': 'office', 'stype': stype_of(name),
+              'vip': False, 'approx': False, 'boat': False, 'placeholder': False,
+              'note': '' if u else f'Users not given; the workbook assumes {NS_DEFAULT_USERS}.'}
     S[sid]['oz'] = old_zone(lat, lng)
+assert len(HQS) == 3, [h['name'] for h in HQS]
 offices = [s for s in S.values() if s['type'] == 'office']
 
 # ---------------------------------------------------------------- Google Maps drive times
@@ -172,8 +180,8 @@ if USE_G:
     big, small = defaultdict(list), defaultdict(list)
     for s in S.values():
         if s['boat']: continue
-        if s['type'] == 'school' and s['cr'] == 'City' and s['size'] in ('Medium', 'Large', 'X-Large'): big[s['zone']].append(s['id'])
-        elif s['type'] == 'office' or (s['cr'] == 'City' and s['size'] in ('Small', 'X-Small')): small[s['zone']].append(s['id'])
+        if s['type'] == 'school' and s['cr'] == 'City' and s['qsize'] in BIG: big[s['zone']].append(s['id'])
+        elif s['type'] == 'office' or (s['cr'] == 'City' and s['qsize'] in SMALL): small[s['zone']].append(s['id'])
     for grp, k in ((big, 8), (small, 12)):
         for ids in grp.values():
             for i in ids:
@@ -207,17 +215,12 @@ def add(kind, sites, base, gender, nat, note='', flags=()):
          'maxPeak': max([l['peak'] or 0 for l in legs], default=0), 'users': sum(S[m]['users'] for m in sites), 'note': note, 'flags': list(flags)}
     ENG.append(e); return e
 
-# 1) remote: top 200 by users -> 1 Emirati national each (female for girls' schools); the 2 smallest -> 1 non-national
+# 1) remote: every remote school gets its own Emirati national, on site (female for girls' schools)
 remote = sorted([s for s in schools if s['cr'] == 'Remote'], key=lambda s: (-s['users'], s['name']))
-assert len(remote) == 202, len(remote)
-for s in remote[:200]:
+assert len(remote) == TARGET['national'], len(remote)
+for s in remote:
     add('national', [s['id']], s['id'], {'B': 'Male', 'G': 'Female', 'M': 'Male or female'}[s['g']], 'Emirati national',
         'Dedicated to this school, on site. Nationals are never shared (MOE rule).')
-low = remote[200:]
-base = next((s for s in low if not s['boat']), low[0])
-add('remote_shared', [base['id']] + [s['id'] for s in low if s is not base], base['id'], 'Male', 'Non-national',
-    'The two smallest remote schools share one non-national engineer.' + (' Abu Moosa is on Abu Musa island: visits by boat.' if any(s['boat'] for s in low) else ''),
-    (['island'] if any(s['boat'] for s in low) else []) + (['two-zones'] if len({s['zone'] for s in low}) > 1 else []))
 
 # 2) city Medium / Large / X-Large: 1 non-national per 2 schools, inside the zone, same gender first, shortest drive
 def compat(a, b): return 'M' in (S[a]['g'], S[b]['g']) or S[a]['g'] == S[b]['g']
@@ -229,8 +232,8 @@ def match(ids):
     M = [tuple(e) for e in nx.max_weight_matching(G, maxcardinality=True)]
     return M, sum(pc(*e) for e in M)
 def join_cost(v, pair): return max(pc(v, m) for m in pair)
-city_big = [s for s in schools if s['cr'] == 'City' and s['size'] in ('Medium', 'Large', 'X-Large')]
-assert len(city_big) == 158, len(city_big)
+city_big = [s for s in schools if s['cr'] == 'City' and s['qsize'] in BIG]
+assert len(city_big) == 142, len(city_big)
 zones_big = defaultdict(list)
 for s in city_big: zones_big[s['zone']].append(s['id'])
 plans = {}
@@ -245,9 +248,13 @@ for z, ids in zones_big.items():
             if not single or (c, -S[v]['users']) < (single[0], -S[single[2]]['users']): single = (c, M, v)
         plans[z] = {'triad': tri, 'single': single}
 odd = sorted(z for z in plans if 'even' not in plans[z])
-assert len(odd) % 2 == 0, odd
+# every even zone gives n/2 engineers; an odd zone gives (n-1)/2 with a 3-school engineer or (n+1)/2 with a 1-school one.
+# Choose which odd zones take a 3-school engineer so the total is exactly the target, at the least extra drive time.
+extra = TARGET['city_shared'] - len(city_big) // 2          # singles minus triads, halved
+n_tri = (len(odd) - 2 * extra) // 2 if (len(odd) - 2 * extra) % 2 == 0 else None
+assert n_tri is not None and 0 <= n_tri <= len(odd), (odd, extra)
 best = None
-for combo in itertools.combinations(odd, len(odd) // 2):     # half the odd zones take a 3-school engineer, half a 1-school one
+for combo in itertools.combinations(odd, n_tri):
     cost = sum(plans[z]['triad'][0] if z in combo else plans[z]['single'][0] for z in odd)
     if not best or cost < best[0]: best = (cost, set(combo))
 def pair_gender(ids):
@@ -275,8 +282,8 @@ for z, p in sorted(plans.items()):
 
 # 3) city Small / X-Small + non-school sites: 43 pool engineers, split across zones by workload (half users, half sites,
 #    at least 1 per zone); every girls' school is in a female engineer's patch; patches are balanced and compact.
-pool_sites = [s for s in schools if s['cr'] == 'City' and s['size'] in ('Small', 'X-Small')] + offices
-assert len(pool_sites) == 210, len(pool_sites)
+pool_sites = [s for s in schools if s['cr'] == 'City' and s['qsize'] in SMALL] + offices
+assert len(pool_sites) == 178 + 38, len(pool_sites)
 Utot, Ntot = sum(s['users'] for s in pool_sites), len(pool_sites)
 w = {s['id']: 0.5 * s['users'] / Utot + 0.5 / Ntot for s in pool_sites}
 # 2b) a zone whose girls' small schools would give a female pool engineer less than half a normal load: those schools join
@@ -362,6 +369,10 @@ for z in sorted(zsites):
         fl = ['mixed'] if gender == 'Female' and any(S[i]['g'] == 'B' for i in p) else []
         add('pool', p, b, gender, 'Non-national',
             f'One of {k} pool engineers in {LABEL[z]}. The zone lead dispatches pool engineers by ticket; this is their home patch.', fl)
+for isl in [s for s in schools if s['cr'] == 'Island']:
+    near = min((e for e in ENG if e['kind'] == 'pool' and e['zone'] == isl['zone']), key=lambda e: hav(S[e['base']], isl))
+    near['sites'].append(isl['id']); near['legs'] = mklegs(near['base'], near['sites']); near['users'] += isl['users']
+    near['flags'].append('island'); near['note'] += f" Also visits {isl['name']} on Abu Musa island by boat (not in service; not counted in the plan)."
 assert len(ENG) == TOTAL - HQ, len(ENG)
 
 # every trip an engineer makes gets Google's typical time at 7:30 and 10:30; if new 7:30 times came in, re-run the allocation
@@ -379,8 +390,8 @@ if FETCH:
             e['legs'] = mklegs(e['base'], e['sites']); e['maxPeak'] = max([l['peak'] or 0 for l in e['legs']], default=0)
 
 # ---------------------------------------------------------------- ids, checks, stats
-KCODE = {'national': 'N', 'remote_shared': 'R', 'city_shared': 'C', 'pool': 'P'}
-ORDER = {'national': 0, 'remote_shared': 1, 'city_shared': 2, 'pool': 3}
+KCODE = {'national': 'N', 'city_shared': 'C', 'pool': 'P'}
+ORDER = {'national': 0, 'city_shared': 2, 'pool': 3}
 zorder = [z['id'] for z in ZONES]
 ENG.sort(key=lambda e: (zorder.index(e['zone']), ORDER[e['kind']], -e['users']))
 cnt = Counter()
@@ -392,23 +403,23 @@ seen = Counter(m for e in ENG for m in e['sites'])
 assert all(v == 1 for v in seen.values()) and len(seen) == len(S), 'every site exactly once'
 assert not [e for e in ENG if e['kind'] in ('city_shared', 'pool') and len({S[m]['zone'] for m in e['sites']}) > 1], 'no zone crossing'
 kinds = Counter(e['kind'] for e in ENG)
-assert kinds['national'] == 200 and kinds['remote_shared'] == 1 and kinds['city_shared'] == 79 and kinds['pool'] == 43, kinds
+assert all(kinds[k] == v for k, v in TARGET.items()) and sum(kinds.values()) == TOTAL - HQ, kinds
 
 pairs = [e for e in ENG if e['kind'] == 'city_shared' and len(e['sites']) > 1]
 pmins = sorted(e['maxPeak'] for e in pairs)
 pools = [e for e in ENG if e['kind'] == 'pool']
 stats = {
     'pairs': len(pairs), 'pair_median': statistics.median(pmins), 'pair_le15': sum(m <= 15 for m in pmins), 'pair_le30': sum(m <= 30 for m in pmins),
-    'pair_gt30': sum(m > 30 for m in pmins), 'pair_km_median': statistics.median(max(l['km'] for l in e['legs']) for e in pairs),
+    'pair_gt30': sum(m > 30 for m in pmins), 'pair_km_median': round(statistics.median(max(l['km'] for l in e['legs']) for e in pairs), 1),
     'pair_users_avg': round(statistics.mean(e['users'] for e in ENG if e['kind'] == 'city_shared')),
     'mixed_pairs': [e['id'] for e in ENG if e['kind'] == 'city_shared' and 'mixed' in e['flags']],
-    'qualified_xs_city': sum(1 for s in city_big if s['qsize'] in ('X-Small', 'Small')),
+    'qualified_down_city': sum(1 for s in schools if s['cr'] == 'City' and s['size'] in BIG and s['qsize'] in SMALL),
     'pool_sites_avg': round(statistics.mean(len(e['sites']) for e in pools), 2), 'girls_small_with_city_engineer': len(attached), 'pool_sites_max': max(len(e['sites']) for e in pools),
     'pool_users_avg': round(statistics.mean(e['users'] for e in pools)),
     'pool_median_reach': statistics.median(l['peak'] for e in pools for l in e['legs'] if l['peak'] is not None),
     'pool_le30_sites': sum(1 for e in pools for l in e['legs'] if l['peak'] is not None and l['peak'] <= 30) + len(pools),
     'pool_alloc': alloc, 'female': Counter(e['gender'] for e in ENG), 'closed_removed': closed,
-    'ns_placeholders': sum(1 for s in offices if s['placeholder']), 'ns_users_assumed': sum(1 for s in offices if s['usersAssumed']),
+    'ns_placeholders': 0, 'ns_users_assumed': sum(1 for s in offices if s['usersAssumed']), 'island': [s['id'] for s in schools if s['cr'] == 'Island'],
 }
 LEGS = [l for e in ENG for l in e['legs'] if l['peak'] is not None]
 ng = sum(l['src'] in ('google', 'same') for l in LEGS)
@@ -418,30 +429,35 @@ for z in ZONES:
     es = [e for e in ENG if e['zone'] == z['id']]
     z.update({'schools': sum(1 for s in schools if s['zone'] == z['id']), 'offices': sum(1 for s in offices if s['zone'] == z['id']),
               'remote': sum(1 for s in schools if s['zone'] == z['id'] and s['cr'] == 'Remote'),
-              'cityBig': sum(1 for s in city_big if s['zone'] == z['id']), 'citySmall': sum(1 for s in schools if s['zone'] == z['id'] and s['cr'] == 'City' and s['size'] in ('Small', 'X-Small')),
+              'cityBig': sum(1 for s in city_big if s['zone'] == z['id']), 'citySmall': sum(1 for s in schools if s['zone'] == z['id'] and s['cr'] == 'City' and s['qsize'] in SMALL),
               'eng': len(es), 'byKind': dict(Counter(e['kind'] for e in es)), 'female': sum(e['gender'] == 'Female' for e in es),
               'lat': ZONE_XY[z['id']][0], 'lng': ZONE_XY[z['id']][1]})
-out = {'generated': 'tools/build_remote_plan.py', 'sla': SLA, 'total': TOTAL, 'hq': HQ, 'target': TARGET, 'zones': ZONES, 'stats': stats,
+out = {'generated': 'tools/build_remote_plan.py', 'model': '331', 'source': os.path.basename(WB), 'sla': SLA, 'total': TOTAL, 'hq': HQ, 'budget': TOTAL - HQ,
+       'hqSites': HQS, 'target': TARGET, 'zones': ZONES, 'stats': stats,
        'sites': [{k: v for k, v in s.items() if k != 'oz'} for s in S.values()], 'engineers': ENG}
 json.dump(out, open(os.path.join(ROOT, 'public/data/remote-plan.json'), 'w'), separators=(',', ':'), default=str)
 
 # ---------------------------------------------------------------- FE mapping workbook
-KIND = {'national': 'Dedicated Emirati national (remote school, on site)', 'remote_shared': 'Remote shared non-national (2 smallest remote schools)',
-        'city_shared': 'City shared non-national (Medium / Large / X-Large)', 'pool': 'City pool non-national (Small / X-Small + non-school)'}
+KIND = {'national': 'Dedicated Emirati national (remote school, on site)',
+        'city_shared': 'City shared non-national (qualified Medium / Large / X-Large)', 'pool': 'City pool non-national (qualified Small / X-Small + non-school)'}
 xb = openpyxl.Workbook(); bold = Font(bold=True); head = PatternFill('solid', fgColor='DCE6F5')
 sm = xb.active; sm.title = 'Summary'
-sm.append(['Option Remote: 333 engineers for 573 locations']); sm['A1'].font = Font(bold=True, size=13)
+sm.append([f'Option Remote: {TOTAL} engineers ({kinds["national"]} Emirati nationals) for {len(schools) + len(offices) + len(HQS)} locations, by qualified size category']); sm['A1'].font = Font(bold=True, size=13)
 sm.append([]); sm.append(['', 'Category', 'Sites', 'Engineers', 'Who'])
-for r in [('City', 'Medium, Large, X-Large', 158, 79, 'Non-national, 1 per 2 schools'), ('City', 'X-Small, Small', 162, 43, 'Non-national zone pool'),
-          ('City', 'Non-school sites', 48, '(in pool)', 'Zone pool'), ('Remote', 'National', 200, 200, 'Emirati national, 1 per school'),
-          ('Remote', 'Non-national', 2, 1, 'Non-national, shared'), ('', 'Schools + non-school', 570, 323, ''), ('HQ', 'HQ sites', 3, 10, 'Fixed, not mapped'),
-          ('', 'Total', 573, 333, '')]: sm.append(list(r))
+nsmall = sum(1 for s in schools if s['cr'] == 'City' and s['qsize'] in SMALL)
+for r in [('Remote', 'All sizes', len(remote), kinds['national'], 'Emirati national, 1 per school'),
+          ('City', 'HQ', len(HQS), HQ, ', '.join(f"{h['name']} {h['engineers']}" for h in HQS)),
+          ('City', 'Medium, Large, X-Large (qualified)', len(city_big), kinds['city_shared'], 'Non-national, 1 per 2 schools'),
+          ('City', 'Small, X-Small (qualified)', nsmall, kinds['pool'], 'Non-national zone pool'),
+          ('City', 'Non-school sites', len(offices), '(in pool)', 'Zone pool'),
+          ('Island', 'Abu Moosa (not in service)', sum(1 for s in schools if s['cr'] == 'Island'), '-', 'Boat visits from its zone pool'),
+          ('', 'Total', len(schools) + len(offices) + len(HQS), TOTAL, '')]: sm.append(list(r))
 for c in sm[3]: c.font = bold; c.fill = head
-sm.append([]); sm.append(['Zone', 'Team Lead', 'Schools', 'Remote', 'City M/L/XL', 'City S/XS', 'Non-school', 'Nationals', 'City shared', 'Pool', 'Remote shared', 'Engineers', 'Female engineers'])
+sm.append([]); sm.append(['Zone', 'Team Lead', 'Schools', 'Remote', 'City M/L/XL (qualified)', 'City S/XS (qualified)', 'Non-school', 'Nationals', 'City shared', 'Pool', 'Engineers', 'Female engineers'])
 hr = sm.max_row
 for z in ZONES:
     b = z['byKind']; sm.append([f"{z['id']} {z['label']}", z['lead'], z['schools'], z['remote'], z['cityBig'], z['citySmall'], z['offices'],
-                                b.get('national', 0), b.get('city_shared', 0), b.get('pool', 0), b.get('remote_shared', 0), z['eng'], z['female']])
+                                b.get('national', 0), b.get('city_shared', 0), b.get('pool', 0), z['eng'], z['female']])
 for c in sm[hr]: c.font = bold; c.fill = head
 sm.column_dimensions['A'].width = 30; sm.column_dimensions['B'].width = 26; sm.column_dimensions['E'].width = 30
 GOO = stats['times']['source'] != 'model'
@@ -472,7 +488,7 @@ for s in sorted(S.values(), key=lambda s: (zorder.index(s['zone']), s['type'], s
 for c in ss[1]: c.font = bold; c.fill = head
 ss.freeze_panes = 'C2'
 for col, wd in zip('ABCDEFGHIJKLMNOPQRSTU', [12, 46, 10, 22, 8, 12, 12, 8, 8, 8, 8, 14, 44, 12] + ([12, 12, 8, 12] if GOO else [10]) + [11, 11, 60]): ss.column_dimensions[col].width = wd
-XL = os.path.join(ROOT, 'dist/MOE-FE-Mapping-Option-Remote-323.xlsx'); os.makedirs(os.path.dirname(XL), exist_ok=True); xb.save(XL)
+XL = os.path.join(ROOT, 'dist/MOE-FE-Mapping-Option-Remote-331.xlsx'); os.makedirs(os.path.dirname(XL), exist_ok=True); xb.save(XL)
 
 print('engineers', len(ENG), '+ HQ', HQ, '=', len(ENG) + HQ, dict(kinds))
 print('stats', {k: v for k, v in stats.items()})

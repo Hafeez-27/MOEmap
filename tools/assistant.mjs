@@ -65,11 +65,11 @@ CHANGES (simulation)
   {"op":"remove","engineer":"AJM-UAQ-P09"}                       remove an engineer; its sites go to the nearest engineers in the zone
   {"op":"gender","engineer":"RAK-C03","gender":"Male"}
   {"op":"rebalance","zone":"KFK-DBA"}                            re-split the zone's pool patches
-  kind is one of national, remote_shared, city_shared, pool; gender is Male or Female.
+  kind is one of national, city_shared, pool; gender is Male or Female.
   Always give a site's exact name next to its id ("name", "aName"/"bName", "names"), copied from the same row: the map checks they agree.
 - Before you write the block, check each change against the tables: the site and engineer ids exist, each name matches its id's row, and you know which rules it would break (crossing zones, a girls' school with a male engineer, and the rest below). Say what the change does to the drive time when the tables show it.
 - Changes are only simulated: they show on the map as pending and need approval. Never say a change is approved or done. Tell the user they can review the impact, make more changes, then press "Request plan update" so the approvers (Sithesvaran Thirumaran, Sanath Swaroop) get an email.
-- Allow changes that break a rule (sharing a national, a girls' school with a male engineer, a remote school without its national, crossing zones, going over or under 323): still add the block, and say plainly which rule it breaks. The map then warns the user and asks them to confirm before simulating it.
+- Allow changes that break a rule (sharing a national, a girls' school with a male engineer, a remote school without its national, crossing zones, going over or under the budget in the BUDGET line): still add the block, and say plainly which rule it breaks. The map then warns the user and asks them to confirm before simulating it.
 - If a change request is ambiguous (which school, which engineer), ask one short question instead of guessing, and add no block.
 - Only add a <changes> block when the user asks for a change. Questions never get one.
 
@@ -82,7 +82,7 @@ ${PE.kbTables(plan, { arabic })}`;
   const live = `Today is ${new Date().toISOString().slice(0, 10)}.
 
 PLAN VERSION
-${meta?.version ? `Live plan version ${meta.version}, approved ${String(meta.at || '').slice(0, 10)} by ${meta.by || 'an approver'}. The decisions guide describes how the original plan (version 0) was built; where its numbers differ from the data tables, the tables are right: they are the plan as it is now.` : 'The original plan (version 0); no changes have been approved yet.'}
+${meta?.version ? `Live plan version ${meta.version}, ${meta.rebuild ? `${meta.note || 'rebuilt'}; made live` : 'approved'} ${String(meta.at || '').slice(0, 10)} by ${meta.by || 'an approver'}. The decisions guide describes how the original plan (version 0) was built; where its numbers differ from the data tables, the tables are right: they are the plan as it is now.` : 'The original plan (version 0); no changes have been approved yet.'}
 ${draft?.lines?.length ? `\nPENDING SIMULATED CHANGES (not approved). The data tables above ALREADY INCLUDE these changes.\n${draft.log.map(l => `- ${l.text}`).join('\n')}\nImpact against the approved plan:\n${draft.lines.map(l => `- ${l}`).join('\n')}\n` : ''}
 ${sel.length ? `\nSELECTED ON THE MAP (questions like "this", "these", "here" refer to them):\n${PE.details(plan, sel)}\n` : ''}${mentioned?.length ? `\nMENTIONED IN THE CONVERSATION (exact details):\n${PE.details(plan, mentioned)}\n` : ''}`;
   return { guide, tables, live };

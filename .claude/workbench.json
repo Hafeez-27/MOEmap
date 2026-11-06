@@ -1,0 +1,6 @@
+{
+  "commits": "per-increment",
+  "branchPolicy": "main",
+  "coAuthorTrailer": false,
+  "note": "Vercel Hobby deploys this repo from the laptop: commits must be authored by sanath15swaroop@gmail.com, with no co-author trailer."
+}

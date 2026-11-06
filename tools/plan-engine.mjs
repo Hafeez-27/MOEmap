@@ -2,7 +2,11 @@
 // rules, describe the impact, and build the assistant's data tables. Plain ES module with no imports: the map inlines it
 // (tools/build-remote-map.mjs) and the server imports it (copied into the Vercel project by tools/build-deploy.mjs).
 
-export const SLA = 30, BUDGET = 323;
+export const SLA = 30, BUDGET = 322;
+// the engineer budget in the zones comes from the plan itself (331 model: 331 - 9 HQ = 322); older plans fall back to total - HQ
+export const budgetOf = plan => plan.budget ?? (plan.total != null && plan.hq != null ? plan.total - plan.hq : BUDGET);
+// the 331 model classes city schools by their *qualified* size; older plans used the size category
+export const sizeOf = (plan, s) => (plan?.model ? s.qsize : s.size) || s.size;
 export const KCODE = { national: 'N', remote_shared: 'R', city_shared: 'C', pool: 'P' };
 export const KNAME = { national: 'Emirati national', remote_shared: 'Remote shared engineer', city_shared: 'City shared engineer', pool: 'City pool engineer' };
 const BIG = ['Medium', 'Large', 'X-Large'], SMALL = ['Small', 'X-Small'];
@@ -138,7 +142,7 @@ export function recompute(plan) {
     pool_sites_avg: Math.round(mean(pools.map(e => e.sites.length)) * 100) / 100, pool_sites_max: Math.max(0, ...pools.map(e => e.sites.length)),
     pool_users_avg: Math.round(mean(pools.map(e => e.users))), pool_median_reach: median(poolLegs.map(l => l.peak)),
     pool_le30_sites: poolLegs.filter(l => l.peak <= SLA).length + pools.length, pool_alloc: alloc, female: fem,
-    girls_small_with_city_engineer: plan.sites.filter(s => s.type === 'school' && s.cr === 'City' && SMALL.includes(s.size) && s.g === 'G' && plan.engineers.find(e => e.id === s.eng)?.kind === 'city_shared').length,
+    girls_small_with_city_engineer: plan.sites.filter(s => s.type === 'school' && s.cr === 'City' && SMALL.includes(sizeOf(plan, s)) && s.g === 'G' && plan.engineers.find(e => e.id === s.eng)?.kind === 'city_shared').length,
   });
   plan.stats.times = { ...(plan.stats.times || {}), legs: legs.length, google: ng, source: ng === legs.length ? 'google' : ng ? 'mixed' : 'model' };
   plan.total = plan.engineers.length + (plan.hq || 0);   // headcount follows the plan after any change
@@ -150,12 +154,13 @@ export function checks(plan) {
   const { S, E } = index(plan), out = [];
   const add = (key, level, text, ids) => out.push({ key, level, text, ids });
   const n = plan.engineers.length;
-  if (n !== BUDGET) add('headcount', 'rule', `${n} engineers in the zones, against the budget of ${BUDGET} (${n > BUDGET ? '+' : ''}${n - BUDGET}).`, []);
+  const B = budgetOf(plan);
+  if (n !== B) add('headcount', 'rule', `${n} engineers in the zones, against the budget of ${B} (${n > B ? '+' : ''}${n - B}).`, []);
   for (const e of plan.engineers) {
     if (e.kind === 'national' && e.sites.length > 1) add('nat-shared:' + e.id, 'rule', `${e.id} is an Emirati national covering ${e.sites.length} schools; nationals are never shared (MOE rule).`, [e.id]);
     if (['city_shared', 'pool'].includes(e.kind) && e.sites.some(id => S.get(id).zone !== e.zone)) add('zone:' + e.id, 'rule', `${e.id} covers a site outside its zone (${e.zone}).`, [e.id]);
     if (e.kind === 'city_shared' && e.sites.length > 3) add('big:' + e.id, 'watch', `${e.id} covers ${e.sites.length} city schools.`, [e.id]);
-    if (e.kind === 'pool' && e.sites.length > 8) add('pool:' + e.id, 'watch', `${e.id}'s patch has ${e.sites.length} sites (the average is about 5).`, [e.id]);
+    if (e.kind === 'pool' && e.sites.length > 8) add('pool:' + e.id, 'watch', `${e.id}'s patch has ${e.sites.length} sites (the average is about ${Math.round(plan.stats?.pool_sites_avg || 5)}).`, [e.id]);
     for (const l of e.legs) if (l.peak != null && l.peak > SLA) add(`far:${e.id}:${l.to}`, 'watch', `${S.get(l.to).name} is ${l.peak} min from ${e.id}'s base at 7:30 am.`, [l.to, e.id]);
   }
   for (const s of plan.sites) {
@@ -219,7 +224,7 @@ export async function simulate(base, ops, { drive } = {}) {
           const mates = plan.engineers.filter(x => x.kind === 'pool' && x.zone === e.zone && x.gender === e.gender && x !== e);
           if (mates.length) { mates[0].sites.push(...orphans); for (const id of orphans) S.get(id).eng = mates[0].id; rebalance(e.zone, e.gender); }
           else for (const id of orphans) { const s = S.get(id), to = pickNearest(s, e.zone, 'pool'); if (!to) throw new Error(`no engineer in ${e.zone} can take ${s.name}`); to.sites.push(id); s.eng = to.id; touched.add(to.id); }
-        } else for (const id of orphans) { const s = S.get(id), to = pickNearest(s, e.zone, s.cr === 'City' && BIG.includes(s.size) ? 'city_shared' : 'pool'); if (!to) throw new Error(`no engineer in ${e.zone} can take ${s.name}`); to.sites.push(id); s.eng = to.id; touched.add(to.id); }
+        } else for (const id of orphans) { const s = S.get(id), to = pickNearest(s, e.zone, s.cr === 'City' && BIG.includes(sizeOf(plan, s)) ? 'city_shared' : 'pool'); if (!to) throw new Error(`no engineer in ${e.zone} can take ${s.name}`); to.sites.push(id); s.eng = to.id; touched.add(to.id); }
         log.push({ i, ok: true, text: `Remove ${e.id} (${KNAME[e.kind].toLowerCase()}); its ${orphans.length} site${orphans.length === 1 ? '' : 's'} go to the nearest engineers in ${e.zone}` });
       }
       else if (op.op === 'rebalance') { if (!plan.zones.some(z => z.id === op.zone)) throw new Error(`there is no zone "${op.zone}"`); rebalance(op.zone, 'Female'); rebalance(op.zone, 'Male'); log.push({ i, ok: true, text: `Re-split the pool patches in ${op.zone}` }); }
@@ -344,6 +349,7 @@ export function kbTables(plan, { arabic = false } = {}) {
     `Pool engineers with the most sites: ${plan.engineers.filter(e => e.kind === 'pool').sort((a, b) => b.sites.length - a.sites.length).slice(0, 8).map(e => `${e.id} ${e.sites.length}`).join('; ')}.`,
     `Mixed boys+girls city engineers: ${plan.stats.mixed_pairs.join(', ') || 'none'}. City engineers with 3 schools: ${plan.engineers.filter(e => e.kind === 'city_shared' && e.sites.length === 3).map(e => e.id).join(', ') || 'none'}; with 1 school: ${plan.engineers.filter(e => e.kind === 'city_shared' && e.sites.length === 1).map(e => e.id).join(', ') || 'none'}.`);
   const st = plan.stats;
-  L.push('', `TOTALS: ${plan.engineers.length + (plan.hq || 0)} engineers = ${plan.hq} HQ + ${plan.engineers.length} in zones: ${Object.keys(KCODE).map(k => `${plan.engineers.filter(e => e.kind === k).length} ${KNAME[k].toLowerCase()}s`).join(', ')}. City pairs: ${st.pairs}, median ${st.pair_median} min apart at 7:30 am, ${st.pair_le15} within 15 min, ${st.pair_le30} within 30, ${st.pair_gt30} over 30; median ${st.pair_km_median} km. Pool: ${st.pool_sites_avg} sites per engineer on average (max ${st.pool_sites_max}); median ${st.pool_median_reach} min from base; ${st.pool_le30_sites} pool sites within 30 min. Mixed boys+girls pairs: ${st.mixed_pairs.join(', ') || 'none'}. Engineers by gender: ${Object.entries(st.female).map(([k, v]) => `${k} ${v}`).join(', ')}.`);
+  L.push('', `TOTALS: ${plan.engineers.length + (plan.hq || 0)} engineers = ${plan.hq} HQ + ${plan.engineers.length} in zones: ${Object.keys(KCODE).map(k => [k, plan.engineers.filter(e => e.kind === k).length]).filter(([, n]) => n).map(([k, n]) => `${n} ${KNAME[k].toLowerCase()}s`).join(', ')}. City pairs: ${st.pairs}, median ${st.pair_median} min apart at 7:30 am, ${st.pair_le15} within 15 min, ${st.pair_le30} within 30, ${st.pair_gt30} over 30; median ${st.pair_km_median} km. Pool: ${st.pool_sites_avg} sites per engineer on average (max ${st.pool_sites_max}); median ${st.pool_median_reach} min from base; ${st.pool_le30_sites} pool sites within 30 min. Mixed boys+girls pairs: ${st.mixed_pairs.join(', ') || 'none'}. Engineers by gender: ${Object.entries(st.female).map(([k, v]) => `${k} ${v}`).join(', ')}.`);
+  L.push(`BUDGET: ${budgetOf(plan)} engineers in the zones + ${plan.hq} at HQ${plan.hqSites?.length ? ` (${plan.hqSites.map(h => `${h.name} ${h.engineers}`).join(', ')}; HQ engineers are not field engineers and are not on the plan's sites)` : ''}. ${plan.model ? 'City schools are classed by QUALIFIED size: qualified Medium/Large/X-Large are paired (1 non-national per 2 schools); qualified Small/X-Small go to the zone pool with the non-school sites. Every remote school has its own Emirati national.' : ''}${plan.stats?.island?.length ? ' Abu Moosa School is not in service (on Abu Musa island): boat visits by the nearest pool engineer in its zone, not counted.' : ''}`);
   return L.join('\n');
 }

@@ -10,7 +10,7 @@ Built by Skyform / Alpha Data for the MOE end-user computing (EUC) support progr
 
 ## The problem
 
-MOE's EUC support model puts field engineers in 10 zones to cover **522 schools and 48 offices**. Deciding who covers what has to satisfy several rules at once:
+MOE's EUC support model puts field engineers in 10 zones to cover **522 schools and 38 offices**, with 3 HQ sites staffed separately. The current model is **331 engineers**: 201 Emirati nationals (one per remote school), 72 city shared engineers, 49 city pool engineers and 9 at HQ, with city schools classed by their *qualified* size. Deciding who covers what has to satisfy several rules at once:
 
 - **Emirati nationals are dedicated.** The largest remote schools each get one Emirati national on site, and nationals are never shared.
 - **Gender.** Every girls' school must be covered by a female engineer.
@@ -24,7 +24,7 @@ The allocation lived in spreadsheets. They can't show geography, real drive time
 One map, built from the project lead's workbook and real Google Maps drive times, that anyone on the team can open and understand:
 
 1. **A reproducible plan.** A builder script reads the source workbook, applies the rules in order, and looks up typical 7:30 am and 10:30 am drive times from Google Maps. It writes the plan as data (`public/data/remote-plan.json`) and an engineer-by-engineer Excel workbook.
-2. **A map that explains itself.** Every site is coloured by the engineer who covers it: national, city shared pair, city pool patch, or remote shared. Hover cards, engineer panels and the side tabs explain why each site sits where it does.
+2. **A map that explains itself.** Every site is coloured by the engineer who covers it: national, city shared pair or city pool patch. HQ sites are marked with their own engineers. Hover cards, engineer panels and the side tabs explain why each site sits where it does.
 3. **An AI assistant that knows the plan.** Questions are answered from the plan's own data. Requests to change the plan are worked out step by step by a planning agent. It tests each option on the same plan engine the map uses and shows every attempt on the map as it happens.
 4. **Controlled change.** Changes are only simulated until an approver confirms them by email. Approved changes become a new numbered version of the live plan. Alternative plans can be saved as private versions with unlisted links.
 
@@ -105,7 +105,7 @@ flowchart LR
 server.js                     local server (map at /remote, uses a dev/ store and a test inbox)
 public/
   remote-map.src.html         the map page (source; built into dist/)
-  data/remote-plan.json       the plan (version 0) produced by the builder
+  data/remote-plan.json       the plan produced by the builder (331 model)
   brand/                      Alpha Data and MOE logos
   index.html, js/, css/       earlier prototype: school-day dispatch simulation and guided demo
   coverage-map.src.html       earlier prototype: coverage-cluster map
@@ -156,7 +156,7 @@ The site runs on Vercel (project `moe-option-remote-map`).
 tools/deploy-remote-map.sh     # rebuild plan + map + bundle, then vercel deploy --prod
 ```
 
-Once a version 1 or later has been approved, the live plan lives in the Blob store, so redeploying never overwrites approved changes.
+Once a version 1 or later is live, the live plan lives in the Blob store, so redeploying never overwrites it. A plan rebuilt from a new workbook is made live as the next version (the 331 model was installed this way).
 
 ## Settings
 
