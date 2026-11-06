@@ -97,6 +97,9 @@ ZNAME = {z['id']: z['name'] for z in ZONES}
 LABEL = {'DXB-SHJ': 'Dubai & Sharjah', 'KFK-DBA': 'Khor Fakkan & Dibba', 'AJM-UAQ': 'Ajman, Sharjah & UAQ', 'RAK': 'Ras Al Khaimah',
          'FUJ-KLB': 'Fujairah & Kalba', 'AAN-A': 'Al Ain A', 'AAN-B': 'Al Ain B', 'AUH-A': 'Abu Dhabi A', 'AUH-B': 'Abu Dhabi B', 'DHF': 'Al Dhafra'}
 for z in ZONES: z['label'] = LABEL.get(z['id'], z['name'])
+# Team Lead corrections from the project lead (6 Nov 2026): the workbook has Al Ain A and Al Ain B swapped
+LEAD_FIX = {'AAN-A': 'Azza Alsmany', 'AAN-B': 'Khalid Hasaballa'}
+for z in ZONES: z['lead'] = LEAD_FIX.get(z['id'], z['lead'])
 
 # Al Manhal register: rural flag, Arabic name, cycle (matched by GPS, which is identical for the schools both lists share)
 mrows = list(openpyxl.load_workbook(MANHAL, read_only=True, data_only=True).worksheets[0].iter_rows(values_only=True)); MH = mrows[0]
@@ -131,6 +134,7 @@ for d in raw:
               'rural': bool(m and m.get('School Location Type En') == 'Rural'), 'cycle': (m or {}).get('School Cycle EN') or '',
               'lead': d['Tower Lead Name'], 'type': 'school', 'approx': approx, 'boat': boat, 'note': note}
     S[sid]['oz'] = old_zone(S[sid]['lat'], S[sid]['lng'])
+    if S[sid]['zone'] in LEAD_FIX: S[sid]['lead'] = LEAD_FIX[S[sid]['zone']]
 schools = list(S.values())
 
 # non-school sites: the "Non-Schools List with Map" sheet gives real names and locations. The 3 HQ sites are not covered by

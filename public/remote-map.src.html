@@ -12,6 +12,7 @@
   --chg:#6D28D9; --chgk:#4C1D95; --chgl:#CDBDF4; --chgbg:#F6F2FF; --bad:#B42318;
   --ink:#15233B; --ink2:#3A4659; --mut:#5F6B80; --line:#E4E8EF; --mist:#D2D9E3; --paper:#F5F7FA; --sheet:#FFFFFF; --hi:#F2C230;
   --nat:#10744F; --pair:#2A78D6; --pool:#EE8A2E; --poolk:#A65A12; --rem:#B64A9A; --hq:#9AA4B3;
+  --office:#0E7C86; --hqsite:#9F1239;   /* the 38 non-school offices and the 3 main HQs each have their own colour */
   --boy:#2457A6; --girl:#C2387F; --mix:#8A6D1A;
   --t1:#1F8A4C; --t2:#C98F00; --t3:#C8372D;
   --sea:#DCE8F1; --seal:#B9CFDF; --land:#F4F2EC; --mway:#D3D8DF;
@@ -46,7 +47,7 @@ h1,h2,h3{font-family:var(--cond);margin:0;text-wrap:balance}
 .bar{display:flex;gap:2px;height:22px}
 .bar button{border:0;padding:0;cursor:pointer;min-width:6px;border-radius:2px;position:relative}
 .bar button:first-child{border-radius:4px 2px 2px 4px}.bar button:last-child{border-radius:2px 4px 4px 2px}
-.bar button.hq{cursor:default;background:repeating-linear-gradient(135deg,var(--hq) 0 3px,#C5CCD6 3px 6px)}
+.bar button.hq{cursor:default;background:repeating-linear-gradient(135deg,var(--hqsite) 0 3px,#D9A3B2 3px 6px)}
 .bar button.off{opacity:.25}
 .bar button:hover:not(.hq){filter:brightness(1.08)}
 .hc-keys{display:flex;flex-wrap:wrap;gap:4px 18px}
@@ -122,6 +123,16 @@ tr.zr small{color:var(--mut)}
 /* engineer list */
 .filters{display:grid;gap:8px;margin-bottom:10px}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
+.sv-ctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 6px}
+.sv-ctl select{font:inherit;font-size:12.5px;padding:4px 6px;border:1px solid var(--mist);border-radius:6px;background:var(--sheet);color:var(--ink)}
+.sv-help{font-size:12px;color:var(--ink2);margin:2px 0 8px}
+.sv-cats .chip b{margin-left:2px}
+.sv-xd{margin:10px 0 4px;font-size:12.5px}.sv-xd summary{cursor:pointer;font-weight:600}
+.sv-x th,.sv-x td{text-align:center;padding:3px 4px}.sv-x tr th:first-child{text-align:left;white-space:nowrap}
+.sv-c{border:1px solid var(--mist);background:var(--sheet);border-radius:5px;min-width:30px;padding:1px 4px;font:inherit;font-size:12px;cursor:pointer}
+.sv-c.d{border-color:var(--chgl);background:var(--chgbg);color:var(--chgk);font-weight:700}.sv-c.on{outline:2px solid var(--ink)}
+.sv-act{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0 4px}
+.sv-act .count{margin:0}
 .chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--mist);border-radius:999px;padding:3px 10px;cursor:pointer;font-size:12px;background:var(--sheet)}
 .chip[aria-pressed="false"]{opacity:.45}
 .chip i{width:9px;height:9px;border-radius:50%}
@@ -156,6 +167,8 @@ input[type=search]{width:100%}
 .msearch kbd{font:600 11px var(--sans);color:var(--mut);border:1px solid var(--mist);border-radius:4px;padding:1px 6px;line-height:16px}
 .msearch .box:focus-within kbd,.msearch input:not(:placeholder-shown) ~ kbd{display:none}
 .mres{list-style:none;margin:6px 0 0;padding:4px;background:var(--sheet);border:1px solid var(--mist);border-radius:8px;box-shadow:0 10px 30px rgba(21,35,59,.16);max-height:min(440px,calc(100vh - 260px));overflow:auto}
+.mres li.mhead{display:block;color:var(--mut);font-size:12px;padding:5px 9px 3px;cursor:default}.mres li.mhead.ask{color:var(--chgk);font-weight:700}
+.mres li i.hq{border-radius:2px!important;background:var(--hqsite)!important}
 .mres li{display:grid;grid-template-columns:12px 1fr auto;gap:1px 10px;align-items:baseline;padding:7px 9px;border-radius:5px;cursor:pointer}
 .mres li.act{background:var(--paper)}
 .mres li > i{width:10px;height:10px;border-radius:50%;align-self:center;grid-row:span 2}
@@ -375,9 +388,9 @@ dialog.req::backdrop{background:rgba(21,35,59,.35)}
 /* map labels (HTML markers: no font server needed) */
 .place{font:600 12px var(--cond);color:#7A8597;opacity:.85;text-shadow:0 0 3px var(--land),0 0 3px var(--land),0 0 3px var(--land);white-space:nowrap;pointer-events:none}
 .place.sea{font-style:italic;color:#7F9DB5;text-shadow:0 0 3px var(--sea)}
-.hqm{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink);white-space:nowrap;pointer-events:auto}
-.hqm b{background:var(--ink);color:#fff;border-radius:3px;padding:1px 4px;font:700 10px var(--cond);letter-spacing:.02em}
-.hqm span{background:rgba(255,255,255,.88);border-radius:3px;padding:0 4px}
+.hqm{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink);white-space:nowrap;pointer-events:auto;cursor:pointer;border:0;background:none;padding:0;font-family:inherit}
+.hqm i{width:15px;height:15px;border-radius:3px;background:var(--hqsite);border:2px solid #fff;box-shadow:0 1px 4px rgba(21,35,59,.35);flex:none}
+.hqm span{background:rgba(255,255,255,.9);border-radius:3px;padding:0 4px;font-weight:600;color:var(--hqsite)}
 .zcard{background:var(--sheet);border:1px solid var(--mist);border-radius:6px;padding:5px 8px 6px;font-size:11.5px;line-height:1.3;box-shadow:0 2px 10px rgba(21,35,59,.12);cursor:pointer;white-space:nowrap;transition:opacity .25s;min-width:150px}
 .zcard b{display:block;font:700 13.5px var(--cond);color:var(--ink)}
 .zcard .zl{color:var(--mut)}
@@ -427,6 +440,7 @@ dialog.req::backdrop{background:rgba(21,35,59,.35)}
       <button role="tab" aria-selected="false" data-p="ai">Ask AI</button>
       <button role="tab" aria-selected="false" data-p="zones">Zones</button>
       <button role="tab" aria-selected="false" data-p="engineers">Engineers</button>
+      <button role="tab" aria-selected="false" data-p="sites">Sites</button>
       <button role="tab" aria-selected="false" data-p="method">Method</button>
     </div>
     <div class="ctrl">
@@ -445,6 +459,7 @@ dialog.req::backdrop{background:rgba(21,35,59,.35)}
       <p class="count" id="count"></p>
       <ul class="list" id="list"></ul>
     </div>
+    <div class="pane" id="p-sites" hidden></div>
     <div class="pane" id="p-method" hidden></div>
     <div class="pane ai" id="p-ai" hidden>
       <div id="draftbox"></div>
@@ -467,7 +482,7 @@ dialog.req::backdrop{background:rgba(21,35,59,.35)}
     <div class="tip" id="tip" hidden></div>
     <div class="msearch" id="msearch">
       <div class="box"><svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M15.5 15.5 21 21" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-        <input id="mq" type="search" role="combobox" aria-expanded="false" aria-controls="mres" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Search a school, School no., engineer or Team Lead" aria-label="Search schools, offices, engineers, zones and Team Leads"><kbd title="Press / to search">/</kbd></div>
+        <input id="mq" type="search" role="combobox" aria-expanded="false" aria-controls="mres" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Search a school, office, HQ, engineer or Team Lead" aria-label="Search schools, offices, engineers, zones and Team Leads"><kbd title="Press / to search">/</kbd></div>
       <ul class="mres" id="mres" role="listbox" aria-label="Search results" hidden></ul>
     </div>
     <div class="legend"><div class="lt"><b>Map key</b><button id="lgt" aria-expanded="true">Hide</button></div><div id="legend"></div></div>
@@ -501,6 +516,7 @@ const KIND = {
   remote_shared: { name: 'Remote shared engineer', plural: 'remote shared engineer', col: '--rem', what: 'The two smallest remote schools', short: 'Shares the two smallest remote schools' },
 };
 const KORDER = ['national', 'remote_shared', 'city_shared', 'pool'];
+const PANES = ['overview', 'ai', 'zones', 'engineers', 'sites', 'method'];
 const C = k => V(KIND[k].col);
 const gWord = g => ({ B: "Boys'", G: "Girls'", M: 'Mixed' }[g] || '');
 const gTag = g => g ? `<span class="tag ${g}">${{ B: 'Boys', G: 'Girls', M: 'Mixed' }[g]}</span>` : '<span class="tag O">Office</span>';
@@ -529,7 +545,7 @@ $('#bar').innerHTML = SEG.map(s => `<button class="${s.k === 'hq' ? 'hq' : ''}" 
 const liveN = k => k === 'hq' ? LIVEPLAN.hq : LIVEPLAN.engineers.filter(e => e.kind === k).length, dTxt = d => d ? `<em>${d > 0 ? '+' : '−'}${Math.abs(d)}</em>` : '';
 const total = P.engineers.length + P.hq, liveTotal = LIVEPLAN.engineers.length + LIVEPLAN.hq, dt = P === LIVEPLAN ? 0 : total - liveTotal;
 $('#hc-title').innerHTML = `Where the ${total} engineers go${dt ? ` ${dTxt(dt)} <em>vs the live plan</em>` : ''}`; $('#hc').setAttribute('aria-label', `Where the ${total} engineers go`);
-$('#keys').innerHTML = SEG.map(s => `<button class="${s.k === 'hq' ? 'hq' : ''}" data-k="${s.k}"><i style="background:${s.col || V('--hq')}"></i><b>${s.n}</b>${P === LIVEPLAN ? '' : dTxt(s.n - liveN(s.k))}<span>${esc(s.label)}</span></button>`).join('');
+$('#keys').innerHTML = SEG.map(s => `<button class="${s.k === 'hq' ? 'hq' : ''}" data-k="${s.k}"><i style="background:${s.col || V('--hqsite')}"></i><b>${s.n}</b>${P === LIVEPLAN ? '' : dTxt(s.n - liveN(s.k))}<span>${esc(s.label)}</span></button>`).join('');
 $$('#bar button, #keys button').forEach(b => { b.onclick = () => toggleKind(b.dataset.k); b.classList.toggle('off', b.dataset.k !== 'hq' && !shown.has(b.dataset.k)); });
 }
 renderHeader();
@@ -568,7 +584,9 @@ $('#p-overview').innerHTML = `${notLiveNote()}
   <div class="key">
     <div>${keySvg.nat}<span>Remote school with its own Emirati national</span></div>
     <div>${keySvg.pair}<span>Two city schools sharing one engineer; zoom in to see the drive time on the line</span></div>
-    <div>${keySvg.pool}<span>A pool engineer's home patch: small schools (dots) and offices (dots with a white centre)</span></div>
+    <div>${keySvg.pool}<span>A pool engineer's home patch of small schools</span></div>
+    <div><svg width="34" height="18" viewBox="0 0 34 18"><circle cx="17" cy="9" r="5.5" fill="${V('--office')}" stroke="#fff" stroke-width="1.4"/><circle cx="17" cy="9" r="2" fill="#fff"/></svg><span>Non-school office (${offices.length}), covered by its zone's pool engineers</span></div>
+    ${P.hqSites?.length ? `<div><svg width="34" height="18" viewBox="0 0 34 18"><rect x="11" y="3" width="12" height="12" rx="2" fill="${V('--hqsite')}" stroke="#fff" stroke-width="1.5"/></svg><span>Main HQ site (${P.hqSites.length}), with its own HQ engineers</span></div>` : ''}
     <div>${keySvg.size}<span>Bigger dot, more users (students and staff)</span></div>
   </div>
 
@@ -623,6 +641,79 @@ $('#p-zones').innerHTML = `${notLiveNote()}<p>Each zone has a Team Lead who runs
   <p class="count" style="margin-top:8px">Plus ${P.hq} HQ engineers at the ${(P.hqSites || []).length || 3} HQ sites${P.hqSites?.length ? ` (${esc(hqList())})` : ''}, outside the zone counts.</p>`;
 }
 renderZones();
+
+// ---------- sites: every school, office and HQ, listed by actual or qualified size ----------
+const SIZES = ['X-Large', 'Large', 'Medium', 'Small', 'X-Small'];
+let SV = { by: 'q', show: 'all', cr: 'all', cat: null, x: null };
+const svCat = (r, by) => r.hq ? 'Main HQ' : r.s.type === 'office' ? 'Non-school office' : r.s.cr === 'Island' ? 'Not in service' : (by === 'q' ? (r.s.qsize || r.s.size) : r.s.size) || 'Unknown';
+const SVORDER = [...SIZES, 'Not in service', 'Non-school office', 'Main HQ', 'Unknown'];
+function svRows({ ignoreCat = false } = {}) {
+  const zone = $('#zone').value;
+  return [...P.sites.map(x => ({ s: x })), ...(P.hqSites || []).map(h => ({ hq: h }))].filter(r => {
+    const z = r.hq ? r.hq.zone : r.s.zone, kind = r.hq ? 'hq' : r.s.type;
+    if (zone && z !== zone) return false;
+    if (SV.show !== 'all' && kind !== SV.show) return false;
+    if (SV.cr !== 'all' && (r.hq || r.s.type !== 'school' || r.s.cr !== SV.cr)) return false;
+    if (!ignoreCat && SV.cat && svCat(r, SV.by) !== SV.cat) return false;
+    if (!ignoreCat && SV.x && (r.hq || r.s.type !== 'school' || r.s.size !== SV.x[0] || (r.s.qsize || r.s.size) !== SV.x[1])) return false;
+    return true;
+  });
+}
+function renderSites() {
+  const all = svRows({ ignoreCat: true }), rows = svRows(), by = SV.by;
+  const cats = SVORDER.map(c => [c, all.filter(r => svCat(r, by) === c).length]).filter(([, n]) => n);
+  const sch = all.filter(r => r.s && r.s.type === 'school' && r.s.cr !== 'Island'), diff = sch.filter(r => (r.s.qsize || r.s.size) !== r.s.size).length;
+  const cell = (a, q) => sch.filter(r => r.s.size === a && (r.s.qsize || r.s.size) === q).length;
+  rows.sort((a, b) => SVORDER.indexOf(svCat(a, by)) - SVORDER.indexOf(svCat(b, by)) || (b.s?.users || 0) - (a.s?.users || 0));
+  const row = r => {
+    if (r.hq) return `<li data-hq="${r.hq.id}" tabindex="0"><i style="background:${V('--hqsite')};border-radius:2px"></i><span class="nm">${esc(r.hq.name)}</span><span class="rt">Main HQ</span><span class="meta">${esc(r.hq.fullName || r.hq.name)}, ${esc(zoneName(r.hq.zone))}, ${r.hq.engineers} HQ engineers</span></li>`;
+    const x = r.s, e = engOf(x), q = x.qsize || x.size, sz = x.type === 'office' ? `${esc(x.stype || 'Office')}` : x.cr === 'Island' ? 'Not in service (island)' : q !== x.size ? `Actual ${esc(x.size)}, <b>qualified ${esc(q)}</b>` : `${esc(x.size)} (actual and qualified)`;
+    return `<li data-site="${x.id}" tabindex="0"><i style="background:${x.type === 'office' ? V('--office') : e ? C(e.kind) : '#8D97A6'}"></i><span class="nm">${esc(x.name)}</span><span class="rt">${esc(svCat(r, by))}</span>
+      <span class="meta">${x.type === 'office' ? `Site code ${esc(x.no)}` : `School no. ${esc(x.no)}, ${esc(x.cr)}`}, ${esc(zoneName(x.zone))}. ${sz}. ${fmt(x.users)} users${e ? `, ${e.id}` : ''}</span></li>`;
+  };
+  $('#p-sites').innerHTML = `${notLiveNote()}<div class="sv-ctl">
+      <div class="seg" role="group" aria-label="Group by size"><button type="button" data-by="q" aria-pressed="${by === 'q'}">Qualified size</button><button type="button" data-by="a" aria-pressed="${by === 'a'}">Actual size</button></div>
+      <select id="sv-show" aria-label="Which sites"><option value="all">All sites</option><option value="school">Schools</option><option value="office">Non-school offices</option><option value="hq">Main HQs</option></select>
+      <select id="sv-cr" aria-label="City or remote"><option value="all">City and remote</option><option value="City">City schools</option><option value="Remote">Remote schools</option></select>
+    </div>
+    <p class="sv-help">${by === 'q' ? 'Qualified size allows for Alef-managed student devices (MOE then supports staff only); it decides how city schools are covered.' : 'Actual size is the register size category from the workbook.'} Click a group to list only those sites.</p>
+    <div class="chips sv-cats">${cats.map(([c, n]) => `<button type="button" class="chip" data-cat="${esc(c)}" aria-pressed="${SV.cat === c}">${esc(c)} <b>${n}</b></button>`).join('')}</div>
+    ${sch.length ? `<details class="sv-xd"${SV.x ? ' open' : ''}><summary>Actual size against qualified size (${diff} school${diff === 1 ? '' : 's'} differ)</summary>
+      <table class="mdt sv-x"><tr><th>Actual ↓ / qualified →</th>${SIZES.map(q => `<th>${q}</th>`).join('')}</tr>${SIZES.map(a => `<tr><th>${a}</th>${SIZES.map(q => { const n = cell(a, q); return `<td>${n ? `<button type="button" class="sv-c${a !== q ? ' d' : ''}${SV.x && SV.x[0] === a && SV.x[1] === q ? ' on' : ''}" data-a="${a}" data-q="${q}">${n}</button>` : ''}</td>`; }).join('')}</tr>`).join('')}</table></details>` : ''}
+    <div class="sv-act"><span class="count">${rows.length} site${rows.length === 1 ? '' : 's'}${SV.cat ? `: ${esc(SV.cat)}` : ''}${SV.x ? `: actual ${SV.x[0]}, qualified ${SV.x[1]}` : ''}${SV.cat || SV.x ? ' <button type="button" class="showall" id="sv-clr">show all groups</button>' : ''}</span>
+      <span><button type="button" class="showall" id="sv-map">Show on the map</button> <button type="button" class="showall" id="sv-csv">Download CSV</button></span></div>
+    <ul class="list sv-list">${rows.slice(0, 300).map(row).join('')}${rows.length > 300 ? `<li class="none">And ${rows.length - 300} more: narrow the groups or download the CSV.</li>` : ''}</ul>`;
+  $('#sv-show').value = SV.show; $('#sv-cr').value = SV.cr;
+}
+renderSites();
+$('#p-sites').addEventListener('click', ev => {
+  const b = ev.target.closest('button');
+  if (b?.dataset.by) { SV.by = b.dataset.by; SV.cat = null; renderSites(); return; }
+  if (b?.dataset.cat) { SV.cat = SV.cat === b.dataset.cat ? null : b.dataset.cat; SV.x = null; renderSites(); return; }
+  if (b?.dataset.a) { SV.x = SV.x && SV.x[0] === b.dataset.a && SV.x[1] === b.dataset.q ? null : [b.dataset.a, b.dataset.q]; SV.cat = null; renderSites(); return; }
+  if (b?.id === 'sv-clr') { SV.cat = null; SV.x = null; renderSites(); return; }
+  if (b?.id === 'sv-map') { const ids = svRows().filter(r => r.s).map(r => ({ type: 'site', id: r.s.id })); if (ids.length) isolate(ids, `Showing only the ${ids.length} sites in this list`); return; }
+  if (b?.id === 'sv-csv') { svCsv(); return; }
+  const li = ev.target.closest('li[data-site], li[data-hq]');
+  if (li?.dataset.hq) showHq(li.dataset.hq); else if (li) goTo({ type: 'site', id: li.dataset.site });
+});
+$('#p-sites').addEventListener('keydown', ev => { const li = ev.target.closest('li[data-site], li[data-hq]'); if (li && ev.key === 'Enter') li.click(); });
+$('#p-sites').addEventListener('change', ev => { if (ev.target.id === 'sv-show') SV.show = ev.target.value; else if (ev.target.id === 'sv-cr') SV.cr = ev.target.value; else return; SV.cat = null; SV.x = null; renderSites(); });
+$('#zone').addEventListener('change', () => renderSites());
+// the list as a spreadsheet-friendly CSV
+function svCsv() {
+  const q = v => { const t = String(v ?? ''); return /[",\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
+  const head = ['Type', 'Name', 'School no. / site code', 'Zone', 'Team Lead', 'City / Remote', 'Actual size', 'Qualified size', 'Boys / Girls', 'Supported users', 'Engineer', 'Engineer type', 'Drive from base 7:30 am (min)', 'Road km', 'Latitude', 'Longitude'];
+  const lines = svRows().map(r => {
+    if (r.hq) return ['Main HQ', r.hq.fullName || r.hq.name, r.hq.code, zoneName(r.hq.zone), Z.get(r.hq.zone)?.lead, '', '', '', '', '', `${r.hq.engineers} HQ engineers`, '', '', '', r.hq.lat, r.hq.lng];
+    const x = r.s, e = engOf(x), l = e && legOf(e, x.id);
+    return [x.type === 'office' ? 'Non-school office' : 'School', x.name, x.no, zoneName(x.zone), Z.get(x.zone)?.lead, x.cr, x.type === 'office' ? '' : x.size, x.type === 'office' ? '' : (x.qsize || x.size),
+      { B: 'Boys', G: 'Girls', M: 'Mixed' }[x.g] || '', x.users, e?.id || '', e ? KIND[e.kind].name : '', e && e.base === x.id ? 'base' : l?.peak ?? '', e && e.base === x.id ? '' : l?.km ?? '', x.lat, x.lng];
+  });
+  const csv = '﻿' + [head, ...lines].map(r => r.map(q).join(',')).join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = `MOE-sites-by-${SV.by === 'q' ? 'qualified' : 'actual'}-size${$('#zone').value ? '-' + $('#zone').value : ''}.csv`; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+}
 
 // ---------- method ----------
 const allRemoteNow = () => cnt('national') >= schools.filter(s => s.cr === 'Remote').length;
@@ -714,7 +805,7 @@ map.addControl(attrCtl, 'bottom-right');
 class HomeCtl { onAdd() { const d = document.createElement('div'); d.className = 'maplibregl-ctrl maplibregl-ctrl-group'; d.innerHTML = '<button type="button" class="homebtn" title="Show the whole UAE" aria-label="Show the whole UAE">UAE</button>'; d.onclick = () => { clearSel(); $('#zone').value = ''; applyFilter(); map.fitBounds(UAE, { padding: 16, duration: 900 }); }; return d; } onRemove() {} }
 map.addControl(new HomeCtl(), 'top-right');
 
-const COL = { chg: V('--chg'), nat: C('national'), pair: C('city_shared'), pool: C('pool'), poolk: V('--poolk'), rem: C('remote_shared'), boy: V('--boy'), girl: V('--girl'), mix: V('--mix'), off: '#8D97A6', t1: V('--t1'), t2: V('--t2'), t3: V('--t3'), ink: V('--ink'), hi: V('--hi') };
+const COL = { office: V('--office'), hqsite: V('--hqsite'), chg: V('--chg'), nat: C('national'), pair: C('city_shared'), pool: C('pool'), poolk: V('--poolk'), rem: C('remote_shared'), boy: V('--boy'), girl: V('--girl'), mix: V('--mix'), off: '#8D97A6', t1: V('--t1'), t2: V('--t2'), t3: V('--t3'), ink: V('--ink'), hi: V('--hi') };
 const kindCol = ['match', ['get', 'k'], 'national', COL.nat, 'city_shared', COL.pair, 'pool', COL.pool, 'remote_shared', COL.rem, COL.off];
 const genCol = ['match', ['get', 'g'], 'B', COL.boy, 'G', COL.girl, 'M', COL.mix, COL.off];
 const driveCol = ['match', ['get', 'band'], 't1', COL.t1, 't2', COL.t2, 't3', COL.t3, 'base', COL.ink, 'site', '#C9D1DC', '#C9D1DC'];
@@ -861,11 +952,22 @@ function labels() {
   planLabels();
 }
 let hqMk = [];
+// an HQ site: its own engineers, not part of the field plan
+function showHq(id) {
+  const h = (P.hqSites || []).find(x => x.id === id); if (!h) return;
+  clearSel(); $('#detail').style.setProperty('--c', V('--hqsite'));
+  $('#detail').innerHTML = `<div class="dh"><div><h3>${esc(h.name)}</h3><div class="kind">Main HQ site</div></div><button class="x" id="dx" aria-label="Close">×</button></div>
+    <dl><dt>Site</dt><dd>${esc(h.fullName || h.name)}${h.code ? ` (${esc(h.code)})` : ''}</dd><dt>Zone</dt><dd>${esc(zoneName(h.zone))}</dd><dt>Engineers</dt><dd>${h.engineers} dedicated HQ engineers</dd></dl>
+    <p class="note">HQ engineers stay at their HQ. They are not field engineers and are not part of the zone counts.</p>`;
+  $('#detail').hidden = false; $('#dx').onclick = () => { $('#detail').hidden = true; };
+  map.flyTo({ center: [h.lng, h.lat], zoom: Math.max(map.getZoom(), 13.5), duration: 1000 });
+}
 function planLabels() {
   for (const m of zoneMk) m.mk.remove(); for (const m of minMk) m.mk.remove(); for (const m of hqMk) m.remove(); zoneMk = []; minMk = []; hqMk = [];
   for (const h of P.hqSites || []) {      // HQ sites: their own engineers, not part of the field plan
-    const el = document.createElement('div'); el.className = 'hqm';
-    el.innerHTML = `<b>HQ</b><span>${esc(h.name)}: ${h.engineers} engineers</span>`;
+    const el = document.createElement('button'); el.type = 'button'; el.className = 'hqm';
+    el.innerHTML = `<i aria-hidden="true"></i><span>${esc(h.name)}: ${h.engineers} engineers</span>`;
+    el.onclick = () => showHq(h.id);
     el.title = `${h.fullName || h.name}: ${h.engineers} dedicated HQ engineers (not field engineers)`;
     hqMk.push(new maplibregl.Marker({ element: el, anchor: 'left' }).setLngLat([h.lng, h.lat]).addTo(map));
   }
@@ -938,8 +1040,8 @@ function applyMode() {
   const fill = mode === 'cov' ? kindCol : mode === 'gender' ? genCol : driveCol;
   map.setPaintProperty('sites', 'circle-color', fill);
   map.setPaintProperty('sites', 'circle-stroke-color', mode === 'cov' ? ['match', ['get', 'k'], 'pool', COL.poolk, '#FFFFFF'] : '#FFFFFF');
-  map.setPaintProperty('offices', 'circle-color', mode === 'cov' ? kindCol : mode === 'gender' ? COL.off : driveCol);
-  map.setPaintProperty('offices', 'circle-stroke-color', mode === 'cov' ? COL.poolk : '#5F6B80');
+  map.setPaintProperty('offices', 'circle-color', mode === 'drive' ? driveCol : COL.office);
+  map.setPaintProperty('offices', 'circle-stroke-color', mode === 'drive' ? '#5F6B80' : '#FFFFFF');
   map.setPaintProperty('links', 'line-color', mode === 'drive' ? ['match', ['get', 'band'], 't1', COL.t1, 't2', COL.t2, COL.t3] : mode === 'gender' ? '#9AA4B3' : ['match', ['get', 'k'], 'remote_shared', COL.rem, COL.pair]);
   map.setPaintProperty('spokes', 'line-color', mode === 'drive' ? ['match', ['get', 'band'], 't1', COL.t1, 't2', COL.t2, COL.t3] : COL.poolk);
   map.setPaintProperty('spokes', 'line-opacity', mode === 'drive' ? ['interpolate', ['linear'], ['zoom'], 7, 0.5, 10, 0.85] : ['interpolate', ['linear'], ['zoom'], 9, 0, 10, 0.55]);
@@ -1080,8 +1182,8 @@ function legend() {
   const ln = (col, dash) => `<svg width="18" height="16" viewBox="0 0 18 16" aria-hidden="true"><line x1="1" y1="8" x2="17" y2="8" stroke="${col}" stroke-width="3" ${dash ? 'stroke-dasharray="3 2"' : ''}/></svg>`;
   const area = `<svg width="18" height="16" viewBox="0 0 18 16" aria-hidden="true"><rect x="1.5" y="2.5" width="15" height="11" rx="5" fill="${COL.pool}" fill-opacity=".16" stroke="${COL.poolk}" stroke-dasharray="3 2"/></svg>`;
   let h = '';
-  if (mode === 'cov') h = `<div class="r">${dot(COL.nat)}Emirati national, on site</div><div class="r">${ln(COL.pair)}City shared engineer: 2 schools</div><div class="r">${dot(COL.pool, COL.poolk)}City pool engineer: small school</div><div class="r">${sq(COL.pool)}Office (pool engineer)</div><div class="r">${area}One pool engineer's patch</div>${cnt('remote_shared') ? `<div class="r">${ln(COL.rem)}Remote shared engineer</div>` : ''}${P.hqSites?.length ? `<div class="r"><svg width="18" height="16" viewBox="0 0 18 16" aria-hidden="true"><rect x="3" y="2.5" width="12" height="11" rx="2" fill="${COL.ink}"/></svg>HQ site (its own HQ engineers)</div>` : ''}<div class="hint">Bigger dot, more users. Faded dots: location to confirm.</div>`;
-  if (mode === 'gender') h = `<div class="r">${dot(COL.boy)}Boys' school</div><div class="r">${dot(COL.girl)}Girls' school</div><div class="r">${dot(COL.mix)}Mixed school</div><div class="r">${sq(COL.off)}Office (any engineer)</div><div class="hint">Girls' schools always have a female engineer.</div>`;
+  if (mode === 'cov') h = `<div class="r">${dot(COL.nat)}Emirati national, on site</div><div class="r">${ln(COL.pair)}City shared engineer: 2 schools</div><div class="r">${dot(COL.pool, COL.poolk)}City pool engineer: small school</div><div class="r">${sq(COL.office)}Non-school office (a pool engineer covers it)</div><div class="r">${area}One pool engineer's patch</div>${cnt('remote_shared') ? `<div class="r">${ln(COL.rem)}Remote shared engineer</div>` : ''}${P.hqSites?.length ? `<div class="r"><svg width="18" height="16" viewBox="0 0 18 16" aria-hidden="true"><rect x="3" y="2.5" width="12" height="11" rx="2" fill="${COL.hqsite}" stroke="#fff" stroke-width="1.5"/></svg>Main HQ site (its own HQ engineers)</div>` : ''}<div class="hint">Bigger dot, more users. Faded dots: location to confirm.</div>`;
+  if (mode === 'gender') h = `<div class="r">${dot(COL.boy)}Boys' school</div><div class="r">${dot(COL.girl)}Girls' school</div><div class="r">${dot(COL.mix)}Mixed school</div><div class="r">${sq(COL.office)}Non-school office (any engineer)</div><div class="hint">Girls' schools always have a female engineer.</div>`;
   if (mode === 'drive') h = `<div class="r">${ln(COL.t1)}15 min or less from the engineer</div><div class="r">${ln(COL.t2)}16–30 min</div><div class="r">${ln(COL.t3)}Over 30 min</div><div class="r">${dot(COL.ink)}Engineer's base</div><div class="r">${dot('#C9D1DC')}Emirati national, on site</div><div class="hint">${GOO ? 'Google Maps, typical 7:30 am traffic.' : 'Peak school-run traffic, door to door.'}</div>`;
   if (CHG.size || CHGE.size) h += `<div class="r"><svg width="18" height="16" viewBox="0 0 18 16" aria-hidden="true"><circle cx="9" cy="8" r="6" fill="rgba(109,40,217,.16)" stroke="${COL.chg}" stroke-width="2"/></svg>${VIEWING?.version ? 'Changed in this version' : VIEWING ? 'Changed by this proposal' : 'Pending change (simulated)'}</div>`;
   $('#legend').innerHTML = h;
@@ -1143,36 +1245,69 @@ function clearSel() { sel = null; $('#detail').hidden = true; for (const l of ['
 // ---------- search: schools (English or Arabic name, School no.), offices, engineers, zones and Team Leads ----------
 const norm = v => String(v ?? '').toLowerCase().normalize('NFKD').replace(/[̀-ًͯ-ٰٟـ]/g, '')
   .replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/ى/g, 'ي').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
-const TORDER = { zone: 0, school: 1, office: 2, engineer: 3 }, TNAME = { zone: 'Zone', school: 'School', office: 'Office', engineer: 'Engineer' };
+const TORDER = { hq: 0, zone: 1, school: 2, office: 3, engineer: 4 }, TNAME = { hq: 'Main HQ', zone: 'Zone', school: 'School', office: 'Office', engineer: 'Engineer' };
 const IDX = [
+  ...(P.hqSites || []).map(h => ({ t: 'hq', id: h.id, title: h.name, key: norm(h.code), tn: norm(h.name), hay: norm([h.name, h.fullName, h.code, 'hq headquarters head office main', P.zones.find(z => z.id === h.zone)?.label].join(' ')) })),
   ...P.zones.map(z => ({ t: 'zone', id: z.id, title: z.label, key: norm(z.id), tn: norm(z.label), hay: norm([z.label, z.name, z.id, z.lead].join(' ')) })),
   ...P.sites.map(s => ({ t: s.type === 'office' ? 'office' : 'school', id: s.id, title: s.name, ar: s.nameAr, key: norm(s.no), tn: norm(s.name), ta: norm(s.nameAr),
     hay: norm([s.name, s.nameAr, s.no, s.area, s.stype].join(' ')) })),
   ...P.engineers.map(e => ({ t: 'engineer', id: e.id, title: e.id, key: norm(e.id), tn: norm(e.id), hay: norm(e.id + ' ' + e.id.replace(/-/g, '')) })),
-];
+].map(it => ({ ...it, words: [...new Set(it.hay.split(' ').filter(Boolean))] }));
+// edit distance, giving up past `max` (typos: a letter missing, extra, wrong or two swapped)
+function lev(a, b, max) {
+  if (Math.abs(a.length - b.length) > max) return max + 1;
+  let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i]; let low = i;
+    for (let j = 1; j <= b.length; j++) { cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); low = Math.min(low, cur[j]); }
+    if (low > max) return max + 1; prev = cur;
+  }
+  return prev[b.length];
+}
+// how well one typed word fits an item: 0 starts a word, 1 inside a word, 2+ close spelling; null = no fit
+function tokFit(t, it) {
+  if ((' ' + it.hay).includes(' ' + t)) return 0;
+  if (it.hay.includes(t)) return 1;
+  if (t.length < 3 || /^\d+$/.test(t)) return null;
+  const max = t.length <= 4 ? 1 : 2; let best = null;
+  for (const w of it.words) {
+    if (w.length < 3) continue;
+    const d = Math.min(lev(t, w, max), w.length > t.length ? lev(t, w.slice(0, t.length), max) : max + 1);
+    if (d <= max && (best == null || d < best)) best = d;
+  }
+  return best == null ? null : 2 + best;
+}
 function findAll(q) {
   const n = norm(q); if (!n) return [];
-  const toks = n.split(' '), hits = [];
+  const toks = n.split(' ').filter(Boolean), hits = [];
   for (const it of IDX) {
-    if (!toks.every(t => it.hay.includes(t))) continue;
-    const sc = it.key === n ? 0 : it.tn.startsWith(n) || it.ta?.startsWith(n) ? 1 : (' ' + it.tn + ' ' + (it.ta || '')).includes(' ' + toks[0]) ? 2 : 3;
-    hits.push([sc, TORDER[it.t], it.tn.length, it]);
+    let fit = 0;
+    for (const t of toks) { const f = tokFit(t, it); if (f == null) { fit = null; break; } fit += f; }
+    if (fit == null) continue;
+    const exact = it.key === n ? -20 : it.tn === n ? -15 : it.tn.startsWith(n) || it.ta?.startsWith(n) ? -6 : 0;
+    hits.push({ it, sc: exact + fit * 4, fuzzy: fit >= 2 * toks.length });
   }
-  return hits.sort((a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2]).slice(0, 8).map(h => h[3]);
+  hits.sort((a, b) => a.sc - b.sc || TORDER[a.it.t] - TORDER[b.it.t] || a.it.tn.length - b.it.tn.length);
+  mInfo = { n: hits.length, amb: hits.length > 1 && hits[1].sc - hits[0].sc < 4, fuzzy: hits.length > 0 && hits.every(h => h.fuzzy) };
+  return hits.slice(0, 10).map(h => h.it);
 }
+let mInfo = { n: 0, amb: false, fuzzy: false }, mMoved = false, mAsk = false;
 let mHits = [], mAct = 0;
 function mRender() {
   const q = $('#mq').value, ar = /[؀-ۿ]/.test(q), ul = $('#mres');
   mHits = findAll(q); mAct = Math.min(mAct, Math.max(0, mHits.length - 1));
   if (!norm(q)) { ul.hidden = true; $('#mq').setAttribute('aria-expanded', 'false'); return; }
-  ul.innerHTML = mHits.length ? mHits.map((it, i) => {
+  const head = !mHits.length ? '' : mInfo.fuzzy ? `<li class="mhead" role="presentation">Did you mean${mHits.length > 1 ? ' one of these' : ''}?</li>`
+    : mInfo.amb ? `<li class="mhead${mAsk ? ' ask' : ''}" role="presentation">${mInfo.n} places match "${esc(q.trim())}". Which one do you mean?</li>` : '';
+  ul.innerHTML = head + (mHits.length ? mHits.map((it, i) => {
     let dot = '', title = it.title, sub = '';
-    if (it.t === 'zone') { const z = Z.get(it.id); dot = '<i class="z"></i>'; sub = `Team Lead: ${z.lead}, ${z.schools} schools, ${z.eng} engineers`; }
+    if (it.t === 'hq') { const h = P.hqSites.find(x => x.id === it.id); dot = '<i class="hq"></i>'; sub = `${h.fullName || h.name}, ${zoneName(h.zone)}, ${h.engineers} HQ engineers`; }
+    else if (it.t === 'zone') { const z = Z.get(it.id); dot = '<i class="z"></i>'; sub = `Team Lead: ${z.lead}, ${z.schools} schools, ${z.eng} engineers`; }
     else if (it.t === 'engineer') { const e = E.get(it.id); dot = `<i style="background:${C(e.kind)}"></i>`; sub = `${KIND[e.kind].name}, based at ${S.get(e.base).name}`; }
-    else { const s = S.get(it.id), e = engOf(s); dot = `<i style="background:${C(e.kind)}"></i>`; if (ar && s.nameAr) title = s.nameAr;
-      sub = it.t === 'office' ? `Office, site code ${s.no}, ${zoneName(s.zone)}, engineer ${e.id}` : `School no. ${s.no}, ${zoneName(s.zone)}, engineer ${e.id}${ar && s.nameAr ? `, ${s.name}` : ''}`; }
+    else { const s = S.get(it.id), e = engOf(s); dot = `<i style="background:${it.t === 'office' ? V('--office') : C(e.kind)}"></i>`; if (ar && s.nameAr) title = s.nameAr;
+      sub = it.t === 'office' ? `Office, site code ${s.no}, ${zoneName(s.zone)}, engineer ${e.id}` : `School no. ${s.no}, ${zoneName(s.zone)}, ${s.size}${s.qsize && s.qsize !== s.size ? ` (qualified ${s.qsize})` : ''}, engineer ${e.id}${ar && s.nameAr ? `, ${s.name}` : ''}`; }
     return `<li role="option" id="mr${i}" data-i="${i}" class="${i === mAct ? 'act' : ''}" aria-selected="${i === mAct}">${dot}<span class="t">${esc(title)}</span><span class="ty">${TNAME[it.t]}</span><span class="s">${esc(sub)}</span></li>`;
-  }).join('') : `<li class="none">Nothing matches "${esc(q.trim())}". Try part of a school's name, its School no., an engineer ID such as DXB-SHJ-C03, or a Team Lead's name.</li>`;
+  }).join('') : `<li class="none">Nothing matches "${esc(q.trim())}". Try part of a school's name, its School no., an engineer ID such as DXB-SHJ-C03, or a Team Lead's name.</li>`);
   ul.hidden = false; $('#mq').setAttribute('aria-expanded', 'true');
   $('#mq').setAttribute('aria-activedescendant', mHits.length ? 'mr' + mAct : '');
 }
@@ -1188,30 +1323,31 @@ function mChoose(it) {
   if (!it) return;
   mClose(); $('#mq').value = it.title; $('#mq').blur();
   const side = Math.min(210, map.getContainer().clientWidth * 0.22);
+  if (it.t === 'hq') { showEverything(''); setPicks([]); showHq(it.id); return; }
   if (it.t === 'zone') { clearSel(); showEverything(it.id); $('#zone').value = it.id; applyFilter(); flyZone(it.id); setPicks([{ type: 'zone', id: it.id }]); return; }
   if (it.t === 'engineer') { const e = E.get(it.id); showEverything(e.zone); select(e.id, true); setPicks([{ type: 'eng', id: e.id }]); return; }
   const s = S.get(it.id), e = engOf(s);
   showEverything(s.zone); select(e.id, false, s.id); setPicks([{ type: 'site', id: s.id }]);
   map.flyTo({ center: [s.lng, s.lat], zoom: Math.max(map.getZoom(), 13), offset: [side, 0], duration: 1100 });
 }
-$('#mq').addEventListener('input', () => { mAct = 0; mRender(); });
+$('#mq').addEventListener('input', () => { mAct = 0; mMoved = false; mAsk = false; mRender(); });
 $('#mq').addEventListener('focus', () => { if ($('#mq').value) mRender(); });
 $('#mq').addEventListener('keydown', ev => {
   const open = !$('#mres').hidden && mHits.length;
-  if (ev.key === 'ArrowDown' && open) { ev.preventDefault(); mAct = (mAct + 1) % mHits.length; mRender(); $('#mr' + mAct)?.scrollIntoView({ block: 'nearest' }); }
-  else if (ev.key === 'ArrowUp' && open) { ev.preventDefault(); mAct = (mAct - 1 + mHits.length) % mHits.length; mRender(); $('#mr' + mAct)?.scrollIntoView({ block: 'nearest' }); }
-  else if (ev.key === 'Enter') { ev.preventDefault(); mChoose(mHits[mAct]); }
+  if (ev.key === 'ArrowDown' && open) { ev.preventDefault(); mMoved = true; mAct = (mAct + 1) % mHits.length; mRender(); $('#mr' + mAct)?.scrollIntoView({ block: 'nearest' }); }
+  else if (ev.key === 'ArrowUp' && open) { ev.preventDefault(); mMoved = true; mAct = (mAct - 1 + mHits.length) % mHits.length; mRender(); $('#mr' + mAct)?.scrollIntoView({ block: 'nearest' }); }
+  else if (ev.key === 'Enter') { ev.preventDefault(); if (mHits.length > 1 && mInfo.amb && !mMoved) { mAsk = true; mRender(); } else mChoose(mHits[mAct]); }   // several equally good matches: ask which one
   else if (ev.key === 'Escape') { ev.stopPropagation(); if (!$('#mres').hidden) mClose(); else { $('#mq').value = ''; $('#mq').blur(); } }
 });
 $('#mres').addEventListener('pointerdown', ev => { const li = ev.target.closest('li[data-i]'); if (li) { ev.preventDefault(); mChoose(mHits[+li.dataset.i]); } });
-$('#mres').addEventListener('pointermove', ev => { const li = ev.target.closest('li[data-i]'); if (li && +li.dataset.i !== mAct) { mAct = +li.dataset.i; $$('#mres li').forEach((l, i) => { l.classList.toggle('act', i === mAct); l.setAttribute('aria-selected', i === mAct); }); } });
+$('#mres').addEventListener('pointermove', ev => { const li = ev.target.closest('li[data-i]'); if (li && +li.dataset.i !== mAct) { mMoved = true; mAct = +li.dataset.i; $$('#mres li').forEach((l, i) => { l.classList.toggle('act', i === mAct); l.setAttribute('aria-selected', i === mAct); }); } });
 document.addEventListener('pointerdown', ev => { if (!ev.target.closest('#msearch')) mClose(); });
 addEventListener('keydown', ev => { if (ev.key === '/' && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName)) { ev.preventDefault(); $('#mq').focus(); $('#mq').select(); } });
 
 // ---------- redraw everything from a plan (live, simulated or a proposal) ----------
 function renderPlan(p, changedSites = [], changedEngs = []) {
   setPlan(p); CHG = new Set(changedSites); CHGE = new Set(changedEngs);
-  renderHeader(); renderOverview(); renderZones(); renderMethod(); buildFeatures();
+  renderHeader(); renderOverview(); renderZones(); renderSites(); renderMethod(); buildFeatures();
   if (map.getSource('sites')) {
     for (const [id, f] of [['hulls', hullF], ['links', linkF], ['spokes', spokeF], ['sites', siteF]]) map.getSource(id).setData(fc(f));
     planLabels(); applyMode(); applyFilter();
@@ -1246,7 +1382,7 @@ $('#ai-ctx').addEventListener('click', ev => { if (ev.target.closest('button[dat
 // ---------- the assistant ----------
 const chat = [];
 let aiBusy = false, rq = 0;
-function openAI() { $$('.tabs button').forEach(x => x.setAttribute('aria-selected', x.dataset.p === 'ai')); for (const p of ['overview', 'ai', 'zones', 'engineers', 'method']) $('#p-' + p).hidden = p !== 'ai'; showSide(); sizeSide(); setTimeout(() => $('#ai-q').focus(), 30); }
+function openAI() { $$('.tabs button').forEach(x => x.setAttribute('aria-selected', x.dataset.p === 'ai')); for (const p of PANES) $('#p-' + p).hidden = p !== 'ai'; showSide(); sizeSide(); setTimeout(() => $('#ai-q').focus(), 30); }
 function suggestions() {
   const d = VIEWING ? VIEWING.proposal.ops : draft.ops;
   if (d.length) return ['Summarise the impact of these changes', 'Do these changes break any rules?', 'Which schools get a longer drive?'];
@@ -1768,7 +1904,7 @@ async function boot() {
 boot();
 
 // ---------- wiring ----------
-$$('.tabs button').forEach(b => b.onclick = () => { $$('.tabs button').forEach(x => x.setAttribute('aria-selected', x === b)); for (const p of ['overview', 'ai', 'zones', 'engineers', 'method']) $('#p-' + p).hidden = p !== b.dataset.p; sizeSide(); if (b.dataset.p === 'ai') setTimeout(() => $('#ai-q').focus(), 30); });
+$$('.tabs button').forEach(b => b.onclick = () => { $$('.tabs button').forEach(x => x.setAttribute('aria-selected', x === b)); for (const p of PANES) $('#p-' + p).hidden = p !== b.dataset.p; sizeSide(); if (b.dataset.p === 'ai') setTimeout(() => $('#ai-q').focus(), 30); });
 
 // ---------- the side panel: wider for Ask AI; drag its edge to resize (remembered per tab type); hide it to give the map the screen ----------
 const SIDE_KEY = 'moe-side-v1';
