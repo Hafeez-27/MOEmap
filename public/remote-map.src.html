@@ -12,7 +12,7 @@
   --chg:#6D28D9; --chgk:#4C1D95; --chgl:#CDBDF4; --chgbg:#F6F2FF; --bad:#B42318;
   --ink:#15233B; --ink2:#3A4659; --mut:#5F6B80; --line:#E4E8EF; --mist:#D2D9E3; --paper:#F5F7FA; --sheet:#FFFFFF; --hi:#F2C230;
   --nat:#10744F; --pair:#2A78D6; --pool:#EE8A2E; --poolk:#A65A12; --rem:#B64A9A; --hq:#9AA4B3;
-  --office:#0E7C86; --hqsite:#9F1239;   /* the 38 non-school offices and the 3 main HQs each have their own colour */
+  --office:#8E44AD; --hqsite:#9F1239;   /* the 38 non-school offices and the 3 main HQs each have their own colour */
   --boy:#2457A6; --girl:#C2387F; --mix:#8A6D1A;
   --t1:#1F8A4C; --t2:#C98F00; --t3:#C8372D;
   --sea:#DCE8F1; --seal:#B9CFDF; --land:#F4F2EC; --mway:#D3D8DF;
@@ -537,9 +537,8 @@ const bandOf = m => m == null ? 'boat' : m <= 15 ? 't1' : m <= P.sla ? 't2' : 't
 
 // ---------- header: the headcount, as one bar ----------
 let shown = new Set(KORDER);
-const verNote = () => LIVEMETA.version ? ` Live plan version ${LIVEMETA.version}${LIVEMETA.rebuild ? ` (${esc(LIVEMETA.label || 'rebuilt')}), made live` : ', approved'} ${new Date(LIVEMETA.at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} by ${esc(LIVEMETA.by)}.` : '';
 function renderHeader() {
-$('#sub').innerHTML = `${fmt(schools.length)} schools and ${offices.length} offices${P.hqSites?.length ? `, plus ${P.hqSites.length} HQ sites` : ''}, every one with a named engineer. Remote schools each get their own Emirati national. City schools share engineers: bigger ones in pairs, small ones and offices in pools that each zone lead dispatches.${verNote()}`;
+$('#sub').innerHTML = `${fmt(schools.length)} schools and ${offices.length} offices${P.hqSites?.length ? `, plus ${P.hqSites.length} HQ sites` : ''}, every one with a named engineer. Remote schools each get their own Emirati national. City schools share engineers: bigger ones in pairs, small ones and offices in pools that each zone lead dispatches.`;
 const SEG = [...usedKinds().map(k => ({ k, n: cnt(k), col: C(k), label: { national: 'Emirati nationals, one per remote school', remote_shared: 'remote shared', city_shared: 'city shared, two schools each', pool: `city pool, about ${Math.round(ST.pool_sites_avg || 5)} sites each` }[k] })), { k: 'hq', n: P.hq, col: '', label: P.hqSites?.length ? `at HQ (${hqList()})` : 'at HQ (3 sites, not on this map)' }];
 $('#bar').innerHTML = SEG.map(s => `<button class="${s.k === 'hq' ? 'hq' : ''}" data-k="${s.k}" style="flex:${s.n} 0 0;${s.col ? `background:${s.col}` : ''}" aria-label="${s.n} ${esc(s.label)}" title="${s.n} ${esc(s.label)}"></button>`).join('');
 const liveN = k => k === 'hq' ? LIVEPLAN.hq : LIVEPLAN.engineers.filter(e => e.kind === k).length, dTxt = d => d ? `<em>${d > 0 ? '+' : '−'}${Math.abs(d)}</em>` : '';
