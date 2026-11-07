@@ -360,6 +360,13 @@ dialog.req::backdrop{background:rgba(21,35,59,.35)}
 .detail dt{color:var(--mut)}
 .detail dd{margin:0}
 .detail table td:first-child{white-space:normal}
+.detail .dsub{margin:12px 0 2px;font:700 13px var(--cond);color:var(--ink);border-top:1px solid var(--line);padding-top:10px}
+.detail .ar{font-size:13px;color:var(--ink2);margin-top:2px}
+.detail .qs{color:var(--mut)}
+.detail tr[data-site]{cursor:pointer}.detail tr[data-site]:hover td{background:var(--paper)}
+.detail .sl{display:block;border:0;background:none;padding:0 0 2px;font:inherit;color:var(--ink);text-align:left;text-decoration:underline;text-decoration-color:var(--mist);text-underline-offset:2px;cursor:pointer}
+.detail .sl:hover{text-decoration-color:var(--ink)}
+.detail .dmap{font-size:12.5px;font-weight:600;color:var(--ink);margin-left:8px}
 .detail .note{color:var(--ink2);font-size:12.5px;margin:8px 0 0;padding:7px 9px;background:var(--paper);border-radius:4px}
 .detail .flag{background:#FFF1E6;color:#8A3B00}
 .detail .live{display:block;margin-top:3px;font-size:12px;color:var(--ink)}
@@ -902,7 +909,8 @@ map.on('load', () => {
     if (!f) { if (!shift) { clearSel(); setPicks([]); } return; }
     const item = f.layer.id === 'sites' || f.layer.id === 'offices' ? { type: 'site', id: f.properties.id } : { type: 'eng', id: f.properties.e };
     if (shift) { togglePick(item); return; }
-    select(f.properties.e, false, item.type === 'site' ? item.id : undefined); setPicks([item]);
+    if (item.type === 'site') showSite(item.id); else select(f.properties.e, false);
+    setPicks([item]);
   });
   map.on('zoom', zoneCardVis);
   map.on('moveend', () => { labelVis(); clampCards(); });
@@ -928,7 +936,7 @@ function siteCard(s) {
     <div class="tg">${gTag(s.g)}<span class="tag O">${s.type === 'office' ? 'Office' : s.cr}</span>${s.rural ? '<span class="tag O">Rural</span>' : ''}</div></div>
     <dl><dt>${s.type === 'office' ? 'Site code' : 'School no.'}</dt><dd>${esc(s.no)}</dd><dt>Size</dt><dd>${sizeLine}</dd><dt>Users</dt><dd>${usersLine}</dd>
     <dt>Zone</dt><dd>${esc(z.label)}</dd><dt>Team Lead</dt><dd>${esc(z.lead)}</dd>${s.cycle ? `<dt>Cycles</dt><dd>${esc(s.cycle.replace(/KGs/g, 'KG').replace(/Cycle(\d)/g, 'Cycle $1').split(' ').join(' ').replace(/(\d) (?=[KC])/g, '$1, ').replace(/KG (?=C)/, 'KG, '))}</dd>` : ''}</dl>
-    <div class="te">${eng}</div>${CHG.has(s.id) ? `<div class="tchg">Pending change (simulated): ${LIVEENG.get(s.id) ? `was covered by ${esc(LIVEENG.get(s.id))}` : 'new'}</div>` : ''}${s.note ? `<div class="tf">${esc(s.note)}</div>` : ''}<div class="tx">Click to see this engineer; shift-click to pick several and ask about them</div>`;
+    <div class="te">${eng}</div>${CHG.has(s.id) ? `<div class="tchg">Pending change (simulated): ${LIVEENG.get(s.id) ? `was covered by ${esc(LIVEENG.get(s.id))}` : 'new'}</div>` : ''}${s.note ? `<div class="tf">${esc(s.note)}</div>` : ''}<div class="tx">Click for the full details; shift-click to pick several and ask about them</div>`;
 }
 function engCard(e) {
   const z = Z.get(e.zone), sc = e.sites.filter(id => S.get(id).type === 'school').length;
@@ -1191,9 +1199,16 @@ function legend() {
 // ---------- selection ----------
 function boundsOf(ids, pad = 0.006) { const pts = ids.map(id => S.get(id)).filter(s => !s.boat); return [[Math.min(...pts.map(p => p.lng)) - pad, Math.min(...pts.map(p => p.lat)) - pad], [Math.max(...pts.map(p => p.lng)) + pad, Math.max(...pts.map(p => p.lat)) + pad]]; }
 function flyZone(id) { const ids = P.sites.filter(s => s.zone === id && !s.boat).map(s => s.id); map.fitBounds(boundsOf(ids, 0.03), { padding: { top: 50, bottom: 50, left: 50, right: 50 }, duration: 1000, maxZoom: 12 }); }
-function select(id, fly, focus) {
-  const e = E.get(id); if (!e) return; sel = id;
+// the map side of a selection: this engineer's lines, pool area and sites stand out
+function highlight(id) {
+  sel = id;
   for (const [l, k] of [['sel-line', 'e'], ['sel-hull', 'e'], ['sel-ring', 'e']]) map.setFilter(l, ['==', ['get', k], id]);
+  $$('#list li').forEach(l => l.classList.toggle('sel', l.dataset.id === id));
+  labelVis();
+}
+function select(id, fly, focus) {
+  const e = E.get(id); if (!e) return;
+  highlight(id);
   const z = Z.get(e.zone), sc = e.sites.filter(i => S.get(i).type === 'school').length;
   const rows = e.sites.map(i => { const s = S.get(i), l = legOf(e, i);
     return `<tr data-site="${i}" class="${i === focus ? 'hit' : ''}"><td>${esc(s.name)}<br><small style="color:var(--mut)">${s.type === 'office' ? `${esc(s.stype)}, site code ${esc(s.no)}` : `${esc(s.size)}, ${gWord(s.g).toLowerCase()} school, no. ${esc(s.no)}`}, ${fmt(s.users)} users</small></td><td>${i === e.base && e.sites.length > 1 ? 'Base' : s.boat ? 'Boat' : l && l.peak != null ? `${l.peak} min ${PK}<br><small style="color:var(--mut)">${l.off} min ${OFW}, ${l.km} km</small><span class="live" data-to="${i}" hidden></span>` : 'On site'}</td></tr>`; }).join('');
@@ -1210,14 +1225,49 @@ function select(id, fly, focus) {
   $('#dask').onclick = () => { setPicks(focus ? [{ type: 'site', id: focus }] : [{ type: 'eng', id }]); openAI(); };
   liveTimes(e);
   if (focus) document.querySelector(`#detail tr[data-site="${focus}"]`)?.scrollIntoView({ block: 'nearest' });
-  $$('#list li').forEach(l => l.classList.toggle('sel', l.dataset.id === id));
-  labelVis();
   if (fly) map.fitBounds(boundsOf(e.sites), { padding: { top: 60, bottom: 60, left: Math.min(420, map.getContainer().clientWidth * 0.45), right: 60 }, maxZoom: 13.5, duration: 1000 });
 }
+// ---------- a school or office: its own details, then the engineer who covers it ----------
+const cycleText = c => String(c || '').replace(/KGs/g, 'KG').replace(/Cycle(\d)/g, 'Cycle $1').split(' ').join(' ').replace(/(\d) (?=[KC])/g, '$1, ').replace(/KG (?=C)/, 'KG, ');
+function showSite(id, { fly = false } = {}) {
+  const s = S.get(id); if (!s) return;
+  const e = engOf(s), z = Z.get(s.zone), office = s.type === 'office', q = s.qsize || s.size;
+  if (e) highlight(e.id); else clearSel();
+  const row = (k, v) => v == null || v === '' ? '' : `<dt>${k}</dt><dd>${v}</dd>`;
+  const facts = office
+    ? row('Site code', esc(s.no)) + row('Type', esc(s.stype || 'Office')) + row('Zone', esc(z.label)) + row('Team Lead', esc(z.lead)) + row('Users', `${fmt(s.users)}${s.usersAssumed ? ' (assumed)' : ''}`)
+    : row('School no.', esc(s.no)) + row('Zone', esc(z.label)) + row('Team Lead', esc(z.lead)) + row('Boys / girls', { B: 'Boys', G: 'Girls', M: 'Mixed' }[s.g] || '') +
+      row('City / remote', s.cr === 'Island' ? 'Island, not in service' : esc(s.cr)) + row('Actual size', esc(s.size)) + row('Qualified size', `${esc(q)}${q !== s.size ? ' <span class="qs">(used for coverage)</span>' : ''}`) +
+      row('Users', `${fmt(s.users)} (${fmt(s.st)} students, ${fmt(s.sf)} staff)`) + row('Cycles', s.cycle ? esc(cycleText(s.cycle)) : '') + row('Area', s.rural ? 'Rural' : '');
+  const l = e && legOf(e, id), atBase = e && e.base === id, rest = e ? e.sites.filter(i => i !== id && i !== e.base) : [];
+  const siteBtn = i => `<button type="button" class="sl" data-site="${i}">${esc(S.get(i).name)}</button>`;
+  const drive = !e ? '' : s.boat ? 'Boat visits' : e.kind === 'national' ? 'None: on site' : atBase ? `This ${office ? 'site' : 'school'} is the engineer's base` : l && l.peak != null ? `${l.peak} min ${PK}, ${l.off} min ${OFW}, ${kmS(l.km)} by road<span class="live" data-to="${id}" hidden></span>` : '';
+  const engHtml = !e ? '<p class="note">No engineer covers this site.</p>' : e.kind === 'national'
+    ? `<h4 class="dsub">Engineer (dedicated to this school)</h4><dl>${row('Engineer', `<button type="button" class="ref" data-eng="${e.id}"><i style="background:${C(e.kind)}"></i>${e.id}</button>`)}${row('Type', 'Emirati national, on site full time')}${row('Gender', esc(e.gender))}${row('Shared', 'Never: nationals are not shared (MOE rule)')}${row('Travel', drive)}</dl>`
+    : `<h4 class="dsub">Covered by</h4><dl>${row('Engineer', `<button type="button" class="ref" data-eng="${e.id}"><i style="background:${C(e.kind)}"></i>${e.id}</button> ${esc(KIND[e.kind].name.toLowerCase())}, ${esc(e.gender.toLowerCase())}`)}${row('Based at', atBase ? 'Here' : siteBtn(e.base))}${row('Drive from base', drive)}${row('Also covers', rest.length ? rest.slice(0, 6).map(siteBtn).join('') + (rest.length > 6 ? `<span class="qs">and ${rest.length - 6} more</span>` : '') : '')}</dl>
+       <p class="dask"><button type="button" data-eng="${e.id}">See ${e.id}'s full list</button></p>`;
+  $('#detail').style.setProperty('--c', office ? V('--office') : e ? C(e.kind) : '#8D97A6');
+  $('#detail').innerHTML = `<div class="dh"><div><h3>${esc(s.name)}</h3><div class="kind">${office ? 'Non-school office' : `${gWord(s.g) || ''} ${s.cr === 'Island' ? 'island' : s.cr.toLowerCase()} school`.trim()}${s.nameAr ? `<div class="ar" lang="ar" dir="rtl">${esc(s.nameAr)}</div>` : ''}</div></div><button class="x" id="dx" aria-label="Close">×</button></div>
+    <dl>${facts}</dl>${CHG.has(id) ? `<p class="note flag">Pending change (simulated): ${LIVEENG.get(id) ? `was covered by ${esc(LIVEENG.get(id))}` : 'new'}.</p>` : ''}
+    ${engHtml}<p class="livecap" id="livecap" hidden></p>
+    ${s.note ? `<p class="note">${esc(s.note)}</p>` : ''}
+    <p class="dask"><button type="button" id="dask">Ask AI about ${esc(s.name)}</button> <a class="dmap" href="https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lng}" target="_blank" rel="noopener">Open in Google Maps</a></p>`;
+  $('#detail').hidden = false; $('#tip').hidden = true;
+  $('#dx').onclick = clearSel;
+  $('#dask').onclick = () => { setPicks([{ type: 'site', id }]); openAI(); };
+  if (e && e.kind !== 'national' && !atBase) liveTimes(e, [id]);
+  if (fly) map.flyTo({ center: [s.lng, s.lat], zoom: Math.max(map.getZoom(), 13), offset: [Math.min(210, map.getContainer().clientWidth * 0.22), 0], duration: 1000 });
+}
+// inside the panels: a site row opens that school, an engineer button opens the engineer
+$('#detail').addEventListener('click', ev => {
+  const eb = ev.target.closest('[data-eng]'); if (eb) { select(eb.dataset.eng, false); setPicks([{ type: 'eng', id: eb.dataset.eng }]); return; }
+  const tr = ev.target.closest('tr[data-site], .sl[data-site]'); if (tr) { showSite(tr.dataset.site); setPicks([{ type: 'site', id: tr.dataset.site }]); }
+});
+
 // live traffic on click: Google's usual time for this hour vs right now, through the local server (keys stay there)
 let LIVE = location.protocol.startsWith('http') ? null : false, liveSeq = 0;
-async function liveTimes(e) {
-  const legs = e.legs.filter(l => l.peak != null && l.km > 0), seq = ++liveSeq;
+async function liveTimes(e, only) {
+  const legs = e.legs.filter(l => l.peak != null && l.km > 0 && (!only || only.includes(l.to))), seq = ++liveSeq;
   if (!legs.length || LIVE === false) return;
   const spans = legs.map(l => document.querySelector(`#detail .live[data-to="${l.to}"]`));
   spans.forEach(sp => { if (sp) { sp.hidden = false; sp.className = 'live wait'; sp.textContent = 'Checking live traffic…'; } });
@@ -1325,8 +1375,8 @@ function mChoose(it) {
   if (it.t === 'hq') { showEverything(''); setPicks([]); showHq(it.id); return; }
   if (it.t === 'zone') { clearSel(); showEverything(it.id); $('#zone').value = it.id; applyFilter(); flyZone(it.id); setPicks([{ type: 'zone', id: it.id }]); return; }
   if (it.t === 'engineer') { const e = E.get(it.id); showEverything(e.zone); select(e.id, true); setPicks([{ type: 'eng', id: e.id }]); return; }
-  const s = S.get(it.id), e = engOf(s);
-  showEverything(s.zone); select(e.id, false, s.id); setPicks([{ type: 'site', id: s.id }]);
+  const s = S.get(it.id);
+  showEverything(s.zone); showSite(s.id); setPicks([{ type: 'site', id: s.id }]);
   map.flyTo({ center: [s.lng, s.lat], zoom: Math.max(map.getZoom(), 13), offset: [side, 0], duration: 1100 });
 }
 $('#mq').addEventListener('input', () => { mAct = 0; mMoved = false; mAsk = false; mRender(); });
@@ -1519,7 +1569,7 @@ function goTo(p) {
   if (p.type === 'zone') { showEverything(p.id); $('#zone').value = p.id; applyFilter(); flyZone(p.id); return; }
   if (p.type === 'eng') { const e = E.get(p.id); if (e) { showEverything(e.zone); select(e.id, true); } return; }
   const s = S.get(p.id); if (!s) return;
-  showEverything(s.zone); select(s.eng, false, s.id);
+  showEverything(s.zone); showSite(s.id);
   map.flyTo({ center: [s.lng, s.lat], zoom: Math.max(map.getZoom(), 13), offset: [Math.min(210, map.getContainer().clientWidth * 0.22), 0], duration: 1000 });
 }
 $('#ai-log').addEventListener('click', async ev => {
