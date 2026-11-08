@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "start": "node server.js",
     "build": "node tools/build-remote-map.mjs && node tools/build-deploy.mjs",
     "deploy": "node tools/build-remote-map.mjs && node tools/build-deploy.mjs && cd deploy/moe-option-remote-map && npx vercel deploy --prod"
   },
