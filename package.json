@@ -1,1 +1,13 @@
-{"type":"module","dependencies":{"@anthropic-ai/sdk":"^1.4.0","@vercel/blob":"^2.8.2"}}
+{
+  "name": "moe-map",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "node tools/build-remote-map.mjs && node tools/build-deploy.mjs",
+    "deploy": "node tools/build-remote-map.mjs && node tools/build-deploy.mjs && cd deploy/moe-option-remote-map && npx vercel deploy --prod"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.4.0",
+    "@vercel/blob": "^2.8.2"
+  }
+}
